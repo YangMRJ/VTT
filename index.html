@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nosso Jogo 2D</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="login-container">
+        <h2>🎮 Bem-vindo!</h2>
+        <p class="subtitle">Entre para começar sua aventura</p>
+                
+        <div class="input-group">
+            <input type="text" id="nome-input" placeholder="Digite seu nome" maxlength="20">
+        </div>
+
+        <div class="color-section">
+            <span class="color-label">Escolha sua cor favorita</span>
+            <div id="color-selector">
+                <div class="color-swatch selected" data-color="#0a7aff" style="background-color: #0a7aff;"></div>
+                <div class="color-swatch" data-color="#ff4757" style="background-color: #ff4757;"></div>
+                <div class="color-swatch" data-color="#2ecc71" style="background-color: #2ecc71;"></div>
+                <div class="color-swatch" data-color="#f1c40f" style="background-color: #f1c40f;"></div>
+                <div class="color-swatch" data-color="#9b59b6" style="background-color: #9b59b6;"></div>
+                <div class="color-swatch" data-color="#e67e22" style="background-color: #e67e22;"></div>
+                <div class="color-swatch" data-color="#1abc9c" style="background-color: #1abc9c;"></div>
+                <div class="color-swatch" data-color="#ecf0f1" style="background-color: #ecf0f1;"></div>
+            </div>
+        </div>
+
+        <button id="entrar-btn">Entrar no Jogo</button>
+        <p id="feedback-msg"></p>
+    </div>
+
+    <div id="game-screen" style="display: none;">
+        <h1>Logado como: <span id="nome-jogador"></span></h1>
+        
+        <canvas id="game-canvas"></canvas>
+        
+        <p id="coords-debug">Posição: (0, 0)</p>
+    </div>
+
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script src="client.js"></script>
+</body>
+</html>
