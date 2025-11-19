@@ -51,3 +51,31 @@ Os atalhos funcionam na `gameScreen` e permitem acesso rápido a ferramentas e j
 
 * A função `makeMovable(element, handle)` é usada para tornar a Ficha de Personagem arrastável, utilizando o cabeçalho (`.sheet-header`) como *handle*.
 * A posição da Ficha (`characterSheetPosition.x`, `characterSheetPosition.y`) é salva no `dragEnd`.
+
+# 🔮 Planos Futuros e Próximos Passos (TODOs)
+
+Com base nos comentários `// TODO:` presentes no código `script.js`, os planos futuros do projeto se concentram em transformá-lo em um VTT multiplayer interativo, adicionando lógica de movimentação no mapa e gerenciamento de dados de forma dinâmica.
+
+## 1. Movimentação e Pathfinding de Token
+
+O objetivo é implementar a lógica de movimentação inteligente dos tokens no mapa, permitindo aos jogadores usar o sistema de 'point and click'.
+
+* **Conversão de Coordenadas:** Converter as coordenadas do mouse (e.g., `e.clientX`, `e.clientY`) para coordenadas do grid.
+* **Algoritmo de Pathfinding:** Implementar um algoritmo como o **A\*** (A-star) para encontrar o caminho mais curto entre a posição atual do token e a posição clicada.
+* **Movimentação:** Mover o token do jogador atual para a posição clicada, seguindo o caminho calculado.
+* **Verificação de Colisão:** Integrar a lógica para verificar se o caminho calculado colide com obstáculos de mapa, como paredes.
+
+## 2. Sincronização e Multiplayer
+
+O VTT atualmente funciona apenas localmente. O próximo passo é torná-lo utilizável para múltiplos jogadores.
+
+* **Chat Multiplayer:** Enviar mensagens do chat para outros jogadores, o que exige a implementação de uma solução de comunicação em tempo real, como **WebSockets**.
+* **Sincronização da Lista de Jogadores:** Sincronizar o estado da lista de jogadores com um servidor para que todos os participantes vejam quem está conectado.
+* **Sincronização de Tokens:** Garantir que as posições e o estado dos tokens de todos os jogadores sejam atualizados em tempo real para todos os clientes.
+
+## 3. Gerenciamento de Dados e Ferramentas
+
+Adicionar a funcionalidade completa de gerenciamento de conteúdo nas interfaces de usuário.
+
+* **Ficha de Personagem Dinâmica:** Implementar funcionalidades para adicionar e editar itens, armas, magias e equipamentos na Ficha de Personagem.
+* **Implementação de Ferramentas:** Adicionar a lógica de desenho e interação para outras ferramentas da barra, como a Régua (em suas variações: linha, círculo, quadrado, cone) e a ferramenta Parede, que o Mestre utiliza para definir obstáculos no mapa.
