@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VTT RPG</title>
+    <link rel="stylesheet" href="styles.css"> 
+</head>
+<body>
+    <div id="loginScreen">
+        <div class="login-container">
+            <h1>🎲 VTT RPG</h1>
+            
+            <div class="input-group">
+                <label for="playerName">Nome ou Código do Mestre</label>
+                <input type="text" id="playerName" placeholder="Digite seu nome ou 9678">
+            </div>
+
+            <div class="input-group">
+                <label>Escolha sua cor</label>
+                <div class="color-selector" id="colorSelector">
+                    <div class="color-option" data-color="#6b7280" style="background: #6b7280;"></div>
+                    <div class="color-option" data-color="#ef4444" style="background: #ef4444;"></div>
+                    <div class="color-option" data-color="#3b82f6" style="background: #3b82f6;"></div>
+                    <div class="color-option" data-color="#10b981" style="background: #10b981;"></div>
+                    <div class="color-option" data-color="#f59e0b" style="background: #f59e0b;"></div>
+                    <div class="color-option" data-color="#8b5cf6" style="background: #8b5cf6;"></div>
+                    <div class="color-option" data-color="#ec4899" style="background: #ec4899;"></div>
+                    <div class="color-option" data-color="#06b6d4" style="background: #06b6d4;"></div>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Escolha seu emoji</label>
+                <div class="emoji-selector" id="emojiSelector">
+                    <div class="emoji-option" data-emoji="👤">👤</div>
+                    <div class="emoji-option" data-emoji="⚔️">⚔️</div>
+                    <div class="emoji-option" data-emoji="🧙">🧙</div>
+                    <div class="emoji-option" data-emoji="🛡️">🛡️</div>
+                    <div class="emoji-option" data-emoji="🏹">🏹</div>
+                    <div class="emoji-option" data-emoji="🗡️">🗡️</div>
+                    <div class="emoji-option" data-emoji="🔮">🔮</div>
+                    <div class="emoji-option" data-emoji="👑" data-master="true">👑</div>
+                </div>
+            </div>
+
+            <button class="login-btn" id="loginBtn">Entrar</button>
+        </div>
+    </div>
+
+    <div id="gameScreen">
+        <canvas id="gameCanvas"></canvas>
+
+        <div id="toolbar">
+            <div class="tool-btn active" data-tool="move" title="Mover (V)">✋</div>
+            
+            <div class="tool-item"> 
+                <div class="tool-btn" data-tool="ruler" title="Régua (R)">📏</div> 
+                <div class="tool-submenu">
+                    <div class="tool-btn-sub" data-ruler="line">📏</div>
+                    <div class="tool-btn-sub" data-ruler="circle">⭕</div>
+                    <div class="tool-btn-sub" data-ruler="square">⬜</div>
+                    <div class="tool-btn-sub" data-ruler="cone">📐</div>
+                </div>
+            </div>
+            
+            <div class="tool-btn" data-tool="wall" title="Paredes (P)" id="wallTool">🧱</div>
+            <div class="tool-btn" data-tool="enemy" title="Inimigos (I)">👾</div>
+        </div>
+
+        <div id="playersList">
+            </div>
+
+        <div id="diceTray" class="minimized">
+            <div class="dice-tray-header">
+                <h3>🎲 Bandeja de Dados</h3>
+                <div class="chat-controls">
+                    <button class="chat-control-btn" onclick="minimizeDiceTray()">−</button>
+                    <button class="chat-control-btn" onclick="closeDiceTray()">×</button>
+                </div>
+            </div>
+            <div class="dice-tray-content">
+                <div class="dice-container">
+                    <div class="dice-btn" data-dice="d4">
+                        <span>D4</span>
+                        <span class="dice-count">0</span>
+                    </div>
+                    <div class="dice-btn" data-dice="d6">
+                        <span>D6</span>
+                        <span class="dice-count">0</span>
+                    </div>
+                    <div class="dice-btn" data-dice="d8">
+                        <span>D8</span>
+                        <span class="dice-count">0</span>
+                    </div>
+                    <div class="dice-btn" data-dice="d10">
+                        <span>D10</span>
+                        <span class="dice-count">0</span>
+                    </div>
+                    <div class="dice-btn" data-dice="d12">
+                        <span>D12</span>
+                        <span class="dice-count">0</span>
+                    </div>
+                    <div class="dice-btn" data-dice="d20">
+                        <span>D20</span>
+                        <span class="dice-count">0</span>
+                    </div>
+                    <div class="dice-btn" data-dice="d100">
+                        <span>D100</span>
+                        <span class="dice-count">0</span>
+                    </div>
+                </div>
+                <div class="dice-roll-controls">
+                    <input type="number" class="modifier-input" placeholder="+0" value="0">
+                    <button class="roll-btn">🎲 Rolar Dados</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="attackBar">
+            <div 
+                class="attack-slot" 
+                data-name="Espada Longa" 
+                data-damage="1d8" 
+                data-description="Ataque corpo-a-corpo padrão.">
+                ⚔️
+            </div>
+            <div 
+                class="attack-slot" 
+                data-name="Bola de Fogo" 
+                data-damage="8d6" 
+                data-description="Grande explosão mágica. (Área: Círculo)">
+                🔥
+            </div>
+            <div 
+                class="attack-slot" 
+                data-name="Arco Longo" 
+                data-damage="1d8" 
+                data-description="Ataque de longo alcance.">
+                🏹
+            </div>
+            <div class="attack-slot">+</div>
+        </div>
+
+        <div id="chatContainer" class="closed">
+            <div class="chat-header">
+                <h3>💬 Chat</h3>
+                <div class="chat-controls">
+                    <button class="chat-control-btn" onclick="minimizeChat()">−</button>
+                    <button class="chat-control-btn" onclick="closeChat()">×</button>
+                </div>
+            </div>
+            <div class="chat-messages" id="chatMessages">
+                <p style="color: #9ca3af; font-size: 0.9rem;">Bem-vindo ao chat! Pressione Ctrl+C para abrir/fechar.</p>
+            </div>
+            <div class="chat-input-container">
+                <input type="text" placeholder="Digite sua mensagem..." id="chatInput">
+            </div>
+        </div>
+
+        <div id="characterSheet" class="minimized">
+            <div class="sheet-header">
+                <h2>👤 Ficha de Personagem</h2>
+                <div class="chat-controls">
+                    <button class="chat-control-btn" onclick="minimizeCharacterSheet()">−</button>
+                    <button class="chat-control-btn" onclick="closeCharacterSheet()">×</button>
+                </div>
+            </div>
+            <div class="sheet-tabs">
+                <div class="sheet-tab active" data-tab="equipment">Equipamento</div>
+                <div class="sheet-tab" data-tab="spells">Magias</div>
+                <div class="sheet-tab" data-tab="history">História</div>
+            </div>
+            <div class="sheet-content">
+                <div id="equipmentTab" class="tab-content">
+                    <div class="info-grid">
+                        <div class="info-field">
+                            <label>Nome</label>
+                            <input type="text" value="Aventureiro">
+                        </div>
+                        <div class="info-field">
+                            <label>Raça</label>
+                            <input type="text" value="Humano">
+                        </div>
+                        <div class="info-field">
+                            <label>Classe</label>
+                            <input type="text" value="Guerreiro">
+                        </div>
+                        <div class="info-field">
+                            <label>Nível</label>
+                            <input type="number" value="1">
+                        </div>
+                    </div>
+
+                    <div class="sheet-section">
+                        <h4>⚔️ Armas</h4>
+                        <button class="add-btn">+ Adicionar Arma</button>
+                    </div>
+
+                    <div class="sheet-section">
+                        <h4>🛡️ Equipamentos</h4>
+                        <button class="add-btn">+ Adicionar Equipamento</button>
+                    </div>
+
+                    <div class="sheet-section">
+                        <h4>🎒 Mochila</h4>
+                        <button class="add-btn">+ Adicionar Item</button>
+                    </div>
+                </div>
+
+                <div id="spellsTab" class="tab-content" style="display: none;">
+                    <div class="sheet-section">
+                        <h4>✨ Magias</h4>
+                        <button class="add-btn">+ Adicionar Magia</button>
+                        </div>
+
+                    <div class="sheet-section">
+                        <h4>💪 Habilidades</h4>
+                        <button class="add-btn">+ Adicionar Habilidade</button>
+                        </div>
+                </div>
+
+                <div id="historyTab" class="tab-content" style="display: none;">
+                    <div class="sheet-section">
+                        <h4>👤 Aparência</h4>
+                        <textarea style="width: 100%; min-height: 100px; background: var(--bg-darker); border: 1px solid var(--border-color); border-radius: 6px; padding: 0.75rem; color: var(--text-color);" placeholder="Descreva a aparência do seu personagem..."></textarea>
+                    </div>
+
+                    <div class="sheet-section">
+                        <h4>📖 Background</h4>
+                        <textarea style="width: 100%; min-height: 150px; background: var(--bg-darker); border: 1px solid var(--border-color); border-radius: 6px; padding: 0.75rem; color: var(--text-color);" placeholder="Conte a história do seu personagem..."></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="enemyCompendium">
+            <div class="compendium-header">
+                <h2>👾 Compêndio de Inimigos</h2>
+                <button class="close-btn" id="closeCompendiumBtn">×</button>
+            </div>
+            <div class="compendium-content">
+                <button class="add-btn" style="margin-bottom: 1rem;">+ Criar Novo Inimigo</button>
+                
+                <div class="enemy-list-item">
+                    <div>
+                        <h4>Goblin</h4>
+                        <p style="font-size: 0.85rem; color: #9ca3af;">HP: 7 | CA: 15</p>
+                    </div>
+                    <div>
+                        <button class="add-btn">Spawnar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

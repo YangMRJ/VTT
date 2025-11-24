@@ -1,0 +1,883 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary-color: #6b7280;
+    --bg-dark: #1f2937;
+    --bg-darker: #111827;
+    --bg-light: #374151;
+    --text-color: #f3f4f6;
+    --border-color: #4b5563;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg-darker);
+    color: var(--text-color);
+    overflow: hidden;
+}
+
+/* TELA DE LOGIN */
+#loginScreen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, var(--bg-darker) 0%, var(--bg-dark) 100%);
+}
+
+.login-container {
+    background: var(--bg-dark);
+    padding: 2.5rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    width: 400px;
+}
+
+.login-container h1 {
+    margin-bottom: 2rem;
+    text-align: center;
+    color: var(--primary-color);
+    font-size: 2rem;
+}
+
+.input-group {
+    margin-bottom: 1.5rem;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    color: #9ca3af;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 0.75rem;
+    background: var(--bg-darker);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-color);
+    font-size: 1rem;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.color-selector {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+}
+
+.color-option {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.color-option:hover {
+    transform: scale(1.1);
+}
+
+.color-option.selected {
+    border-color: var(--text-color);
+    box-shadow: 0 0 0 3px var(--bg-dark);
+}
+
+.emoji-selector {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+}
+
+.emoji-option {
+    padding: 0.75rem;
+    background: var(--bg-darker);
+    border: 2px solid transparent;
+    border-radius: 8px;
+    font-size: 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.emoji-option:hover {
+    background: var(--bg-light);
+}
+
+.emoji-option.selected {
+    border-color: var(--primary-color);
+    background: var(--bg-light);
+}
+
+.login-btn {
+    width: 100%;
+    padding: 1rem;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 1.5rem;
+    transition: all 0.2s;
+}
+
+.login-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+}
+
+/* TELA DE JOGO */
+#gameScreen {
+    display: none;
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+    opacity: 0;
+    transition: opacity 0.5s;
+}
+
+#gameScreen.active {
+    display: block;
+    opacity: 1;
+}
+
+/* GRID CANVAS */
+#gameCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #0a0a0a;
+    cursor: grab;
+}
+
+#gameCanvas.grabbing {
+    cursor: grabbing;
+}
+
+/* BARRA DE FERRAMENTAS LATERAL */
+#toolbar {
+    position: fixed;
+    left: -60px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--bg-dark);
+    border: 1px solid var(--border-color);
+    border-left: none;
+    border-radius: 0 12px 12px 0;
+    padding: 0.75rem 0;
+    transition: left 0.3s;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+#toolbar:hover,
+#toolbar:focus-within { /* focus-within para manter aberto ao interagir com o submenu */
+    left: 0;
+}
+
+/* NOVO CONTAINER PARA O BOTÃO/SUBMENU */
+.tool-item {
+    width: 60px; /* 50px do botão + 0.5rem (aprox 8px) de margin lateral em cada lado. */
+    height: 50px; 
+    margin: 0 0.5rem; /* Copia o margin do .tool-btn para alinhamento correto */
+    
+    position: relative; /* Contexto de posicionamento para o submenu absoluto */
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+}
+
+.tool-btn {
+    width: 50px;
+    height: 50px;
+    background: var(--bg-darker);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    /* REMOVIDO o margin lateral, agora está no .tool-item */
+    margin: 0; 
+    position: relative;
+    /* Z-INDEX AJUSTADO: Alto para ficar por cima do submenu (AGORA QUE SÃO IRMÃOS) */
+    z-index: 1000; 
+}
+
+.tool-btn:hover {
+    background: var(--bg-light);
+    border-color: var(--primary-color);
+}
+
+.tool-btn.active {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+/* CORREÇÃO CHAVE: O submenu aparece quando o mouse está sobre o contêiner (.tool-item) */
+.tool-item:hover > .tool-submenu { 
+    display: flex;
+}
+
+.tool-submenu {
+    position: absolute;
+    left: 45%;
+    top: 0%;
+    height: 50px;
+    width: 280px;
+    background: var(--bg-dark);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    display: none;
+    flex-direction: row;
+    justify-content: right;
+    gap: 0.5rem;
+    margin-left: 0.5rem;
+    /* Z-INDEX AJUSTADO: Menor que o botão (1000) */
+    z-index: 500;
+}
+
+.tool-btn-sub {
+    width: 40px;
+    height: 40px;
+    background: var(--bg-darker);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    margin: 0 0.5rem;
+    margin-top: 1.8%;
+    position: relative;
+}
+
+.tool-btn-sub:hover {
+    background: var(--bg-light);
+    border-color: var(--primary-color);
+}
+
+.tool-btn-sub.active {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+/* A regra abaixo não é mais necessária, pois o .tool-item cuida do hover. */
+/* .tool-btn-sub:hover > .tool-submenu, .tool-btn-sub .tool-submenu:hover { display: flex; } */
+
+
+/* CHAT */
+#chatContainer {
+    position: fixed;
+    bottom: 0px;
+    right: 20px;
+    width: 350px;
+    background: var(--bg-dark);
+    border: 1px solid var(--border-color);
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+    overflow: hidden;
+    transition: all 0.3s;
+    z-index: 90;
+}
+
+#chatContainer.minimized {
+    height: 45px;
+    width: 150px;
+}
+
+#chatContainer.closed {
+    display: none;
+}
+
+.chat-header {
+    background: var(--bg-darker);
+    padding: 0.75rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    cursor: grab; /* Cursor para indicar que é arrastável */
+}
+
+.chat-header h3 {
+    font-size: 0.9rem;
+    color: var(--primary-color);
+}
+
+.chat-controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.chat-control-btn {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 0.25rem;
+    line-height: 1;
+}
+
+.chat-control-btn:hover {
+    color: var(--text-color);
+}
+
+.chat-messages {
+    height: 300px;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+#chatContainer.minimized .chat-messages,
+#chatContainer.minimized .chat-input-container {
+    display: none;
+}
+
+.chat-input-container {
+    padding: 0.75rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.chat-input-container input {
+    width: 100%;
+    padding: 0.5rem;
+    background: var(--bg-darker);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-color);
+}
+
+/* FICHA DE PERSONAGEM */
+#characterSheet {
+    position: fixed;
+    right: 20px;
+    top: 20px;
+    width: 450px;
+    max-height: 80vh;
+    background: var(--bg-dark);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    overflow: hidden;
+    z-index: 95;
+    display: none;
+    transition: height 0.3s, width 0.3s;
+}
+
+#characterSheet.active {
+    display: block;
+}
+
+#characterSheet.minimized {
+    height: 50px;
+    width: 250px;
+}
+
+.sheet-header {
+    background: var(--bg-darker);
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: grab; /* Cursor para indicar que é arrastável */
+}
+
+.sheet-header h2 {
+    font-size: 0.9rem;
+    color: var(--primary-color);
+}
+
+#characterSheet.minimized .sheet-tabs,
+#characterSheet.minimized .sheet-content {
+    display: none;
+}
+
+.sheet-tabs {
+    display: flex;
+    background: var(--bg-darker);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.sheet-tab {
+    flex: 1;
+    padding: 0.75rem;
+    text-align: center;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+}
+
+.sheet-tab:hover {
+    background: var(--bg-light);
+}
+
+.sheet-tab.active {
+    border-bottom-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.sheet-content {
+    padding: 1rem;
+    max-height: calc(80vh - 45px - 45px); /* Altura máxima baseada no topo e header */
+    overflow-y: auto;
+}
+
+.sheet-section {
+    margin-bottom: 1.5rem;
+}
+
+.sheet-section h4 {
+    margin-bottom: 0.75rem;
+    color: var(--primary-color);
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.info-field {
+    background: var(--bg-darker);
+    padding: 0.75rem;
+    border-radius: 6px;
+}
+
+.info-field label {
+    display: block;
+    font-size: 0.75rem;
+    color: #9ca3af;
+    margin-bottom: 0.25rem;
+}
+
+.add-btn {
+    width: 100%;
+    padding: 0.5rem;
+    background: var(--primary-color);
+    border: none;
+    border-radius: 6px;
+    color: white;
+    cursor: pointer;
+    margin-top: 0.5rem;
+}
+
+/* BANDEJA DE DADOS */
+#diceTray {
+    position: fixed;
+    bottom: 20px; 
+    left: 20px; 
+    width: 450px;
+    background: var(--bg-dark);
+    border: 1px solid var(--border-color);
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+    padding: 0;
+    z-index: 85;
+    display: none;
+    transition: height 0.3s, width 0.3s;
+}
+
+#diceTray.active {
+    display: block;
+    margin-bottom: -20px;
+}
+
+#diceTray.minimized {
+    height: 45px;
+    width: 240px;
+}
+
+.dice-tray-header {
+    background: var(--bg-darker);
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: grab; /* Cursor para indicar que é arrastável */
+}
+
+.dice-tray-header h3 {
+    font-size: 0.9rem;
+    color: var(--primary-color);
+}
+
+.dice-tray-content {
+    padding: 1rem;
+}
+
+#diceTray.minimized .dice-tray-content {
+    display: none;
+}
+
+.dice-container {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.dice-btn {
+    width: 60px;
+    height: 60px;
+    background: var(--bg-darker);
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.dice-btn:hover {
+    border-color: var(--primary-color);
+}
+
+.dice-btn.selected {
+    background: var(--primary-color);
+}
+
+.dice-count {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: var(--primary-color);
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+}
+
+.dice-btn.selected .dice-count {
+    display: flex;
+}
+
+.dice-roll-controls {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.modifier-input {
+    width: 80px;
+    padding: 0.5rem;
+    background: var(--bg-darker);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-color);
+    text-align: center;
+}
+
+.roll-btn {
+    flex: 1;
+    padding: 0.75rem;
+    background: var(--primary-color);
+    border: none;
+    border-radius: 6px;
+    color: white;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+/* BARRA DE ATAQUES */
+#attackBar {
+    position: fixed;
+    bottom: 10px;
+    height: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-dark);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 0.55rem 1rem;
+    display: flex;
+    gap: 0.75rem;
+    z-index: 85;
+}
+
+.attack-slot {
+    /* ATUALIZADO: Propriedades para slot quadrado de 40px */
+    width: 40px; 
+    height: 40px;
+    font-size: 1.2rem; /* Tamanho maior para o emoji */
+    text-align: center;
+
+    background: var(--bg-darker);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.15rem;
+    transition: all 0.2s;
+    position: relative; 
+}
+
+.attack-slot:hover {
+    border-color: var(--primary-color);
+    transform: translateY(-4px);
+}
+
+/* Estilo para o Tooltip (Dica de Ferramenta) */
+.attack-slot:hover:not(:last-child)::before {
+    content: attr(data-name) "\A Dano: " attr(data-damage) "\A\A" attr(data-description);
+    white-space: pre-wrap; 
+    position: absolute;
+    bottom: 100%; 
+    left: 50%;
+    transform: translateX(-50%) translateY(-10px);
+    
+    background: var(--bg-darker);
+    border: 1px solid var(--primary-color);
+    color: var(--text-color);
+    padding: 0.75rem;
+    border-radius: 8px;
+    
+    font-size: 0.7rem;
+    line-height: 1.3;
+    width: 200px;
+    text-align: left;
+    z-index: 99;
+    
+    opacity: 1;
+    transition: opacity 0.3s;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+.attack-slot:hover:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    bottom: 100%; 
+    left: 50%;
+    transform: translateX(-50%);
+    
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid var(--primary-color); 
+    margin-bottom: -4px;
+    z-index: 100;
+}
+
+/* ATUALIZADO: Ajuste específico para o botão '+' */
+.attack-slot:last-child {
+    font-size: 1.5rem; 
+}
+
+/* LISTA DE JOGADORES (CORRIGIDO) */
+#playersList {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    /* CORREÇÃO VISUAL: Removendo fundo e borda */
+    background: transparent; 
+    border: none;           
+    padding: 0; 
+    z-index: 80;
+    min-width: 200px;
+    
+    /* NOVO: Propriedades para retração */
+    transition: transform 0.3s ease-out;
+    transform: translateX(0);
+}
+
+/* NOVO: Quando a lista está retraída */
+#playersList.minimized {
+    /* Retrai o elemento, mostrando apenas a largura das barras de cor */
+    transform: translateX(calc(-100% + 180px)); 
+}
+
+/* Contêiner interno que segura os itens */
+.player-list-content {
+    padding: 0.75rem; 
+    background: var(--bg-dark); /* Adiciona o fundo escuro para o corpo da lista */
+    border-radius: 12px;
+}
+
+/* Oculta o conteúdo interno quando a lista está retraída */
+#playersList.minimized .player-list-content {
+    padding: 0; /* Remove padding na retração */
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+/* Estilo do item individual do jogador */
+.player-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    background: var(--bg-darker); 
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3); 
+    position: relative; /* Adicionado para que o indicador absoluto funcione */
+}
+
+/* NOVO: Estilo do item quando a lista está retraída */
+#playersList.minimized .player-item {
+    padding: 0;
+    margin-bottom: 0;
+    width: 15px; /* Largura da "bordinha" */
+    height: 40px; /* Altura da "bordinha" */
+    overflow: hidden;
+    background: transparent;
+    border-radius: 0 8px 8px 0; /* Arredonda apenas a ponta visível */
+    box-shadow: none;
+    margin-left: 0;
+    
+    /* Faz com que os itens fiquem um em cima do outro */
+    flex-direction: column;
+    justify-content: center; 
+}
+
+#playersList.minimized .player-item:not(:last-child) {
+    margin-bottom: 5px; /* Espaçamento entre as barras */
+}
+
+/* NOVO: Estilo da bordinha de cor quando retraída */
+.player-indicator {
+    width: 15px; /* Largura padrão quando visível */
+    height: 15px; /* Altura padrão quando visível */
+    border-radius: 50%;
+}
+
+#playersList.minimized .player-indicator {
+    /* Usa o indicador de cor como o único elemento visível */
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+    
+    /* POSICIONAMENTO ABSOLUTO PARA COBRIR O ITEM MINIMIZADO */
+    position: absolute; 
+    left: 0;
+    top: 0;
+}
+
+/* Oculta os elementos de texto/emoji na retração */
+#playersList.minimized .player-emoji,
+#playersList.minimized .player-name {
+    display: none;
+}
+
+/* COMPENDIO DE INIMIGOS */
+#enemyCompendium {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px;
+    max-height: 80vh;
+    background: var(--bg-dark);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    z-index: 200;
+    display: none;
+}
+
+#enemyCompendium.active {
+    display: block;
+}
+
+.compendium-header {
+    background: var(--bg-darker);
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.compendium-content {
+    padding: 1rem;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.enemy-list-item {
+    background: var(--bg-darker);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    font-size: 1.5rem;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    line-height: 1;
+}
+
+/* Scrollbar customizada */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-darker);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-color);
+}
+
+.fade-in {
+    animation: fadeIn 0.5s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
