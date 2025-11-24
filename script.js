@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 // ========== VARIÁVEIS GLOBAIS ==========
 let playerData = {
     name: '',
