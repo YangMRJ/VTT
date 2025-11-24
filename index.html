@@ -49,6 +49,7 @@
     </div>
 
     <div id="gameScreen">
+        
         <canvas id="gameCanvas"></canvas>
 
         <div id="toolbar">
@@ -69,7 +70,7 @@
         </div>
 
         <div id="playersList">
-            </div>
+        </div>
 
         <div id="diceTray" class="minimized">
             <div class="dice-tray-header">
@@ -81,34 +82,13 @@
             </div>
             <div class="dice-tray-content">
                 <div class="dice-container">
-                    <div class="dice-btn" data-dice="d4">
-                        <span>D4</span>
-                        <span class="dice-count">0</span>
-                    </div>
-                    <div class="dice-btn" data-dice="d6">
-                        <span>D6</span>
-                        <span class="dice-count">0</span>
-                    </div>
-                    <div class="dice-btn" data-dice="d8">
-                        <span>D8</span>
-                        <span class="dice-count">0</span>
-                    </div>
-                    <div class="dice-btn" data-dice="d10">
-                        <span>D10</span>
-                        <span class="dice-count">0</span>
-                    </div>
-                    <div class="dice-btn" data-dice="d12">
-                        <span>D12</span>
-                        <span class="dice-count">0</span>
-                    </div>
-                    <div class="dice-btn" data-dice="d20">
-                        <span>D20</span>
-                        <span class="dice-count">0</span>
-                    </div>
-                    <div class="dice-btn" data-dice="d100">
-                        <span>D100</span>
-                        <span class="dice-count">0</span>
-                    </div>
+                    <div class="dice-btn" data-dice="d4"><span>D4</span><span class="dice-count">0</span></div>
+                    <div class="dice-btn" data-dice="d6"><span>D6</span><span class="dice-count">0</span></div>
+                    <div class="dice-btn" data-dice="d8"><span>D8</span><span class="dice-count">0</span></div>
+                    <div class="dice-btn" data-dice="d10"><span>D10</span><span class="dice-count">0</span></div>
+                    <div class="dice-btn" data-dice="d12"><span>D12</span><span class="dice-count">0</span></div>
+                    <div class="dice-btn" data-dice="d20"><span>D20</span><span class="dice-count">0</span></div>
+                    <div class="dice-btn" data-dice="d100"><span>D100</span><span class="dice-count">0</span></div>
                 </div>
                 <div class="dice-roll-controls">
                     <input type="number" class="modifier-input" placeholder="+0" value="0">
@@ -139,20 +119,19 @@
                 data-description="Ataque de longo alcance.">
                 🏹
             </div>
-            <div class="attack-slot">+</div>
+            <div class="attack-slot" title="Adicionar Arma">+</div>
         </div>
 
         <div id="chatContainer" class="closed">
             <div class="chat-header">
                 <h3>💬 Chat</h3>
-                <div class="chat-controls">
+                <div class="chat-controls-chat">
                     <button class="chat-control-btn" onclick="minimizeChat()">−</button>
                     <button class="chat-control-btn" onclick="closeChat()">×</button>
                 </div>
             </div>
             <div class="chat-messages" id="chatMessages">
-                <p style="color: #9ca3af; font-size: 0.9rem;">Bem-vindo ao chat! Pressione Ctrl+C para abrir/fechar.</p>
-            </div>
+                </div>
             <div class="chat-input-container">
                 <input type="text" placeholder="Digite sua mensagem..." id="chatInput">
             </div>
@@ -166,72 +145,88 @@
                     <button class="chat-control-btn" onclick="closeCharacterSheet()">×</button>
                 </div>
             </div>
-            <div class="sheet-tabs">
-                <div class="sheet-tab active" data-tab="equipment">Equipamento</div>
+            
+            <div class="sheet-tabs sheet-grid-header">
+                <div class="sheet-tab active" data-tab="personagem">Personagem</div>
                 <div class="sheet-tab" data-tab="spells">Magias</div>
                 <div class="sheet-tab" data-tab="history">História</div>
             </div>
-            <div class="sheet-content">
-                <div id="equipmentTab" class="tab-content">
-                    <div class="info-grid">
-                        <div class="info-field">
-                            <label>Nome</label>
-                            <input type="text" value="Aventureiro">
-                        </div>
-                        <div class="info-field">
-                            <label>Raça</label>
-                            <input type="text" value="Humano">
-                        </div>
-                        <div class="info-field">
-                            <label>Classe</label>
-                            <input type="text" value="Guerreiro">
-                        </div>
-                        <div class="info-field">
-                            <label>Nível</label>
-                            <input type="number" value="1">
-                        </div>
+            
+            <div class="sheet-content sheet-grid-container">
+                
+                <div id="personagemTab" class="tab-content sheet-grid-main">
+                    
+                    <div class="sheet-section sheet-grid-menu">
+                        <h4>🎯 Perícias (Skills)</h4>
+                        <ul class="item-list" id="skillsList">
+                            </ul>
                     </div>
 
-                    <div class="sheet-section">
-                        <h4>⚔️ Armas</h4>
-                        <button class="add-btn">+ Adicionar Arma</button>
-                    </div>
+                    <div class="sheet-grid-content">
+                        
+                        <div class="info-grid">
+                            <div class="info-field"><label>Nome</label><input type="text" value="Aventureiro"></div>
+                            <div class="info-field"><label>Raça</label><input type="text" value="Humano"></div>
+                            <div class="info-field"><label>Classe</label><input type="text" value="Guerreiro"></div>
+                            <div class="info-field"><label>Nível</label><input type="number" value="1"></div>
+                        </div>
 
-                    <div class="sheet-section">
-                        <h4>🛡️ Equipamentos</h4>
-                        <button class="add-btn">+ Adicionar Equipamento</button>
-                    </div>
+                        <div class="sheet-section">
+                            <h4>⚔️ Combate & Atributos</h4>
+                            <div class="info-grid" style="grid-template-columns: repeat(3, 1fr);">
+                                <div class="info-field" style="justify-self: center;"><label>CA</label><input type="number" value="10"></div>
+                                <div class="info-field"><label>Iniciativa</label><input type="text" value="+0"></div>
+                                <div class="info-field"><label>Bônus de Proficiência</label><input type="text" value="+2"></div>
+                            </div>
+                            <div class="info-grid" style="grid-template-columns: repeat(2, 1fr);">
+                                <div class="info-field"><label>Inspiração</label><input type="checkbox" style="width: auto; margin-top: 5px;"></div>
+                                <div class="info-field" style="visibility: hidden; height: 0; padding: 0; border: none;"></div>
+                            </div>
+                        </div>
 
-                    <div class="sheet-section">
-                        <h4>🎒 Mochila</h4>
-                        <button class="add-btn">+ Adicionar Item</button>
-                    </div>
-                </div>
+                        <div class="sheet-section">
+                            <h4>⚔️ Armas</h4>
+                            <div id="addWeaponFormContainer" class="add-form-container" style="display: none;"> 
+                                <div class="info-field"><label>Nome da Arma</label><input type="text" id="weaponNameInput"></div>
+                                <div class="info-field"><label>Dado de Dano (ex: 1d8)</label><input type="text" id="weaponDamageInput"></div>
+                                <div class="info-field">
+                                    <label>Tipo de Arma</label>
+                                    <select id="weaponTypeSelect">
+                                        <option value="Comum">Comum</option>
+                                        <option value="Leve">Leve</option>
+                                        <option value="Pesada">Pesada</option>
+                                        <option value="Mágica">Mágica</option>
+                                    </select>
+                                </div>
+                                <div class="info-field">
+                                    <label>Descrição</label>
+                                    <textarea id="weaponDescriptionInput" style="width: 100%; min-height: 50px; background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: 6px; padding: 0.5rem; color: var(--text-color);"></textarea>
+                                </div>
+                                <div class="form-actions">
+                                    <button class="add-btn confirm-btn" id="confirmAddWeapon">Adicionar</button>
+                                    <button class="add-btn cancel-btn" id="cancelAddWeapon">Cancelar</button>
+                                </div>
+                            </div>
+                            
+                            <ul class="item-list" id="weaponList"></ul>
+                            <button class="add-btn" data-action="add-weapon" id="openWeaponFormBtn">+ Adicionar Arma</button>
+                        </div>
 
+                        <div class="sheet-section"><h4>🛡️ Equipamentos</h4><ul class="item-list"></ul><button class="add-btn">+ Adicionar Equipamento</button></div>
+                        <div class="sheet-section"><h4>🎒 Mochila</h4><ul class="item-list"></ul><button class="add-btn">+ Adicionar Item</button></div>
+                    </div> 
+                </div> 
+                
                 <div id="spellsTab" class="tab-content" style="display: none;">
-                    <div class="sheet-section">
-                        <h4>✨ Magias</h4>
-                        <button class="add-btn">+ Adicionar Magia</button>
-                        </div>
-
-                    <div class="sheet-section">
-                        <h4>💪 Habilidades</h4>
-                        <button class="add-btn">+ Adicionar Habilidade</button>
-                        </div>
+                    <div class="sheet-section"><h4>✨ Magias</h4><ul class="item-list"></ul><button class="add-btn">+ Adicionar Magia</button></div>
+                    <div class="sheet-section"><h4>💪 Habilidades</h4><ul class="item-list"></ul><button class="add-btn">+ Adicionar Habilidade</button></div>
                 </div>
 
                 <div id="historyTab" class="tab-content" style="display: none;">
-                    <div class="sheet-section">
-                        <h4>👤 Aparência</h4>
-                        <textarea style="width: 100%; min-height: 100px; background: var(--bg-darker); border: 1px solid var(--border-color); border-radius: 6px; padding: 0.75rem; color: var(--text-color);" placeholder="Descreva a aparência do seu personagem..."></textarea>
-                    </div>
-
-                    <div class="sheet-section">
-                        <h4>📖 Background</h4>
-                        <textarea style="width: 100%; min-height: 150px; background: var(--bg-darker); border: 1px solid var(--border-color); border-radius: 6px; padding: 0.75rem; color: var(--text-color);" placeholder="Conte a história do seu personagem..."></textarea>
-                    </div>
+                    <div class="sheet-section"><h4>👤 Aparência</h4><textarea style="width: 100%; min-height: 100px; background: var(--bg-darker); border: 1px solid var(--border-color); border-radius: 6px; padding: 0.75rem; color: var(--text-color);" placeholder="Descreva a aparência do seu personagem..."></textarea></div>
+                    <div class="sheet-section"><h4>📖 Background</h4><textarea style="width: 100%; min-height: 150px; background: var(--bg-darker); border: 1px solid var(--border-color); border-radius: 6px; padding: 0.75rem; color: var(--text-color);" placeholder="Conte a história do seu personagem..."></textarea></div>
                 </div>
-            </div>
+            </div> 
         </div>
 
         <div id="enemyCompendium">
