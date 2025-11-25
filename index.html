@@ -171,33 +171,68 @@
                             <div class="info-field"><label>Nível</label><input type="number" value="1"></div>
                         </div>
 
-                        <div class="sheet-section">
-                            <h4>⚡ Atributos</h4>
-                            <div id="attributesGrid" class="attributes-grid"></div>
-                        </div>
+                        <div class="combat-attributes-row"> 
 
-                        <div class="sheet-section" style="width: 210px;">
-                            <h4>⚔️ Mods</h4>
-                            <div class="info-grid" style="grid-template-columns: repeat(2, 1fr); gap: 1rem;">
-                                <div class="info-field">
-                                    <label>CA</label>
-                                    <input type="number" value="10">
+                            <div class="attributes-and-mods-column">
+                                <div class="sheet-section">
+                                    <h4>⚡ Atributos</h4>
+                                    <div id="attributesGrid" class="attributes-grid"></div>
                                 </div>
-                                <div class="info-field">
-                                    <label>Iniciativa</label>
-                                    <input type="text" value="+0">
-                                </div>
-                                <div class="info-field">
-                                    <label>Proficiência</label>
-                                    <input type="text" value="+2">
-                                </div>
-                                <div class="info-field">
-                                    <label>Inspiração</label>
-                                    <input type="checkbox" style="width: auto; margin-top: 5px;">
+                                <div class="sheet-section small-mods">
+                                    <h4>⚔️ Mods Adicionais</h4>
+                                    <div class="info-grid">
+                                        <div class="info-field">
+                                            <label>Iniciativa</label>
+                                            <input type="text" id="initiativeModDisplay" value="+0" readonly>
+                                        </div>
+                                        <div class="info-field">
+                                            <label>Proficiência</label>
+                                            <input type="text" id="proficiencyBonusDisplay" value="+2" readonly>
+                                        </div>
+                                        <div class="info-field" style="grid-column: span 2;">
+                                            <label>Inspiração</label>
+                                            <input type="checkbox" style="width: auto; margin-top: 5px;">
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                            <div class="combat-stats-wrapper">
+                                <div class="sheet-section combat-stats">
+                                    <h4>🛡️ CA e Deslocamento</h4>
+                                    <hr>
+                                    <div class="stat-block ac-block">
+                                        <div class="stat-main">
+                                            <label>CLASSE DE ARMADURA</label>
+                                            <div class="combat-value-shield">
+                                                <input type="text" id="totalACDisplay" value="10" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="stat-breakdown info-grid ac-grid">
+                                            <div class="info-field"><input type="number" id="baseACInput" value="10" min="0"><h3>Armadura</h3></div>
+                                            <div class="info-field"><input type="text" id="dexModACDisplay" value="+0" readonly><h3>Destreza</h3></div>
+                                            <div class="info-field"><input type="number" id="shieldACInput" value="0" min="0"><h3>Escudo</h3></div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="stat-block speed-block">
+                                        <div class="stat-main">
+                                            <hr>
+                                            <label>DESLOCAMENTO (PÉ)</label>
+                                            <div class="combat-value-box">
+                                                <input type="number" id="walkSpeedInput" value="9" min="0" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="stat-breakdown info-grid speed-grid">
+                                            <div class="info-field"><input type="number" id="climbSpeedInput" value="0" min="0"><h3>Escalada</h3></div>
+                                            <div class="info-field"><input type="number" id="flySpeedInput" value="0" min="0"><h3>Voo</h3></div>
+                                            <div class="info-field"><input type="number" id="swimSpeedInput" value="0" min="0"><h3>Natação</h3></div>
+                                        </div>
+                                    </div>
+                                </div>
 
+                                </div>
+
+                        </div>
                         <div class="sheet-section">
                             <h4>⚔️ Armas</h4>
                             <div id="addWeaponFormContainer" class="add-form-container" style="display: none;"> 

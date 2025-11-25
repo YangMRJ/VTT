@@ -45,6 +45,17 @@ let characterAttributes = {
     cha: 10
 };
 
+// Novas variáveis para CA e Deslocamento
+let characterCombatStats = {
+    baseAC: 10,  // Armadura base (10 sem armadura)
+    shieldAC: 0, // Escudo
+    walkSpeed: 9, // Deslocamento de caminhada (9 metros = 30 pés)
+    climbSpeed: 0,
+    flySpeed: 0,
+    swimSpeed: 0,
+    initiativeMod: 0 // Modificador de Destreza para Iniciativa
+};
+
 let proficiencyBonus = 2; // +2 no nível 1, atualizável depois
 
 const ATTR_MAP = {
@@ -114,6 +125,63 @@ function renderAttributes() {
     }).join('');
 }
 
+/* FUNÇÃO: updateCombatStats() - Atualiza CA, Iniciativa e Velocidade */
+function updateCombatStats() {
+    const dexMod = getModifier(characterAttributes.dex);
+
+    // --- CA (Classe de Armadura) ---
+    const baseACInputEl = document.getElementById('baseACInput');
+    const shieldACInputEl = document.getElementById('shieldACInput');
+
+    if (baseACInputEl) characterCombatStats.baseAC = parseInt(baseACInputEl.value) || 10;
+    if (shieldACInputEl) characterCombatStats.shieldAC = parseInt(shieldACInputEl.value) || 0;
+
+    // CA total: Armadura Base + Mod Destreza + Escudo
+    const totalAC = characterCombatStats.baseAC + dexMod + characterCombatStats.shieldAC;
+    
+    const totalACDisplay = document.getElementById('totalACDisplay');
+    const dexModACDisplay = document.getElementById('dexModACDisplay');
+
+    if (totalACDisplay) totalACDisplay.value = totalAC;
+    if (dexModACDisplay) dexModACDisplay.value = dexMod >= 0 ? '+' + dexMod : dexMod;
+
+    // --- Iniciativa ---
+    characterCombatStats.initiativeMod = dexMod;
+    const initDisplay = document.getElementById('initiativeModDisplay');
+    if (initDisplay) {
+        initDisplay.value = dexMod >= 0 ? '+' + dexMod : dexMod;
+    }
+    
+    // --- Proficiência (Display) ---
+    const profDisplay = document.getElementById('proficiencyBonusDisplay');
+    if (profDisplay) {
+        profDisplay.value = '+' + proficiencyBonus;
+    }
+}
+
+/* FUNÇÃO: renderCombatStats() - Inicializa os inputs de Velocidade e CA */
+function renderCombatStats() {
+    const stats = characterCombatStats;
+    
+    // CA (lida primariamente por updateCombatStats)
+    const baseACInputEl = document.getElementById('baseACInput');
+    const shieldACInputEl = document.getElementById('shieldACInput');
+    if (baseACInputEl) baseACInputEl.value = stats.baseAC;
+    if (shieldACInputEl) shieldACInputEl.value = stats.shieldAC;
+    
+    // Velocidade
+    const walkSpeedInput = document.getElementById('walkSpeedInput');
+    const climbSpeedInput = document.getElementById('climbSpeedInput');
+    const flySpeedInput = document.getElementById('flySpeedInput');
+    const swimSpeedInput = document.getElementById('swimSpeedInput');
+
+    if (walkSpeedInput) walkSpeedInput.value = stats.walkSpeed;
+    if (climbSpeedInput) climbSpeedInput.value = stats.climbSpeed;
+    if (flySpeedInput) flySpeedInput.value = stats.flySpeed;
+    if (swimSpeedInput) swimSpeedInput.value = stats.swimSpeed;
+    
+    updateCombatStats();
+}
 
 // Função para renderizar a lista de perícias
 function renderSkills() {
@@ -250,7 +318,10 @@ function renderAttackBar() {
     attackBar.innerHTML = weaponSlots + addButton;
     
     // Adiciona listener para o novo botão '+'
-    document.getElementById('openAttackFormBtn').addEventListener('click', openAddWeaponForm);
+    const openAttackFormBtn = document.getElementById('openAttackFormBtn');
+    if (openAttackFormBtn) {
+        openAttackFormBtn.addEventListener('click', openAddWeaponForm);
+    }
 }
 
 // Função de exemplo para rolagem de ataque (simulação)
@@ -278,7 +349,11 @@ function addChatMessage(senderName, senderEmoji, message, color) {
 
     // Estilo para o glow (usado no CSS com ::before)
     const styleSheet = document.styleSheets[0];
-    const ruleIndex = styleSheet.insertRule(`.chat-message-group::before { background-color: ${color}; }`, styleSheet.cssRules.length);
+    // Evita erro se a folha de estilos não estiver carregada
+    if (styleSheet) { 
+        styleSheet.insertRule(`.chat-message-group[data-color="${color}"]::before { background-color: ${color}; }`, styleSheet.cssRules.length);
+        msgGroup.dataset.color = color;
+    }
     
     // Cabeçalho da mensagem (Nome e Emoji)
     const msgHeader = document.createElement('div');
@@ -315,6 +390,7 @@ function initGame() {
     renderSkills();
     renderWeapons();
     renderAttackBar();
+    renderCombatStats(); // NOVO: Inicializa CA e Velocidade
 
     // Inicializa atalhos de teclado
     setupKeyboardShortcuts();
@@ -327,10 +403,10 @@ function initGame() {
 
     // Torna a ficha arrastável pelo header
     makeMovable(document.getElementById('characterSheet'), document.querySelector('.sheet-header'));
-    // Torna o chat arrastável
-    makeMovable(document.getElementById('chatContainer'), document.querySelector('.chat-header'));
-    // Torna a bandeja de dados arrastável
-    makeMovable(document.getElementById('diceTray'), document.querySelector('.dice-tray-header'));
+    
+    // REMOVIDO: Desabilita o arraste do Chat e da Bandeja de Dados.
+    // makeMovable(document.getElementById('chatContainer'), document.querySelector('.chat-header'));
+    // makeMovable(document.getElementById('diceTray'), document.querySelector('.dice-tray-header'));
 }
 
 // ============ CORREÇÃO DO ARRASTAR VS CLICAR ============
@@ -573,10 +649,44 @@ document.addEventListener('input', function(e) {
             modEl.textContent = mod >= 0 ? '+' + mod : mod;
         }
 
-        // Re-renderiza perícias para atualizar mods totais
+        // Re-renderiza perícias e stats de combate para atualizar mods
         renderSkills();
+        updateCombatStats(); // NOVO: Atualiza CA e Iniciativa
     }
 });
+
+/* NOVO LISTENER: Trata a mudança nos inputs de CA e Velocidade */
+document.addEventListener('input', function(e) {
+    if (e.target.matches('#baseACInput, #shieldACInput, #walkSpeedInput, #climbSpeedInput, #flySpeedInput, #swimSpeedInput')) {
+        const inputId = e.target.id;
+        let value = parseInt(e.target.value);
+        if (isNaN(value) || value < 0) value = 0;
+        e.target.value = value;
+
+        switch(inputId) {
+            case 'baseACInput':
+                characterCombatStats.baseAC = value;
+                break;
+            case 'shieldACInput':
+                characterCombatStats.shieldAC = value;
+                break;
+            case 'walkSpeedInput':
+                characterCombatStats.walkSpeed = value;
+                break;
+            case 'climbSpeedInput':
+                characterCombatStats.climbSpeed = value;
+                break;
+            case 'flySpeedInput':
+                characterCombatStats.flySpeed = value;
+                break;
+            case 'swimSpeedInput':
+                characterCombatStats.swimSpeed = value;
+                break;
+        }
+        updateCombatStats();
+    }
+});
+
 
 // Outros listeners (ferramentas, chat, etc.)
 document.querySelectorAll('.tool-btn').forEach(btn => {
@@ -841,6 +951,31 @@ function onCanvasWheel(e) {
 function openAddWeaponForm() {
     // Implementação do formulário inline (exemplo, ajuste conforme necessário)
     const formContainer = document.getElementById('addWeaponFormContainer');
-    formContainer.style.display = 'block';
-    // Adicione listeners para confirm/cancel se necessário
+    if (formContainer) {
+        formContainer.style.display = 'block';
+    }
 }
+
+// Funções para adicionar e cancelar arma (exemplo básico)
+document.getElementById('confirmAddWeapon')?.addEventListener('click', () => {
+    const name = document.getElementById('weaponNameInput').value;
+    const damage = document.getElementById('weaponDamageInput').value;
+    const type = document.getElementById('weaponTypeSelect').value;
+    const description = document.getElementById('weaponDescriptionInput').value || 'Sem descrição.';
+
+    if (name && damage) {
+        characterWeapons.push({ name, damage, type, description });
+        renderWeapons();
+        renderAttackBar();
+        document.getElementById('addWeaponFormContainer').style.display = 'none';
+        document.getElementById('weaponNameInput').value = '';
+        document.getElementById('weaponDamageInput').value = '';
+        document.getElementById('weaponDescriptionInput').value = '';
+    } else {
+        alert('Nome e Dano da arma são obrigatórios.');
+    }
+});
+
+document.getElementById('cancelAddWeapon')?.addEventListener('click', () => {
+    document.getElementById('addWeaponFormContainer').style.display = 'none';
+});
