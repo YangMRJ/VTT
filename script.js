@@ -27,375 +27,775 @@ let tokens = [];
 // Array para armazenar as armas do personagem. (Para renderização da Ficha)
 let characterWeapons = [
     { name: "Espada Longa", damage: "1d8", type: "Comum", description: "Ataque corpo-a-corpo padrão." },
-    { name: "Bola de Fogo", damage: "8d6", type: "Magia", description: "Grande explosão mágica. (Área: Círculo)" }
+    { name: "Bola de Fogo", damage: "8d6", type: "Magia", description: "Grande explosão mágica. (Área: Círculo)" },
+    { name: "Arco Longo", damage: "1d8", type: "Comum", description: "Ataque de longo alcance." },
 ];
 
 // Objeto para armazenar o nível de proficiência das perícias.
 // Chave: Nome da perícia, Valor: Nível (0: Sem, 2: Proficiência, 3: Expertise)
 let characterSkills = {};
 
-// Dados selecionados na Bandeja de Dados
-let selectedDice = {
-    d4: 0, d6: 0, d8: 0, d10: 0, d12: 0, d20: 0, d100: 0
+// D&D 5e Atributos
+let characterAttributes = {
+    str: 10,
+    dex: 10,
+    con: 10,
+    int: 10,
+    wis: 10,
+    cha: 10
 };
 
-// Posições salvas para janelas flutuantes arrastáveis
-let characterSheetPosition = { x: 0, y: 0 }; 
-let diceTrayPosition = { x: 0, y: 0 }; // Atualmente não usada para arrasto, mas reservada.
-let isInitialSetup = true; // Flag para forçar o posicionamento inicial das janelas.
+let proficiencyBonus = 2; // +2 no nível 1, atualizável depois
 
-// Variável para rastrear o último remetente do chat (para agrupar mensagens)
-let lastSender = { 
-    name: '', 
-    color: '' 
-}; 
+const ATTR_MAP = {
+    'For': 'str', // Força
+    'Des': 'dex', // Destreza
+    'Con': 'con', // Constituição
+    'Int': 'int', // Inteligência
+    'Sab': 'wis', // Sabedoria
+    'Car': 'cha'  // Carisma (usando a abreviação do português)
+};
 
-/**
- * Lista de Perícias D&D 5e com Atributo (para inicialização e renderização).
- */
-const DND_SKILLS = [
-    { name: "Acrobacia", attr: "Des" },
-    { name: "Adestrar Animal", attr: "Sab" },
-    { name: "Arcana", attr: "Int" },
-    { name: "Atletismo", attr: "For" },
-    { name: "Atuação", attr: "Cha" },
-    { name: "Furtividade", attr: "Des" },
-    { name: "História", attr: "Int" },
-    { name: "Intimidação", attr: "Car" },
-    { name: "Medicina", attr: "Int" },
-    { name: "Natureza", attr: "Int" },
-    { name: "Percepção", attr: "Sab" },
-    { name: "Persuasão", attr: "Cha" },
-    { name: "Prestidigitação", attr: "Des" },
-    { name: "Procurar", attr: "Int" },
-    { name: "Religião", attr: "Int" },
-    { name: "Sentir Motivação", attr: "Sab" },
-    { name: "Sobrevivência", attr: "Sab" },
-    { name: "Trapacear", attr: "Cha" }
+// Função para calcular o modificador de atributo (D&D 5e: (Pontuação - 10) / 2)
+function getModifier(score) {
+    return Math.floor((score - 10) / 2);
+}
+
+// Tabela de perícias (D&D 5e) com o atributo base
+const SKILLS_LIST = [
+    { name: 'Acrobacia', attr: 'dex', pt: 'Acrobacia' },
+    { name: 'Adestrar Animais', attr: 'wis', pt: 'Trato com Animais' },
+    { name: 'Arcanismo', attr: 'int', pt: 'Arcanismo' },
+    { name: 'Atletismo', attr: 'str', pt: 'Atletismo' },
+    { name: 'Atuação', attr: 'cha', pt: 'Atuação' },
+    { name: 'Enganação', attr: 'cha', pt: 'Enganação' },
+    { name: 'Furtividade', attr: 'dex', pt: 'Furtividade' },
+    { name: 'História', attr: 'int', pt: 'História' },
+    { name: 'Intimidação', attr: 'cha', pt: 'Intimidação' },
+    { name: 'Intuição', attr: 'wis', pt: 'Intuição' },
+    { name: 'Investigação', attr: 'int', pt: 'Investigação' },
+    { name: 'Medicina', attr: 'wis', pt: 'Medicina' },
+    { name: 'Natureza', attr: 'int', pt: 'Natureza' },
+    { name: 'Percepção', attr: 'wis', pt: 'Percepção' },
+    { name: 'Persuasão', attr: 'cha', pt: 'Persuasão' },
+    { name: 'Religião', attr: 'int', pt: 'Religião' },
+    { name: 'Sobrevivência', attr: 'wis', pt: 'Sobrevivência' },
+    { name: 'Prestidigitação', attr: 'dex', pt: 'Prestidigitação' },
 ];
 
-// ========== INICIALIZAÇÃO GERAL ==========
-document.addEventListener('DOMContentLoaded', () => {
-    // Inicializa characterSkills com todas as perícias em nível 0 (Sem Treino)
-    DND_SKILLS.forEach(skill => {
-        characterSkills[skill.name] = 0;
-    });
+/* FUNÇÃO: renderAttributes() - Gera o HTML dos atributos e seus modificadores */
+function renderAttributes() {
+    const grid = document.getElementById('attributesGrid');
+    if (!grid) return;
 
-    setupLoginScreen();
-    setupKeyboardShortcuts();
-});
-
-// ========== TELA DE LOGIN ==========
-function setupLoginScreen() {
-    // Configura listeners para seleção de cor e emoji.
-    document.querySelectorAll('.color-option').forEach(option => {
-        option.addEventListener('click', () => {
-            document.querySelectorAll('.color-option').forEach(o => o.classList.remove('selected'));
-            option.classList.add('selected');
-            selectedColor = option.dataset.color;
-            updateThemeColor(selectedColor); // Aplica a cor ao tema (variável CSS)
-        });
-    });
-
-    // Seletor de emoji (incluindo a checagem de exclusividade do Mestre)
-    document.querySelectorAll('.emoji-option').forEach(option => {
-        option.addEventListener('click', () => {
-            const isMaster = document.getElementById('playerName').value === '9678';
-            
-            // Impede a seleção do emoji de Mestre se o código não for digitado
-            if (!isMaster && option.dataset.master) {
-                alert('Este emoji é exclusivo do Mestre!');
-                return;
-            }
-
-            document.querySelectorAll('.emoji-option').forEach(o => o.classList.remove('selected'));
-            option.classList.add('selected');
-            selectedEmoji = option.dataset.emoji;
-        });
-    });
-
-    // Configura o botão e o Enter para o login.
-    document.getElementById('loginBtn').addEventListener('click', handleLogin);
-    document.getElementById('playerName').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') handleLogin();
-    });
-}
-
-function handleLogin() {
-    const nameInput = document.getElementById('playerName').value.trim();
-    
-    if (!nameInput) {
-        alert('Por favor, digite seu nome ou código!');
-        return;
-    }
-
-    // Lógica para determinar se o jogador é o Mestre (código '9678')
-    const isMaster = nameInput === '9678';
-    
-    // Força o emoji de Mestre para a coroa se o código for usado.
-    if (isMaster && selectedEmoji !== '👑') {
-        selectedEmoji = '👑';
-    } else if (!isMaster && selectedEmoji === '👑') {
-        // Previne a tentativa de login com emoji de Mestre sem o código
-        alert('O emoji 👑 é exclusivo do Mestre!');
-        return;
-    }
-
-    playerData = {
-        name: isMaster ? 'Mestre' : nameInput,
-        color: selectedColor,
-        emoji: selectedEmoji,
-        isMaster: isMaster
+    const attrNames = {
+        str: 'Força (FOR)',
+        dex: 'Destreza (DES)',
+        con: 'Constituição (CON)',
+        int: 'Inteligência (INT)',
+        wis: 'Sabedoria (SAB)',
+        cha: 'Carisma (CAR)'
     };
 
-    // Transição de tela suave
-    const loginScreen = document.getElementById('loginScreen');
-    const gameScreen = document.getElementById('gameScreen');
-    
-    loginScreen.style.opacity = '0';
-    setTimeout(() => {
-        loginScreen.style.display = 'none';
-        gameScreen.classList.add('active'); // Ativa o display: block e opacity: 1
-        initGameScreen();
-    }, 500);
+    grid.innerHTML = Object.keys(characterAttributes).map(key => {
+        const score = characterAttributes[key];
+        const mod = getModifier(score);
+        
+        // Formata o modificador (ex: +2 ou -1)
+        const modDisplay = mod >= 0 ? '+' + mod : mod;
+
+        return `
+            <div class="attr-item">
+                <label>${attrNames[key]}</label>
+                <div class="attr-mod" data-attr="${key}">${modDisplay}</div>
+                <input type="number" class="attr-score-input" data-attr="${key}" value="${score}" min="1" max="30">
+            </div>
+        `;
+    }).join('');
 }
 
-function updateThemeColor(color) {
-    // Atualiza a variável CSS global --primary-color
-    document.documentElement.style.setProperty('--primary-color', color);
-}
 
-// ========== TELA DE JOGO ==========
-function initGameScreen() {
-    setupCanvas();
-    setupToolbar();
-    setupDiceTray();
-    setupCharacterSheet();
-    setupChat();
-    
-    // Inicializa a lista de jogadores e adiciona o jogador atual
-    const playersList = document.getElementById('playersList');
-    playersList.innerHTML = `<div class="player-list-content" id="playersListContent"></div>`;
-    addPlayerToList(playerData);
-    createPlayerToken(playerData);
-    
-    // Esconde ferramentas exclusivas do Mestre se o jogador não for Mestre
-    if (!playerData.isMaster) {
-        document.getElementById('wallTool').style.display = 'none';
-    }
-    
-    // Inicialização e posicionamento das janelas flutuantes
-    setTimeout(() => {
-        const charSheet = document.getElementById('characterSheet');
-        const diceTray = document.getElementById('diceTray');
-        const chatContainer = document.getElementById('chatContainer');
-        
-        // 1. Garante que os elementos estejam visíveis (mas com opacidade 0) para o cálculo correto de offsetHeight/offsetWidth
-        charSheet.style.opacity = '0';
-        charSheet.classList.add('active'); // Temporário, se necessário para calcular dimensões
-        diceTray.style.opacity = '0';
-        diceTray.classList.add('active');
-        chatContainer.style.opacity = '0'; 
-        
-        positionMovableElements(); // Define a posição inicial com base nas dimensões da tela.
-        
-        // 2. Aplica as classes finais para o estado "fechado" inicial com animação.
-        charSheet.classList.add('minimized');
-        charSheet.classList.add('closed');
-        charSheet.style.opacity = ''; 
-        
-        diceTray.classList.add('minimized');
-        diceTray.classList.add('closed');
-        diceTray.style.opacity = ''; 
-        
-        chatContainer.classList.add('closed'); 
-        chatContainer.style.opacity = ''; 
-        
-        isInitialSetup = false; 
-    }, 0); 
+// Função para renderizar a lista de perícias
+function renderSkills() {
+    const list = document.getElementById('skillsList');
+    if (!list) return;
 
-    animate(); // Inicia o loop de animação do canvas
-    
-    window.addEventListener('resize', positionMovableElements);
-    
-    // Apenas a Ficha de Personagem é arrastável (movable).
-    makeMovable(document.getElementById('characterSheet'), document.querySelector('#characterSheet .sheet-header'));
-}
-
-/**
- * Define a posição inicial da Ficha de Personagem (Canto Superior Direito).
- * Chamada no init e no resize para garantir que a janela não saia da tela.
- */
-function positionMovableElements() {
-    const characterSheet = document.getElementById('characterSheet');
-    
-    // Força a posição inicial apenas na primeira vez, respeitando a posição salva depois
-    if (isInitialSetup) {
-        characterSheetPosition.x = window.innerWidth - characterSheet.offsetWidth - 20;
-        characterSheetPosition.y = 20;
-    }
-    
-    // Aplica a posição salva/calculada
-    characterSheet.style.left = `${characterSheetPosition.x}px`;
-    characterSheet.style.top = `${characterSheetPosition.y}px`;
-    characterSheet.style.transform = ''; // Remove qualquer transform restante
-}
-
-/**
- * Torna um elemento arrastável (movable).
- * @param {HTMLElement} element O elemento a ser movido.
- * @param {HTMLElement} handle A alça (elemento) que inicia o arrasto.
- */
-function makeMovable(element, handle) {
-    let isDragging = false;
-    let initialMouseX, initialMouseY;
-    let initialElementX, initialElementY;
-    
-    element.style.position = 'fixed'; 
-
-    let getPosFromStyle = () => {
-        const x = parseInt(element.style.left) || 0;
-        const y = parseInt(element.style.top) || 0;
-        return { x, y };
-    };
-
-    handle.addEventListener('mousedown', dragStart);
-    
-    function dragStart(e) {
-        // Ignora cliques nos botões de controle dentro do handle (min/close)
-        if (e.target.closest('.chat-control-btn')) return;
-
-        const pos = getPosFromStyle();
-        initialElementX = pos.x;
-        initialElementY = pos.y;
-        
-        initialMouseX = e.clientX;
-        initialMouseY = e.clientY;
-
-        isDragging = true;
-        element.style.cursor = 'grabbing';
-        element.style.transition = 'none'; // Desativa a transição durante o arrasto
-        
-        document.addEventListener('mousemove', drag);
-        document.addEventListener('mouseup', dragEnd);
-    }
-
-    function dragEnd(e) {
-        if (!isDragging) return;
-        
-        isDragging = false;
-        element.style.cursor = 'grab';
-        element.style.transition = 'all 0.3s ease-in-out'; // Restaura a transição suave
-        
-        // SALVA A POSIÇÃO FINAL APENAS SE FOR A FICHA
-        if (element.id === 'characterSheet') {
-            characterSheetPosition.x = parseInt(element.style.left) || 0;
-            characterSheetPosition.y = parseInt(element.style.top) || 0;
+    list.innerHTML = SKILLS_LIST.map(skill => {
+        // Inicializa a perícia se não estiver no objeto
+        if (characterSkills[skill.name] === undefined) {
+            characterSkills[skill.name] = 0; // 0: Não Proficiente
         }
 
-        document.removeEventListener('mousemove', drag);
-        document.removeEventListener('mouseup', dragEnd);
+        const level = characterSkills[skill.name];
+        // Obtém o modificador do atributo base
+        const attrMod = getModifier(characterAttributes[skill.attr]);
+        
+        let totalMod = attrMod;
+        
+        // Aplica o Bônus de Proficiência (BP)
+        if (level > 0) {
+            totalMod += proficiencyBonus; 
+        }
+        
+        // Aplica Expertise (soma um BP adicional)
+        if (level === 3) {
+            totalMod += proficiencyBonus; 
+        }
+        
+        const modDisplay = totalMod >= 0 ? '+' + totalMod : totalMod;
+
+        return `
+            <li class="skill-entry" data-skill="${skill.name}" data-attr="${skill.attr}">
+                <div class="skill-level-toggle">
+                    <button class="level-icon-btn" onclick="toggleSkillLevel('${skill.name}', event)">
+                        <span class="level-icon level-${level}" style="--fill-color: ${playerData.color};"></span>
+                    </button>
+                    <div class="skill-level-menu" id="menu-${skill.name}">
+                        <button class="menu-option-btn" onclick="setSkillLevel('${skill.name}', 0, event)">Não Treinado</button>
+                        <button class="menu-option-btn" onclick="setSkillLevel('${skill.name}', 2, event)">Proficiência</button>
+                        <button class="menu-option-btn" onclick="setSkillLevel('${skill.name}', 3, event)">Expertise</button>
+                    </div>
+                </div>
+                <div class="skill-info">
+                    <span class="skill-mod">${modDisplay}</span> 
+                    <span class="skill-name">${skill.pt} (${skill.attr.toUpperCase()})</span>
+                </div>
+            </li>
+        `;
+    }).join('');
+}
+
+// Funções de Perícias (Toggle e Set Level)
+let openSkillMenu = null; // Variável para rastrear o menu aberto
+
+function toggleSkillLevel(skillName, event) {
+    event.stopPropagation();
+    const menu = document.getElementById(`menu-${skillName}`);
+
+    // Fecha qualquer outro menu aberto
+    if (openSkillMenu && openSkillMenu !== menu) {
+        openSkillMenu.classList.remove('open');
     }
 
-    function drag(e) {
-        if (!isDragging) return;
-        e.preventDefault();
-        
-        const dx = e.clientX - initialMouseX;
-        const dy = e.clientY - initialMouseY;
-        
-        let newX = initialElementX + dx;
-        let newY = initialElementY + dy;
-
-        // Limita o arrasto aos limites da janela (bounds checking)
-        newX = Math.max(0, Math.min(newX, window.innerWidth - element.offsetWidth));
-        newY = Math.max(0, Math.min(newY, window.innerHeight - element.offsetHeight));
-
-        element.style.left = `${newX}px`;
-        element.style.top = `${newY}px`;
+    // Abre/fecha o menu atual
+    if (menu) {
+        menu.classList.toggle('open');
+        openSkillMenu = menu.classList.contains('open') ? menu : null;
     }
 }
 
+function setSkillLevel(skillName, level, event) {
+    event.stopPropagation();
+    characterSkills[skillName] = level;
+    renderSkills(); // Re-renderiza para atualizar os ícones e modificadores
+    
+    // Fecha o menu após a seleção
+    const menu = document.getElementById(`menu-${skillName}`);
+    if (menu) {
+        menu.classList.remove('open');
+        openSkillMenu = null;
+    }
+}
 
-// ========== CANVAS E GRID ==========
-function setupCanvas() {
+// Listener para fechar o menu de perícias se clicar fora
+document.addEventListener('click', function() {
+    if (openSkillMenu) {
+        openSkillMenu.classList.remove('open');
+        openSkillMenu = null;
+    }
+});
+// Fim Funções de Perícias
+
+// Função para renderizar a lista de armas
+function renderWeapons() {
+    const list = document.getElementById('weaponList');
+    if (!list) return;
+
+    list.innerHTML = characterWeapons.map((weapon, index) => `
+        <li class="item-entry" data-weapon-index="${index}">
+            <span>${weapon.name} (${weapon.damage})</span>
+            <button onclick="removeWeapon(${index})">×</button>
+        </li>
+    `).join('');
+}
+
+// Função para remover uma arma
+function removeWeapon(index) {
+    characterWeapons.splice(index, 1);
+    renderWeapons();
+    // Re-renderiza a AttackBar para sincronizar
+    renderAttackBar();
+}
+
+// Função para renderizar a AttackBar
+function renderAttackBar() {
+    const attackBar = document.getElementById('attackBar');
+    if (!attackBar) return;
+    
+    // Filtra as armas existentes para criar os slots
+    const weaponSlots = characterWeapons.map(weapon => `
+        <div 
+            class="attack-slot" 
+            data-name="${weapon.name}" 
+            data-damage="${weapon.damage}" 
+            data-description="${weapon.description}"
+            onclick="rollAttack('${weapon.name}', '${weapon.damage}')">
+            ${weapon.type === 'Magia' ? '🔥' : weapon.type === 'Arco Longo' ? '🏹' : '⚔️'}
+        </div>
+    `).join('');
+    
+    // Adiciona o botão '+' no final
+    const addButton = '<div class="attack-slot" title="Adicionar Arma" id="openAttackFormBtn">+</div>';
+    
+    attackBar.innerHTML = weaponSlots + addButton;
+    
+    // Adiciona listener para o novo botão '+'
+    document.getElementById('openAttackFormBtn').addEventListener('click', openAddWeaponForm);
+}
+
+// Função de exemplo para rolagem de ataque (simulação)
+function rollAttack(name, damage) {
+    const diceRoll = Math.floor(Math.random() * 20) + 1;
+    let rollMessage = `
+        <p>⚔️ ${playerData.name} atacou com ${name}!</p>
+        <p>Rolagem (d20): ${diceRoll} (simulando +0 de modificador).</p>
+        <p>Dano: ${damage} (simulando rolagem de dano).</p>
+    `;
+    
+    addChatMessage(playerData.name, playerData.emoji, rollMessage, playerData.color);
+}
+
+// Função para adicionar uma mensagem ao chat
+function addChatMessage(senderName, senderEmoji, message, color) {
+    const messagesContainer = document.getElementById('chatMessages');
+    if (!messagesContainer) return;
+
+    // Cria um novo grupo de mensagens
+    const msgGroup = document.createElement('div');
+    msgGroup.classList.add('chat-message-group');
+    msgGroup.style.borderColor = color; // Borda opcional
+    msgGroup.style.boxShadow = `0 0 10px ${color}1A`; // Sombra suave
+
+    // Estilo para o glow (usado no CSS com ::before)
+    const styleSheet = document.styleSheets[0];
+    const ruleIndex = styleSheet.insertRule(`.chat-message-group::before { background-color: ${color}; }`, styleSheet.cssRules.length);
+    
+    // Cabeçalho da mensagem (Nome e Emoji)
+    const msgHeader = document.createElement('div');
+    msgHeader.classList.add('chat-message-header');
+    msgHeader.innerHTML = `${senderEmoji} ${senderName}`;
+    msgGroup.appendChild(msgHeader);
+
+    // Conteúdo da mensagem
+    const msgContent = document.createElement('div');
+    msgContent.classList.add('chat-message-content');
+    msgContent.innerHTML = message;
+    msgGroup.appendChild(msgContent);
+
+    messagesContainer.appendChild(msgGroup);
+
+    // Auto-scroll para a mensagem mais recente
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+// Função para inicializar o jogo após login
+function initGame() {
     canvas = document.getElementById('gameCanvas');
     ctx = canvas.getContext('2d');
-    
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 
-    // Mouse events para pan, zoom e interação com o mapa
+    // Inicializa tokens (exemplo: adicionar token do jogador)
+    tokens.push({ x: 5, y: 5, color: playerData.color, emoji: playerData.emoji });
+
+    drawGrid();
+
+    // Inicializa renderizações da ficha
+    renderAttributes();
+    renderSkills();
+    renderWeapons();
+    renderAttackBar();
+
+    // Inicializa atalhos de teclado
+    setupKeyboardShortcuts();
+
+    // Inicializa listeners do canvas
     canvas.addEventListener('mousedown', onCanvasMouseDown);
     canvas.addEventListener('mousemove', onCanvasMouseMove);
     canvas.addEventListener('mouseup', onCanvasMouseUp);
-    canvas.addEventListener('wheel', onCanvasWheel); // Zoom
-    canvas.addEventListener('click', onCanvasClick); // Interação (ex: mover token)
+    canvas.addEventListener('wheel', onCanvasWheel);
+
+    // Torna a ficha arrastável pelo header
+    makeMovable(document.getElementById('characterSheet'), document.querySelector('.sheet-header'));
+    // Torna o chat arrastável
+    makeMovable(document.getElementById('chatContainer'), document.querySelector('.chat-header'));
+    // Torna a bandeja de dados arrastável
+    makeMovable(document.getElementById('diceTray'), document.querySelector('.dice-tray-header'));
 }
 
-function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    drawGrid();
+// ============ CORREÇÃO DO ARRASTAR VS CLICAR ============
+function makeMovable(element, handle) {
+    if (!handle) return;
+    
+    let isDraggingSheet = false;
+    let startX, startY, startLeft, startTop;
+
+    handle.addEventListener('mousedown', (e) => {
+        // [CORREÇÃO] Se o alvo do clique for um botão (ou filho de um botão), NÃO inicie o arrasto.
+        if (e.target.tagName === 'BUTTON' || e.target.closest('button')) {
+            return;
+        }
+
+        isDraggingSheet = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        
+        // Obtém a posição computada atual
+        const style = window.getComputedStyle(element);
+        startLeft = parseInt(style.left, 10);
+        startTop = parseInt(style.top, 10);
+        
+        // Se left/top não estiverem definidos (ex: auto), usa getBoundingClientRect
+        if (isNaN(startLeft)) startLeft = element.getBoundingClientRect().left;
+        if (isNaN(startTop)) startTop = element.getBoundingClientRect().top;
+
+        document.addEventListener('mousemove', onMouseMoveSheet);
+        document.addEventListener('mouseup', onMouseUpSheet);
+    });
+
+    function onMouseMoveSheet(e) {
+        if (isDraggingSheet) {
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+            element.style.left = `${startLeft + dx}px`;
+            element.style.top = `${startTop + dy}px`;
+        }
+    }
+
+    function onMouseUpSheet() {
+        isDraggingSheet = false;
+        document.removeEventListener('mousemove', onMouseMoveSheet);
+        document.removeEventListener('mouseup', onMouseUpSheet);
+    }
 }
 
-/**
- * Desenha o grid e todos os tokens na tela.
- */
+// Função de Login
+document.getElementById('loginBtn').addEventListener('click', () => {
+    const playerNameInput = document.getElementById('playerName');
+    const name = playerNameInput.value.trim() || 'Aventureiro(a) Anônimo(a)';
+
+    playerData.name = name;
+    playerData.color = selectedColor;
+    playerData.emoji = selectedEmoji;
+    playerData.isMaster = selectedEmoji === '👑'; 
+    
+    document.getElementById('loginScreen').style.display = 'none';
+    const gameScreen = document.getElementById('gameScreen');
+    gameScreen.style.display = 'block';
+    gameScreen.classList.add('active');
+
+    // Inicializa o jogo
+    initGame();
+});
+
+// Funções para drawGrid e drawTokens (exemplo básico)
 function drawGrid() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    ctx.strokeStyle = '#1a1a1a'; // Cor das linhas do grid
-    ctx.lineWidth = 1;
-
-    // Calcula onde começar a desenhar as linhas visíveis (otimização)
-    const startX = Math.floor(-offsetX / (gridSize * scale)) * gridSize;
-    const startY = Math.floor(-offsetY / (gridSize * scale)) * gridSize;
-    const endX = startX + Math.ceil(canvas.width / scale) + gridSize;
-    const endY = startY + Math.ceil(canvas.height / scale) + gridSize;
-
-    // Linhas verticais
-    for (let x = startX; x < endX; x += gridSize) {
-        const screenX = x * scale + offsetX;
+    ctx.strokeStyle = '#333';
+    for (let x = offsetX % (gridSize * scale); x < canvas.width; x += gridSize * scale) {
         ctx.beginPath();
-        ctx.moveTo(screenX, 0);
-        ctx.lineTo(screenX, canvas.height);
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, canvas.height);
         ctx.stroke();
     }
-
-    // Linhas horizontais
-    for (let y = startY; y < endY; y += gridSize) {
-        const screenY = y * scale + offsetY;
+    for (let y = offsetY % (gridSize * scale); y < canvas.height; y += gridSize * scale) {
         ctx.beginPath();
-        ctx.moveTo(0, screenY);
-        ctx.lineTo(canvas.width, screenY); 
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
         ctx.stroke();
     }
-
-    // Desenhar tokens
     drawTokens();
 }
 
-function onCanvasMouseDown(e) {
-    if (currentTool === 'move') {
-        isDragging = true; // Ativa o pan
-        lastMouseX = e.clientX;
-        lastMouseY = e.clientY;
-        canvas.classList.add('grabbing');
+function drawTokens() {
+    tokens.forEach(token => {
+        const screenX = (token.x * gridSize * scale) + offsetX;
+        const screenY = (token.y * gridSize * scale) + offsetY;
+        ctx.fillStyle = token.color;
+        ctx.beginPath();
+        ctx.arc(screenX + (gridSize * scale / 2), screenY + (gridSize * scale / 2), (gridSize * scale / 2) - 5, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.font = `${gridSize * scale / 2}px sans-serif`;
+        ctx.fillStyle = '#fff';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(token.emoji, screenX + (gridSize * scale / 2), screenY + (gridSize * scale / 2));
+    });
+}
+
+// ============ FUNÇÕES DE JANELAS (CORRIGIDAS) ============
+function minimizeChat() {
+    const chat = document.getElementById('chatContainer');
+    if(chat) {
+        chat.classList.remove('closed');
+        chat.classList.toggle('minimized');
+    }
+}
+
+function closeChat() {
+    const chat = document.getElementById('chatContainer');
+    if(chat) {
+        chat.classList.add('closed');
+        chat.classList.remove('minimized');
+    }
+}
+
+function minimizeCharacterSheet() {
+    const sheet = document.getElementById('characterSheet');
+    if(sheet) {
+        sheet.classList.remove('closed');
+        sheet.classList.toggle('minimized');
+    }
+}
+
+function closeCharacterSheet() {
+    const sheet = document.getElementById('characterSheet');
+    if(sheet) {
+        sheet.classList.add('closed');
+        sheet.classList.remove('minimized');
+    }
+}
+
+function minimizeDiceTray() {
+    const tray = document.getElementById('diceTray');
+    if(tray) {
+        tray.classList.remove('closed');
+        tray.classList.toggle('minimized');
+    }
+}
+
+function closeDiceTray() {
+    const tray = document.getElementById('diceTray');
+    if(tray) {
+        tray.classList.add('closed');
+        tray.classList.remove('minimized');
+    }
+}
+
+// Atalhos de teclado corrigidos com Ctrl e preventDefault
+function setupKeyboardShortcuts() {
+    document.addEventListener('keydown', function(e) {
+        // Ignora atalhos se o foco estiver em um input ou textarea
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+            return;
+        }
+
+        if (e.ctrlKey) {
+            switch (e.key.toLowerCase()) {
+                case 'c':
+                    e.preventDefault();
+                    // Usa a função de toggle para consistência
+                    const chat = document.getElementById('chatContainer');
+                    if (chat.classList.contains('closed')) {
+                        chat.classList.remove('closed');
+                    } else {
+                        closeChat();
+                    }
+                    return;
+                case 'f':
+                    e.preventDefault();
+                    const sheet = document.getElementById('characterSheet');
+                    if (sheet.classList.contains('closed')) {
+                        sheet.classList.remove('closed');
+                    } else {
+                        closeCharacterSheet();
+                    }
+                    return;
+                case 'd':
+                    e.preventDefault();
+                    const tray = document.getElementById('diceTray');
+                    if (tray.classList.contains('closed')) {
+                        tray.classList.remove('closed');
+                    } else {
+                        closeDiceTray();
+                    }
+                    return;
+            }
+        }
+
+        // Atalhos para ferramentas (sem Ctrl)
+        switch (e.key.toLowerCase()) {
+            case 'v':
+                // Seleciona a ferramenta Mover (✋)
+                const moveBtn = document.querySelector('[data-tool="move"]');
+                if(moveBtn) moveBtn.click();
+                break;
+            case 'r':
+                // Seleciona a ferramenta Régua (📏)
+                const rulerBtn = document.querySelector('[data-tool="ruler"]');
+                if(rulerBtn) rulerBtn.click();
+                break;
+            case 'p':
+                // Seleciona a ferramenta Paredes (🧱), apenas para o Mestre
+                if (playerData.isMaster) {
+                    const wallBtn = document.querySelector('[data-tool="wall"]');
+                    if(wallBtn) wallBtn.click();
+                }
+                break;
+            case 'i':
+                // Seleciona a ferramenta Inimigos (👾), apenas para o Mestre
+                if (playerData.isMaster) {
+                    const enemyBtn = document.querySelector('[data-tool="enemy"]');
+                    if(enemyBtn) enemyBtn.click();
+                }
+                break;
+        }
+    });
+}
+
+/* NOVO LISTENER: Trata a mudança de valor nos inputs de Atributos */
+document.addEventListener('input', function(e) {
+    if (e.target.matches('.attr-score-input')) {
+        const attrKey = e.target.dataset.attr;
+        let score = parseInt(e.target.value);
+        if (isNaN(score)) score = 10;
+        
+        // Limita o valor do atributo entre 1 e 30
+        score = Math.max(1, Math.min(30, score));
+        e.target.value = score;
+        
+        characterAttributes[attrKey] = score;
+
+        // Atualiza o mod visual no elemento
+        const modEl = document.querySelector(`.attr-mod[data-attr="${attrKey}"]`);
+        if (modEl) {
+            const mod = getModifier(score);
+            modEl.textContent = mod >= 0 ? '+' + mod : mod;
+        }
+
+        // Re-renderiza perícias para atualizar mods totais
+        renderSkills();
+    }
+});
+
+// Outros listeners (ferramentas, chat, etc.)
+document.querySelectorAll('.tool-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        const newTool = e.currentTarget.dataset.tool;
+        
+        // Se for régua, o sub-botão deve ser clicado
+        if (newTool === 'ruler') return; // Ignora clique no principal se for ruler
+            
+        // Lógica de seleção de ferramenta
+        document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+        document.querySelector(`.tool-btn[data-tool="${newTool}"]`).classList.add('active');
+        currentTool = newTool;
+    });
+});
+
+// Listeners para a seleção de tipo de régua
+document.querySelectorAll('.tool-btn-sub').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation(); // Previne que o clique ative o .tool-btn pai
+        
+        const newRulerType = e.currentTarget.dataset.ruler;
+        
+        // Seleciona a ferramenta 'ruler' no botão principal
+        document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+        document.querySelector('.tool-btn[data-tool="ruler"]').classList.add('active');
+        currentTool = 'ruler';
+        
+        // Lógica de seleção do tipo de régua
+        document.querySelectorAll('.tool-btn-sub').forEach(b => b.classList.remove('active'));
+        e.currentTarget.classList.add('active');
+        currentRulerType = newRulerType;
+    });
+});
+
+// Listener para o input do chat
+document.getElementById('chatInput').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        const message = e.target.value.trim();
+        if (message) {
+            // Simula um roll de dado se começar com '/'
+            if (message.startsWith('/roll')) {
+                rollDiceFromChat(message);
+            } else {
+                addChatMessage(playerData.name, playerData.emoji, `<p>${message}</p>`, playerData.color);
+            }
+            e.target.value = '';
+        }
+    }
+});
+
+// Listeners para a seleção de cor no login
+document.querySelectorAll('.color-option').forEach(option => {
+    option.addEventListener('click', (e) => {
+        document.querySelectorAll('.color-option').forEach(o => o.classList.remove('selected'));
+        e.currentTarget.classList.add('selected');
+        selectedColor = e.currentTarget.dataset.color;
+        // Atualiza a cor primária dinâmica para o preview
+        document.documentElement.style.setProperty('--primary-color', selectedColor);
+    });
+});
+
+// Listeners para a seleção de emoji no login
+document.querySelectorAll('.emoji-option').forEach(option => {
+    option.addEventListener('click', (e) => {
+        document.querySelectorAll('.emoji-option').forEach(o => o.classList.remove('selected'));
+        e.currentTarget.classList.add('selected');
+        selectedEmoji = e.currentTarget.dataset.emoji;
+    });
+});
+
+// Inicializa a seleção padrão
+document.querySelector('.color-option[data-color="#6b7280"]').classList.add('selected');
+document.querySelector('.emoji-option[data-emoji="👤"]').classList.add('selected');
+
+// Listeners para a bandeja de dados
+document.querySelectorAll('.dice-btn').forEach(btn => {
+    btn.addEventListener('click', toggleDiceSelection);
+});
+document.querySelector('.roll-btn').addEventListener('click', rollSelectedDice);
+
+// Listener para o compêndio
+document.getElementById('wallTool').addEventListener('click', toggleCompendium);
+document.getElementById('closeCompendiumBtn').addEventListener('click', toggleCompendium);
+
+function toggleCompendium() {
+    const compendium = document.getElementById('enemyCompendium');
+    compendium.classList.toggle('active');
+}
+
+
+function rollDiceFromChat(command) {
+    const parts = command.split(' ');
+    // Ex: /roll 2d6 + 3
+    if (parts.length < 2) {
+        addChatMessage('Sistema', '🤖', `<p>Comando de rolagem inválido. Use: /roll 2d6+3</p>`, '#ef4444');
+        return;
     }
     
-    // TODO: Implementar lógica de início de ferramenta (régua, parede, etc.)
+    const rollString = parts[1]; // Ex: 2d6+3 ou 1d20
+    const match = rollString.match(/(\d+)d(\d+)([\+\-]\d+)?/);
+
+    if (!match) {
+        addChatMessage('Sistema', '🤖', `<p>Formato de dado inválido. Ex: 2d6 ou 1d20+5</p>`, '#ef4444');
+        return;
+    }
+
+    const numDice = parseInt(match[1]);
+    const diceType = parseInt(match[2]);
+    const modifier = match[3] ? parseInt(match[3]) : 0;
+    
+    let totalRoll = 0;
+    let individualRolls = [];
+
+    for (let i = 0; i < numDice; i++) {
+        const roll = Math.floor(Math.random() * diceType) + 1;
+        individualRolls.push(roll);
+        totalRoll += roll;
+    }
+
+    const finalResult = totalRoll + modifier;
+    
+    let rollMessage = `
+        <p>🎲 ${playerData.name} rolou ${numDice}d${diceType}${modifier >= 0 ? '+' : ''}${modifier}!</p>
+        <p>Resultados: ${individualRolls.join(' + ')} ${modifier !== 0 ? (modifier >= 0 ? '+' : '') + modifier : ''} = <strong>${finalResult}</strong></p>
+    `;
+    
+    addChatMessage(playerData.name, playerData.emoji, rollMessage, playerData.color);
+}
+
+
+// Lógica da bandeja de dados
+let diceCounts = { d4: 0, d6: 0, d8: 0, d10: 0, d12: 0, d20: 0, d100: 0 };
+
+function toggleDiceSelection(e) {
+    const btn = e.currentTarget;
+    const dice = btn.dataset.dice;
+    
+    if (btn.classList.contains('selected')) {
+        diceCounts[dice]++;
+    } else {
+        btn.classList.add('selected');
+        diceCounts[dice] = 1;
+    }
+    
+    if (diceCounts[dice] > 9) diceCounts[dice] = 0; // Limite de 9 dados por tipo
+    
+    if (diceCounts[dice] === 0) {
+        btn.classList.remove('selected');
+    }
+    
+    btn.querySelector('.dice-count').textContent = diceCounts[dice];
+}
+
+function rollSelectedDice() {
+    const modifierInput = document.querySelector('.modifier-input');
+    const modifier = parseInt(modifierInput.value) || 0;
+    
+    let totalRoll = 0;
+    let rollDetails = [];
+    let rollString = '';
+    
+    for (const dice in diceCounts) {
+        const count = diceCounts[dice];
+        if (count > 0) {
+            const diceType = parseInt(dice.substring(1));
+            rollString += `${count}${dice} `;
+            
+            for (let i = 0; i < count; i++) {
+                const roll = Math.floor(Math.random() * diceType) + 1;
+                totalRoll += roll;
+                rollDetails.push({ roll, diceType });
+            }
+        }
+    }
+    
+    if (totalRoll === 0) {
+        addChatMessage('Sistema', '🤖', `<p>Selecione pelo menos um dado para rolar.</p>`, '#ef4444');
+        return;
+    }
+    
+    const finalResult = totalRoll + modifier;
+    const individualRolls = rollDetails.map(d => d.roll);
+    
+    let rollMessage = `
+        <p>🎲 ${playerData.name} rolou: ${rollString.trim()}${modifier !== 0 ? (modifier >= 0 ? '+' : '') + modifier : ''}</p>
+        <p>Resultados: ${individualRolls.join(' + ')} ${modifier !== 0 ? (modifier >= 0 ? '+' : '') + modifier : ''} = <strong>${finalResult}</strong></p>
+    `;
+    
+    addChatMessage(playerData.name, playerData.emoji, rollMessage, playerData.color);
+    
+    // Limpar seleção
+    diceCounts = { d4: 0, d6: 0, d8: 0, d10: 0, d12: 0, d20: 0, d100: 0 };
+    document.querySelectorAll('.dice-btn').forEach(btn => {
+        btn.classList.remove('selected');
+        btn.querySelector('.dice-count').textContent = 0;
+    });
+    modifierInput.value = '0';
+}
+
+
+// Pan e Zoom
+function onCanvasMouseDown(e) {
+    if (currentTool === 'move') {
+        isDragging = true;
+        canvas.classList.add('grabbing');
+        lastMouseX = e.clientX;
+        lastMouseY = e.clientY;
+    }
 }
 
 function onCanvasMouseMove(e) {
-    // Lógica de Pan (movimentação do mapa)
-    if (isDragging && currentTool === 'move') {
+    if (isDragging) {
         const dx = e.clientX - lastMouseX;
         const dy = e.clientY - lastMouseY;
         
         offsetX += dx;
         offsetY += dy;
-        
+
         lastMouseX = e.clientX;
         lastMouseY = e.clientY;
         
@@ -403,692 +803,44 @@ function onCanvasMouseMove(e) {
     }
 }
 
-function onCanvasMouseUp(e) {
+function onCanvasMouseUp() {
     isDragging = false;
     canvas.classList.remove('grabbing');
 }
 
-/**
- * Lógica de Zoom (centralizado no cursor do mouse).
- */
 function onCanvasWheel(e) {
     e.preventDefault();
     
-    const mouseX = e.clientX;
-    const mouseY = e.clientY;
+    const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9; // 10% de zoom por tick
+
+    // Limita o zoom
+    const newScale = Math.max(0.5, Math.min(3.0, scale * zoomFactor));
     
-    // Coordenadas mundiais (no grid) antes do zoom
-    const worldX = (mouseX - offsetX) / scale;
-    const worldY = (mouseY - offsetY) / scale;
+    // Calcula o ponto de zoom (centro da tela)
+    const clientX = e.clientX;
+    const clientY = e.clientY;
     
-    // Calcula a nova escala, limitando entre 0.5x e 3x
-    const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
-    const newScale = Math.max(0.5, Math.min(3, scale * zoomFactor));
-    
-    // Ajusta o offset para manter o ponto (worldX, worldY) fixo na tela após o zoom
-    offsetX = mouseX - worldX * newScale;
-    offsetY = mouseY - worldY * newScale;
-    
+    // Converte coordenadas do cliente para coordenadas do grid (antes do zoom)
+    const gridXBefore = (clientX - offsetX) / (gridSize * scale);
+    const gridYBefore = (clientY - offsetY) / (gridSize * scale);
+
     scale = newScale;
+
+    // Converte coordenadas do grid para coordenadas do cliente (após o zoom)
+    const gridXAfter = gridXBefore * (gridSize * scale);
+    const gridYAfter = gridYBefore * (gridSize * scale);
+    
+    // Ajusta o offset para manter o ponto de zoom no lugar
+    offsetX = clientX - gridXAfter;
+    offsetY = clientY - gridYAfter;
+
     drawGrid();
 }
 
-function onCanvasClick(e) {
-    // TODO: Implementar movimentação de token
-}
-
-// ========== TOKENS ==========
-/**
- * Adiciona um novo token ao array global.
- * @param {object} player Objeto com dados do jogador (name, color, emoji, isMaster).
- */
-function createPlayerToken(player) {
-    const token = {
-        x: 5, // Posição inicial no grid (em número de células)
-        y: 5,
-        color: player.color,
-        emoji: player.emoji,
-        name: player.name,
-        isMaster: player.isMaster
-    };
-    tokens.push(token);
-}
-
-/**
- * Desenha todos os tokens na tela, considerando pan e zoom.
- */
-function drawTokens() {
-    tokens.forEach(token => {
-        // Converte as coordenadas do grid (x, y) para coordenadas de tela (screenX, screenY)
-        const screenX = token.x * gridSize * scale + offsetX;
-        const screenY = token.y * gridSize * scale + offsetY;
-        const tokenSize = gridSize * scale * 0.8; // Tamanho do token (80% da célula)
-
-        // Círculo do token
-        ctx.fillStyle = token.color;
-        ctx.beginPath();
-        // Centraliza o círculo no centro da célula do grid
-        ctx.arc(screenX + gridSize * scale / 2, screenY + gridSize * scale / 2, tokenSize / 2, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Emoji (ícone central)
-        ctx.font = `${tokenSize * 0.8}px Arial`;
-        ctx.fillStyle = '#ffffff';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(token.emoji, screenX + gridSize * scale / 2, screenY + gridSize * scale / 2 + 2);
-
-        // Nome abaixo do token
-        ctx.font = `${gridSize * scale * 0.25}px Arial`;
-        ctx.fillText(token.name, screenX + gridSize * scale / 2, screenY + gridSize * scale + 15);
-    });
-}
-
-function animate() {
-    drawGrid();
-    requestAnimationFrame(animate); // Loop de renderização
-}
-
-// ========== BARRA DE FERRAMENTAS ==========
-function setupToolbar() {
-    // Configura o clique nas ferramentas principais
-    document.querySelectorAll('.tool-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentTool = btn.dataset.tool;
-        });
-    });
-
-    // Configura o clique nas opções do submenu (tipos de régua)
-    document.querySelectorAll('.tool-btn-sub').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.tool-btn-sub').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentRulerType = btn.dataset.ruler;
-        });
-    });
-}
-
-// ========== BANDEJA DE DADOS ==========
-function setupDiceTray() {
-    // Lógica de incremento/decremento de dados (clique esquerdo/direito)
-    document.querySelectorAll('.dice-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const diceType = btn.dataset.dice;
-            selectedDice[diceType]++;
-            updateDiceDisplay(btn, selectedDice[diceType]);
-        });
-
-        btn.addEventListener('contextmenu', (e) => {
-            e.preventDefault(); // Impede o menu de contexto padrão
-            const diceType = btn.dataset.dice;
-            if (selectedDice[diceType] > 0) {
-                selectedDice[diceType]--;
-                updateDiceDisplay(btn, selectedDice[diceType]);
-            }
-        });
-    });
-
-    // Botão de rolar
-    document.querySelector('.roll-btn').addEventListener('click', rollDice);
-}
-
-/**
- * Atualiza o contador visual de um tipo de dado.
- * @param {HTMLElement} btn O botão do dado.
- * @param {number} count A contagem atual.
- */
-function updateDiceDisplay(btn, count) {
-    const countElement = btn.querySelector('.dice-count');
-    countElement.textContent = count;
-    
-    if (count > 0) {
-        btn.classList.add('selected');
-    } else {
-        btn.classList.remove('selected');
-    }
-}
-
-/**
- * Executa a rolagem de dados e envia o resultado para o chat.
- */
-function rollDice() {
-    let total = 0;
-    let results = [];
-    
-    // 1. Rola cada dado selecionado
-    for (let [diceType, count] of Object.entries(selectedDice)) {
-        if (count > 0) {
-            const sides = parseInt(diceType.substring(1));
-            for (let i = 0; i < count; i++) {
-                const roll = Math.floor(Math.random() * sides) + 1;
-                results.push(`${diceType}: ${roll}`);
-                total += roll;
-            }
-        }
-    }
-    
-    // 2. Aplica modificador
-    const modifierInput = document.querySelector('.modifier-input');
-    const modifier = parseInt(modifierInput.value) || 0;
-    
-    if (results.length > 0) {
-        // 3. Formata e envia a mensagem para o chat
-        const rollDetails = results.join(', ');
-        let message = `🎲 **Rolagem**: (${rollDetails})`;
-        
-        if (modifier !== 0) {
-            message += ` ${modifier > 0 ? '+' : ''} ${modifier}`;
-        }
-        
-        total += modifier;
-        message += ` = **${total}**`;
-        
-        addChatMessage(playerData.name, playerData.emoji, playerData.color, message);
-        
-        // 4. Resetar dados e modificador
-        selectedDice = { d4: 0, d6: 0, d8: 0, d10: 0, d12: 0, d20: 0, d100: 0 };
-        document.querySelectorAll('.dice-btn').forEach(btn => {
-            updateDiceDisplay(btn, 0);
-        });
-        modifierInput.value = '0'; 
-    }
-}
-
-// Funções de controle da Bandeja de Dados (chamadas pelo HTML)
-function minimizeDiceTray() {
-    document.getElementById('diceTray').classList.toggle('minimized');
-}
-
-function closeDiceTray() {
-    document.getElementById('diceTray').classList.add('closed');
-}
-
-function openDiceTray() {
-    const diceTray = document.getElementById('diceTray');
-    diceTray.classList.remove('closed');
-    diceTray.classList.remove('minimized');
-}
-
-
-// ========== FICHA DE PERSONAGEM ==========
-function setupCharacterSheet() {
-    // 1. Alternância de abas
-    document.querySelectorAll('.sheet-tab').forEach(tab => {
-        tab.addEventListener('click', () => {
-            const tabName = tab.dataset.tab;
-            
-            document.querySelectorAll('.sheet-tab').forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-            
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.style.display = 'none';
-            });
-            
-            // A aba 'personagem' usa layout 'grid', as outras usam 'block'
-            document.getElementById(`${tabName}Tab`).style.display = (tabName === 'personagem' ? 'grid' : 'block');
-            
-            // Re-renderiza as listas de armas e perícias ao ativar a aba Personagem
-            if (tabName === 'personagem') {
-                renderWeapons();
-                renderSkills(); 
-            }
-        });
-    });
-
-    // 2. Lógica de Formulário de Adição de Arma (Inline)
+// Função para abrir formulário de adicionar arma
+function openAddWeaponForm() {
+    // Implementação do formulário inline (exemplo, ajuste conforme necessário)
     const formContainer = document.getElementById('addWeaponFormContainer');
-    const openFormBtn = document.getElementById('openWeaponFormBtn');
-    
-    // Abre formulário
-    openFormBtn.addEventListener('click', () => {
-        formContainer.style.display = 'block';
-        openFormBtn.style.display = 'none';
-    });
-
-    // Cancela adição e fecha formulário
-    document.getElementById('cancelAddWeapon').addEventListener('click', () => {
-        formContainer.style.display = 'none';
-        openFormBtn.style.display = 'block';
-        // Limpa campos
-        document.getElementById('weaponNameInput').value = '';
-        document.getElementById('weaponDamageInput').value = '';
-        document.getElementById('weaponTypeSelect').value = 'Comum';
-        document.getElementById('weaponDescriptionInput').value = '';
-    });
-
-    // Confirma e adiciona a nova arma
-    document.getElementById('confirmAddWeapon').addEventListener('click', () => {
-        const name = document.getElementById('weaponNameInput').value.trim();
-        const damage = document.getElementById('weaponDamageInput').value.trim();
-        const type = document.getElementById('weaponTypeSelect').value;
-        const description = document.getElementById('weaponDescriptionInput').value.trim();
-
-        if (!name || !damage) {
-            alert('Nome e Dano são obrigatórios para a arma!');
-            return;
-        }
-
-        const newWeapon = { name, damage, type, description };
-        characterWeapons.push(newWeapon);
-        
-        document.getElementById('cancelAddWeapon').click(); // Fecha e limpa
-        renderWeapons(); // Atualiza a lista
-    });
-
-    // 3. Renderização inicial das listas
-    renderWeapons();
-    renderSkills(); 
-
-    // 4. Lógica de adição genérica para outras listas (Equipamentos, Mochila, etc.)
-    document.querySelectorAll('.sheet-section .add-btn').forEach(btn => {
-        // Ignora os botões do formulário de Arma
-        if (btn.id !== 'openWeaponFormBtn' && !btn.classList.contains('confirm-btn') && !btn.classList.contains('cancel-btn')) {
-            btn.addEventListener('click', () => {
-                const section = btn.closest('.sheet-section');
-                const sectionTitle = section.querySelector('h4').textContent.trim();
-                
-                // Pede o nome do item via prompt
-                let itemName = prompt(`Nome do ${sectionTitle.toLowerCase().replace('⚔️ ', '').replace('🛡️ ', '').replace('🎒 ', '').replace('✨ ', '').replace('💪 ', '')}:`);
-                if (!itemName) return;
-                
-                const list = section.querySelector('.item-list');
-                const itemEntry = document.createElement('li');
-                itemEntry.className = 'item-entry';
-                itemEntry.innerHTML = `
-                    <span>${itemName}</span>
-                    <button class="edit-item">✏️</button>
-                    <button class="remove-item">🗑️</button>
-                `;
-
-                // Adiciona lógica de remoção (e edição simples)
-                itemEntry.querySelector('.remove-item').addEventListener('click', () => {
-                    itemEntry.remove();
-                });
-
-                list.appendChild(itemEntry);
-            });
-        }
-    });
-}
-
-/**
- * Renderiza a lista de armas dinamicamente a partir de characterWeapons.
- */
-function renderWeapons() {
-    const list = document.getElementById('weaponList');
-    if (!list) return;
-
-    list.innerHTML = ''; 
-
-    characterWeapons.forEach((weapon, index) => {
-        const itemEntry = document.createElement('li');
-        itemEntry.className = 'item-entry';
-        
-        itemEntry.innerHTML = `
-            <span>
-                <b>${weapon.name}</b> 
-                (Dano: ${weapon.damage}, Tipo: ${weapon.type})
-                ${weapon.description ? ` - <i>${weapon.description}</i>` : ''}
-            </span>
-            <button class="remove-weapon" data-index="${index}" title="Remover Arma">🗑️</button>
-        `;
-        
-        // Lógica de remoção: usa o índice no array characterWeapons
-        itemEntry.querySelector('.remove-weapon').addEventListener('click', (e) => {
-            const idx = parseInt(e.currentTarget.dataset.index); 
-            characterWeapons.splice(idx, 1); 
-            renderWeapons();
-        });
-
-        list.appendChild(itemEntry);
-    });
-}
-
-/**
- * Renderiza a lista de perícias com o menu flutuante de seleção de nível.
- */
-function renderSkills() {
-    const list = document.getElementById('skillsList');
-    if (!list) return;
-
-    list.innerHTML = ''; 
-
-    // Define os níveis de proficiência disponíveis
-    const proficiencyLevels = [
-        { label: "Sem Treino", value: 0, icon: "" }, 
-        { label: "Proficiência", value: 2, icon: "" }, 
-        { label: "Expertise", value: 3, icon: "" } 
-    ];
-
-    DND_SKILLS.forEach((skill, index) => {
-        const currentLevel = characterSkills[skill.name] || 0;
-        const currentProficiency = proficiencyLevels.find(p => p.value === currentLevel) || proficiencyLevels[0];
-        
-        const itemEntry = document.createElement('li');
-        itemEntry.className = 'item-entry skill-entry'; 
-
-        // Estrutura do item: Nome (Atributo), Ícone de Proficiência (nível atual), Menu Flutuante
-        itemEntry.innerHTML = `
-            <div class="skill-info">
-                <span>${skill.name}</span>
-                <span style="color: #9ca3af; font-weight: 500;">(${skill.attr})</span>
-            </div>
-            
-            <div class="skill-level-toggle" data-skill-name="${skill.name}" data-current-level="${currentLevel}">
-                <button class="level-icon-btn" title="Nível de Proficiência">
-                    <span class="level-icon level-${currentLevel}">${currentProficiency.icon}</span>
-                </button>
-                
-                <div class="skill-level-menu">
-                    ${proficiencyLevels.map(level => `
-                        <button 
-                            title="${level.label}" 
-                            data-level="${level.value}"
-                            data-icon="${level.icon}"
-                            class="menu-option-btn ${level.value === currentLevel ? 'active' : ''}" 
-                        >
-                            <span class="menu-option-icon level-${level.value}">${level.icon}</span> 
-                            ${level.label}
-                        </button>
-                    `).join('')}
-                </div>
-            </div>
-        `;
-
-        // Lógica de abertura/fechamento do menu
-        const toggleBtn = itemEntry.querySelector('.level-icon-btn');
-        toggleBtn.addEventListener('click', (e) => {
-            e.stopPropagation(); 
-            // Fecha todos os outros menus abertos para evitar sobreposição
-            document.querySelectorAll('.skill-level-menu.open').forEach(menu => {
-                if (menu !== e.currentTarget.nextElementSibling) {
-                    menu.classList.remove('open');
-                }
-            });
-            e.currentTarget.nextElementSibling.classList.toggle('open');
-        });
-
-        // Lógica de seleção do nível
-        itemEntry.querySelectorAll('.menu-option-btn').forEach(button => {
-            button.addEventListener('click', (e) => {
-                e.stopPropagation(); 
-                
-                const skillToggle = e.currentTarget.closest('.skill-level-toggle');
-                const menu = e.currentTarget.closest('.skill-level-menu');
-                const skillName = skillToggle.dataset.skillName;
-                const newLevel = parseInt(e.currentTarget.dataset.level);
-
-                // 1. Atualiza o estado salvo no objeto characterSkills
-                characterSkills[skillName] = newLevel;
-                
-                // 2. Atualiza o ícone principal (para refletir a classe CSS correta)
-                const iconSpan = skillToggle.querySelector('.level-icon');
-                iconSpan.className = `level-icon level-${newLevel}`; 
-                skillToggle.dataset.currentLevel = newLevel;
-                
-                // 3. Marca a opção ativa dentro do menu
-                menu.querySelectorAll('.menu-option-btn').forEach(btn => btn.classList.remove('active'));
-                e.currentTarget.classList.add('active');
-
-                // 4. Fecha o menu
-                menu.classList.remove('open');
-            });
-        });
-
-        list.appendChild(itemEntry);
-    });
-    
-    // Fecha o menu ao clicar em qualquer lugar fora (global listener)
-    document.addEventListener('click', (e) => {
-        if (!e.target.closest('.skill-level-toggle')) {
-            document.querySelectorAll('.skill-level-menu.open').forEach(menu => {
-                menu.classList.remove('open');
-            });
-        }
-    });
-}
-
-// Funções de controle da Ficha de Personagem (chamadas pelo HTML)
-function minimizeCharacterSheet() {
-    document.getElementById('characterSheet').classList.toggle('minimized');
-}
-
-function closeCharacterSheet() {
-    document.getElementById('characterSheet').classList.add('closed');
-}
-
-function openCharacterSheet() {
-    const sheet = document.getElementById('characterSheet');
-    sheet.classList.remove('closed');
-    sheet.classList.remove('minimized');
-    
-    // Reposiciona para a última posição arrastada conhecida
-    sheet.style.left = `${characterSheetPosition.x}px`;
-    sheet.style.top = `${characterSheetPosition.y}px`;
-    sheet.style.transform = '';
-}
-
-// ========== CHAT ==========
-function setupChat() {
-    const chatInput = document.getElementById('chatInput');
-    // Envia mensagem ao pressionar Enter
-    chatInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter' && chatInput.value.trim()) {
-            addChatMessage(playerData.name, playerData.emoji, playerData.color, chatInput.value); 
-            chatInput.value = '';
-            
-            // TODO: Adicionar lógica de envio via WebSocket
-        }
-    });
-
-    lastSender = { name: '', color: '' };
-}
-
-/**
- * Adiciona uma nova mensagem ao chat, com lógica de agrupamento.
- * @param {string} senderName Nome do remetente.
- * @param {string} senderEmoji Emoji do remetente.
- * @param {string} senderColor Cor do remetente (hex).
- * @param {string} content Conteúdo da mensagem.
- */
-function addChatMessage(senderName, senderEmoji, senderColor, content) {
-    const chatMessages = document.getElementById('chatMessages');
-    const isSameSender = lastSender.name === senderName;
-    
-    let currentGroup;
-
-    // Remove a mensagem inicial de boas-vindas/placeholder
-    const initialMessage = document.getElementById('initialChatMsg');
-    if (initialMessage) {
-        initialMessage.remove();
-    }
-    
-    // Função utilitária para converter cor Hex para RGB (necessário para o background com opacidade)
-    const hexToRgb = hex => {
-        const bigint = parseInt(hex.slice(1), 16);
-        const r = (bigint >> 16) & 255;
-        const g = (bigint >> 8) & 255;
-        const b = bigint & 255;
-        return `${r}, ${g}, ${b}`;
-    };
-    const rgbColor = hexToRgb(senderColor);
-
-    if (isSameSender) {
-        // Se o remetente é o mesmo, anexa a nova mensagem ao último grupo
-        currentGroup = chatMessages.lastElementChild;
-        if (!currentGroup) return; 
-
-        const contentDiv = currentGroup.querySelector('.chat-message-content');
-        const newParagraph = document.createElement('p');
-        
-        // Formatação simples de negrito (transforma **texto** em <b>texto</b>)
-        let formattedContent = content.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
-        
-        newParagraph.innerHTML = formattedContent;
-        contentDiv.appendChild(newParagraph);
-        
-    } else {
-        // Novo remetente: cria um novo grupo de mensagens
-        currentGroup = document.createElement('div');
-        currentGroup.className = 'chat-message-group fade-in';
-        
-        // Estiliza o novo grupo com a cor do jogador (borda e background com opacidade)
-        currentGroup.style.border = `1px solid ${senderColor}`;
-        currentGroup.style.background = `rgba(${rgbColor}, 0.1)`;
-        
-        // Injeta o estilo para o pseudo-elemento ::before (glow)
-        const styleElement = document.createElement('style');
-        styleElement.textContent = `
-            #chatMessages .chat-message-group:last-child::before {
-                background: ${senderColor};
-            }
-        `;
-        currentGroup.appendChild(styleElement); 
-
-        // Cabeçalho (Nome e Emoji)
-        const header = document.createElement('div');
-        header.className = 'chat-message-header';
-        header.style.color = senderColor; 
-        header.style.borderBottom = `1px solid rgba(${rgbColor}, 0.3)`;
-        header.innerHTML = `${senderEmoji} ${senderName}`;
-        currentGroup.appendChild(header);
-
-        // Conteúdo (Mensagem)
-        const contentDiv = document.createElement('div');
-        contentDiv.className = 'chat-message-content';
-        const newParagraph = document.createElement('p');
-        
-        let formattedContent = content.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
-        
-        newParagraph.innerHTML = formattedContent;
-        contentDiv.appendChild(newParagraph);
-        currentGroup.appendChild(contentDiv);
-        
-        chatMessages.appendChild(currentGroup);
-        
-        // Atualiza o último remetente
-        lastSender = { name: senderName, color: senderColor };
-    }
-    
-    // Rolagem automática para baixo para mostrar a mensagem mais recente
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-}
-
-// Funções de controle do Chat (chamadas pelo HTML)
-function minimizeChat() {
-    document.getElementById('chatContainer').classList.toggle('minimized');
-}
-
-function closeChat() {
-    document.getElementById('chatContainer').classList.add('closed');
-}
-
-function openChat() {
-    const chatContainer = document.getElementById('chatContainer');
-    chatContainer.classList.remove('closed');
-    chatContainer.classList.remove('minimized');
-}
-
-// ========== LISTA DE JOGADORES ==========
-/**
- * Adiciona um jogador à lista (apenas visual, sem sincronização de servidor).
- * @param {object} player Dados do jogador.
- */
-function addPlayerToList(player) {
-    const playersListContent = document.getElementById('playersListContent');
-    if (!playersListContent) return; 
-    
-    const playerItem = document.createElement('div');
-    playerItem.className = 'player-item';
-    
-    // Adiciona o listener para retrair/expandir a lista (togglePlayersList)
-    playerItem.setAttribute('onclick', 'togglePlayersList()'); 
-    
-    // player-indicator é o elemento que exibe a cor na versão minimizada
-    playerItem.innerHTML = `
-        <div class="player-indicator" style="background: ${player.color};"></div>
-        <div class="player-emoji">${player.emoji}</div>
-        <div class="player-name">${player.name}</div>
-    `;
-    
-    playersListContent.appendChild(playerItem);
-    
-    // TODO: Adicionar lógica para adicionar jogadores de outros clientes
-}
-
-function togglePlayersList() {
-    // Alterna a classe 'minimized' para retrair/expandir a lista
-    document.getElementById('playersList').classList.toggle('minimized');
-}
-
-// ========== ATALHOS DE TECLADO ==========
-function setupKeyboardShortcuts() {
-    document.addEventListener('keydown', (e) => {
-        // Só funciona na tela de jogo
-        if (document.getElementById('gameScreen').classList.contains('active')) {
-            
-            // Ctrl+C: Abrir/Fechar Chat
-            if (e.ctrlKey && e.key.toLowerCase() === 'c') {
-                e.preventDefault();
-                const chatContainer = document.getElementById('chatContainer');
-                if (chatContainer.classList.contains('closed')) {
-                    openChat();
-                } else {
-                    closeChat();
-                }
-            }
-            
-            // Ctrl+F: Abrir/Fechar/Minimizar Ficha de Personagem
-            if (e.ctrlKey && e.key.toLowerCase() === 'f') {
-                e.preventDefault();
-                const sheet = document.getElementById('characterSheet');
-                if (sheet.classList.contains('closed')) {
-                    openCharacterSheet(); 
-                } else if (sheet.classList.contains('minimized')) {
-                    minimizeCharacterSheet(); // Maximiza
-                } else {
-                    closeCharacterSheet(); // Fecha totalmente
-                }
-            }
-            
-            // Ctrl+D: Abrir/Fechar/Minimizar Bandeja de Dados
-            if (e.ctrlKey && e.key.toLowerCase() === 'd') {
-                e.preventDefault();
-                const tray = document.getElementById('diceTray');
-                if (tray.classList.contains('closed')) {
-                    openDiceTray();
-                } else if (tray.classList.contains('minimized')) {
-                    minimizeDiceTray(); // Maximiza
-                } else {
-                    closeDiceTray(); // Fecha totalmente
-                }
-            }
-            
-            // Atalhos de ferramentas (V, R, P, I)
-            switch(e.key.toLowerCase()) {
-                case 'v':
-                    // Seleciona a ferramenta Mover (✋)
-                    document.querySelector('[data-tool="move"]').click();
-                    break;
-                case 'r':
-                    // Seleciona a ferramenta Régua (📏)
-                    document.querySelector('[data-tool="ruler"]').click();
-                    break;
-                case 'p':
-                    // Seleciona a ferramenta Paredes (🧱), apenas para o Mestre
-                    if (playerData.isMaster) {
-                        document.querySelector('[data-tool="wall"]').click();
-                    }
-                    break;
-                case 'i':
-                    // Seleciona a ferramenta Inimigos (👾), apenas para o Mestre
-                    if (playerData.isMaster) {
-                        document.querySelector('[data-tool="enemy"]').click();
-                    }
-                    break;
-            }
-        }
-    });
+    formContainer.style.display = 'block';
+    // Adicione listeners para confirm/cancel se necessário
 }

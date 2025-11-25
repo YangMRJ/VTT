@@ -195,7 +195,6 @@ body {
     left: 0;
 }
 
-/* NOVO CONTAINER PARA O BOTÃO/SUBMENU */
 .tool-item {
     width: 60px; 
     height: 50px;
@@ -235,7 +234,6 @@ body {
     border-color: var(--primary-color);
 }
 
-/* CORREÇÃO CHAVE: O submenu aparece quando o mouse está sobre o contêiner (.tool-item) */
 .tool-item:hover > .tool-submenu { 
     display: flex;
 }
@@ -284,7 +282,6 @@ body {
     border-color: var(--primary-color);
 }
 
-/* Ajuste nos botões de controle das janelas */
 .chat-control-btn {
     background: var(--bg-darker); 
     border: 1px solid var(--border-color);
@@ -303,11 +300,10 @@ body {
     border-color: var(--primary-color);
 }
 
-
 /* CHAT */
 #chatContainer {
     position: fixed;
-    bottom: 0px;
+    bottom: -1px;
     right: 20px;
     width: 350px;
     background: var(--bg-dark);
@@ -315,7 +311,8 @@ body {
     border-top-left-radius: 15px;
     border-top-right-radius: 15px;
     overflow: hidden;
-    transition: all 0.3s ease-in-out; 
+    /* CORREÇÃO AQUI: Removemos 'all' para não animar top/left durante o drag */
+    transition: opacity 0.3s, transform 0.3s, width 0.3s, height 0.3s;
     z-index: 90;
 }
 
@@ -326,18 +323,14 @@ body {
     padding-right: 10px;
     display: flex;
     background: var(--bg-darker);
-    /* Adicione: Alinha os itens verticalmente para melhor visualização */
     align-items: center;
-    /* Adicione: Distribui o espaço entre o h3 e os controles */
     justify-content: space-between; 
     color: var(--primary-color);
 }
 
 .chat-controls-chat {
-    /* Remove o margin-left fixo para que 'justify-content: space-between' faça o trabalho */
-    /* margin-left: 200px; <- REMOVER ESTA LINHA */
     display: flex;
-    gap: 5px; /* Adiciona um pequeno espaçamento entre os botões */
+    gap: 5px;
 }
 
 #chatContainer.minimized {
@@ -345,44 +338,31 @@ body {
     width: 250px;
 }
 
-/* Ajuste o alinhamento e o padding do cabeçalho no modo minimizado */
 #chatContainer.minimized .chat-header {
-    /* Centraliza os itens verticalmente e remove o padding excessivo */
     align-items: center;
-    padding-left: 15px; /* Ajuste para ter um respiro lateral */
+    padding-left: 15px;
     padding-right: 15px;
 }
 
-/* Ajuste o H3 para garantir que fique inline */
 #chatContainer.minimized .chat-header h3 {
-    white-space: nowrap; /* Impede a quebra de linha dentro do h3 */
-    margin: 0; /* Remove qualquer margem extra que possa causar problemas */
+    white-space: nowrap;
+    margin: 0;
     color: var(--primary-color);
 }
 
-/* Ajuste a posição dos controles no modo minimizado */
 #chatContainer.minimized .chat-controls-chat {
-    /* Usa 'auto' para o margin-left para empurrar os controles para a direita */
     margin-left: auto;
-    display: flex; /* Garante que os botões fiquem lado a lado */
-    gap: 5px; /* Espaçamento entre os botões */
-}
-
-/* Opcional: Ajuste o tamanho da fonte do h3 no modo minimizado, se necessário */
-#chatContainer.minimized .chat-header h3 {
-    font-size: 1.1rem; /* Mantenha o tamanho ou ajuste */
-    color: var(--primary-color);
+    display: flex;
+    gap: 5px;
 }
 
 #chatContainer.closed {
-    /* Usa transform e opacity para animação suave, sem snap */
     transform: translateY(calc(100% + 40px)); 
     opacity: 0;
     pointer-events: none; 
     width: 350px; 
 }
 
-/* NOVO ESTILO PARA AS MENSAGENS DO CHAT AGRUPADO */
 .chat-message-group {
     display: flex;
     flex-direction: column;
@@ -395,7 +375,6 @@ body {
     transition: all 0.3s ease-out;
 }
 
-/* Estilo para a cor/glow (será aplicado via JS com cor do jogador) */
 .chat-message-group::before {
     content: '';
     position: absolute;
@@ -411,7 +390,6 @@ body {
     transition: all 0.3s;
 }
 
-/* Estilo para a primeira linha (Nome e Emoji) */
 .chat-message-header {
     font-size: 0.95rem;
     font-weight: 600;
@@ -425,7 +403,6 @@ body {
     margin-top: -0.2rem;
 }
 
-/* Estilo para o conteúdo das mensagens */
 .chat-message-content {
     font-size: 0.9rem;
     line-height: 1.4;
@@ -437,11 +414,9 @@ body {
     word-wrap: break-word;
 }
 
-/* Remove a margem do último grupo para não estourar o scroll */
 .chat-messages .chat-message-group:last-child {
     margin-bottom: 0; 
 }
-
 
 #chatContainer.minimized .chat-messages,
 #chatContainer.minimized .chat-input-container {
@@ -467,13 +442,14 @@ body {
     position: fixed;
     right: 20px;
     top: 20px;
-    width: 750px;
+    width: 850px;
     max-height: 80vh;
     background: var(--bg-dark);
     border: 1px solid var(--border-color);
     border-radius: 12px;
     overflow: hidden;
-    transition: all 0.3s ease-in-out; 
+    /* CORREÇÃO AQUI: Removemos 'all' */
+    transition: opacity 0.3s, transform 0.3s, width 0.3s, height 0.3s;
     z-index: 95;
 }
 
@@ -503,13 +479,10 @@ body {
     display: none;
 }
 
-/* CORREÇÃO APLICADA AQUI */
 #characterSheet.closed {
-    /* Usa transform e opacity para animação suave, sem snap */
-    /* Para a ficha que começa no topo, movemos para cima para fechar */
     transform: translateY(calc(-100% - 40px)); 
     opacity: 0;
-    pointer-events: none; /* CHAVE: Desativa a interação após fechar */
+    pointer-events: none;
     width: 450px;
 }
 
@@ -524,16 +497,15 @@ body {
     scrollbar-arrow-color: var(--bg-darker);
 }
 
-/* NOVO: Estilização das setas do input number para se misturarem com o background */
 input[type="number"] {
-    -moz-appearance: textfield; /* Esconde as setas no Firefox */
+    -moz-appearance: textfield;
 }
 
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {
-    -webkit-appearance: none; /* Esconde as setas no Chrome/Safari */
+    -webkit-appearance: none;
     margin: 0;
-    background-color: var(--bg-darker); /* Mesma cor do bg para "misturar" */
+    background-color: var(--bg-darker);
 }
 
 .sheet-tabs {
@@ -562,11 +534,10 @@ input[type="number"]::-webkit-inner-spin-button {
 
 .sheet-content {
     padding: 1rem;
-    max-height: calc(80vh - 45px - 45px); /* Altura máxima baseada no topo e header */
+    max-height: calc(80vh - 45px - 45px);
     overflow-y: auto;
 }
 
-/* --- NOVO ESTILO DE BOX PARA AS SEÇÕES --- */
 .sheet-section {
     margin-bottom: 1.5rem;
     padding: 1rem; 
@@ -576,12 +547,130 @@ input[type="number"]::-webkit-inner-spin-button {
     box-shadow: 0 4px 6px rgba(0,0,0,0.2); 
 }
 
+.sheet-section .info-field{
+    width: 80px;
+    justify-content: center;
+}
+
 .sheet-section h4 {
     margin-bottom: 0.75rem;
     margin-top: -0.25rem;
     color: var(--primary-color);
 }
-/* ----------------------------------------- */
+
+.attributes-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); 
+    gap: 0.75rem; 
+    padding: 0;
+}
+
+.attr-item {
+    background: var(--bg-darker);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.5rem;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.attr-item label {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.attr-mod {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+    line-height: 1;
+    position: absolute;
+    top: 45%;
+    right: 10%; 
+    background: var(--bg-dark);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+}
+
+.attr-score-input {
+    width: 60px;
+    padding: 0.25rem;
+    margin-left: -40%;
+    background: var(--bg-light) !important;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    color: var(--text-color);
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-align: center;
+    margin-top: 5px;
+}
+
+.attr-score-input:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
+
+.sheet-section input{
+    text-align: center;
+}
+
+.sheet-section .info-grid{
+    width: 50px;
+    margin-right: 15%;
+    margin-bottom: -1%;
+}
+
+.sheet-section label{
+    justify-content: center;
+    text-align: center;
+    display: flex;
+}
+
+.info-field:has(input[type="checkbox"]) {
+    display: flexbox;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.info-field input[type="checkbox"] {
+    left: 35%;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: var(--bg-darker);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+    margin-top: 0;
+}
+
+.info-field input[type="checkbox"]:hover {
+    border-color: var(--primary-color);
+}
+
+.info-field input[type="checkbox"]:checked {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.info-field input[type="checkbox"]:checked::after {
+    content: ''; 
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--text-color);
+    font-size: 1rem;
+    font-weight: bold;
+}
 
 .info-grid {
     display: grid;
@@ -597,7 +686,15 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 
 .info-field label {
-    display: block;
+    display: flex;
+    font-size: 0.75rem;
+    color: #9ca3af;
+    margin-bottom: 0.25rem;
+}
+
+.info-field h3 {
+    display: flex;
+    justify-content: center;
     font-size: 0.75rem;
     color: #9ca3af;
     margin-bottom: 0.25rem;
@@ -614,7 +711,6 @@ input[type="number"]::-webkit-inner-spin-button {
     margin-top: 0.5rem;
 }
 
-/* NOVO: Estilos para listas de itens e entradas dinâmicas */
 .item-list {
     list-style: none;
     margin-bottom: 1rem;
@@ -641,7 +737,6 @@ input[type="number"]::-webkit-inner-spin-button {
     border: none;
     color: #9ca3af;
     cursor: pointer;
-    margin-left: 0.5rem;
     font-size: 1.1rem;
     transition: color 0.2s;
 }
@@ -653,7 +748,7 @@ input[type="number"]::-webkit-inner-spin-button {
 /* BANDEJA DE DADOS */
 #diceTray {
     position: fixed;
-    bottom: 20px; 
+    bottom: -1px; 
     left: 20px; 
     width: 450px;
     background: var(--bg-dark);
@@ -662,8 +757,8 @@ input[type="number"]::-webkit-inner-spin-button {
     border-top-right-radius: 15px;
     padding: 0;
     z-index: 85;
-    /* display: none removido, JS cuida do display block inicial */
-    transition: all 0.3s ease-in-out; 
+    /* CORREÇÃO AQUI: Removemos 'all' */
+    transition: opacity 0.3s, transform 0.3s, width 0.3s, height 0.3s;
 }
 
 #diceTray.active {
@@ -677,7 +772,6 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 
 #diceTray.closed {
-    /* Usa transform e opacity para animação suave, sem snap */
     transform: translateY(calc(100% + 40px)); 
     opacity: 0;
     pointer-events: none;
@@ -694,7 +788,7 @@ input[type="number"]::-webkit-inner-spin-button {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    cursor: grab; /* Cursor para indicar que é arrastável */
+    cursor: grab;
 }
 
 .dice-tray-header h3 {
@@ -801,10 +895,9 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 
 .attack-slot {
-    /* ATUALIZADO: Propriedades para slot quadrado de 40px */
     width: 40px; 
     height: 40px;
-    font-size: 1.2rem; /* Tamanho maior para o emoji */
+    font-size: 1.2rem;
     text-align: center;
 
     background: var(--bg-darker);
@@ -824,7 +917,6 @@ input[type="number"]::-webkit-inner-spin-button {
     transform: translateY(-4px);
 }
 
-/* Estilo para o Tooltip (Dica de Ferramenta) */
 .attack-slot:hover:not(:last-child)::before {
     content: attr(data-name) "\A Dano: " attr(data-damage) "\A\A" attr(data-description);
     white-space: pre-wrap; 
@@ -866,12 +958,11 @@ input[type="number"]::-webkit-inner-spin-button {
     z-index: 100;
 }
 
-/* ATUALIZADO: Ajuste específico para o botão '+' */
 .attack-slot:last-child {
     font-size: 1.5rem; 
 }
 
-/* LISTA DE JOGADORES (CORRIGIDO) */
+/* LISTA DE JOGADORES */
 #playersList {
     position: fixed;
     top: 20px;
@@ -881,34 +972,27 @@ input[type="number"]::-webkit-inner-spin-button {
     padding: 0; 
     z-index: 80;
     min-width: 200px;
-    
-    /* NOVO: Propriedades para retração */
     transition: transform 0.3s ease-out; 
     transform: translateX(0);
 }
 
-/* NOVO: Quando a lista está retraída */
 #playersList.minimized {
-    /* Retrai o elemento, mostrando apenas a largura das barras de cor */
     transform: translateX(calc(-100% + 180px)); 
 }
 
-/* Contêiner interno que segura os itens */
 .player-list-content {
     padding: 0.75rem; 
-    background: var(--bg-dark); /* Adiciona o fundo escuro para o corpo da lista */
+    background: var(--bg-dark);
     border-radius: 12px;
 }
 
-/* Oculta o conteúdo interno quando a lista está retraída */
 #playersList.minimized .player-list-content {
-    padding: 0; /* Remove padding na retração */
+    padding: 0;
     background: transparent;
     border: none;
     box-shadow: none;
 }
 
-/* Estilo do item individual do jogador */
 .player-item {
     display: flex;
     align-items: center;
@@ -920,50 +1004,42 @@ input[type="number"]::-webkit-inner-spin-button {
     cursor: pointer;
     transition: all 0.3s;
     box-shadow: 0 2px 5px rgba(0,0,0,0.3); 
-    position: relative; /* Adicionado para que o indicador absoluto funcione */
+    position: relative;
 }
 
-/* NOVO: Estilo do item quando a lista está retraída */
 #playersList.minimized .player-item {
     padding: 0;
     margin-bottom: 0;
-    width: 15px; /* Largura da "bordinha" */
-    height: 40px; /* Altura da "bordinha" */
+    width: 15px;
+    height: 40px;
     overflow: hidden;
     background: transparent;
-    border-radius: 0 8px 8px 0; /* Arredonda apenas a ponta visível */
+    border-radius: 0 8px 8px 0;
     box-shadow: none;
     margin-left: 0;
-    
-    /* Faz com que os itens fiquem um em cima do outro */
     flex-direction: column;
     justify-content: center; 
 }
 
 #playersList.minimized .player-item:not(:last-child) {
-    margin-bottom: 5px; /* Espaçamento entre as barras */
+    margin-bottom: 5px;
 }
 
-/* NOVO: Estilo da bordinha de cor quando retraída */
 .player-indicator {
-    width: 15px; /* Largura padrão quando visível */
-    height: 15px; /* Altura padrão quando visível */
+    width: 15px;
+    height: 15px;
     border-radius: 50%;
 }
 
 #playersList.minimized .player-indicator {
-    /* Usa o indicador de cor como o único elemento visível */
     width: 100%;
     height: 100%;
     border-radius: 0;
-    
-    /* POSICIONAMENTO ABSOLUTO PARA COBRIR O ITEM MINIMIZADO */
     position: absolute; 
     left: 0;
     top: 0;
 }
 
-/* Oculta os elementos de texto/emoji na retração */
 #playersList.minimized .player-emoji,
 #playersList.minimized .player-name {
     display: none;
@@ -1026,7 +1102,6 @@ input[type="number"]::-webkit-inner-spin-button {
     line-height: 1;
 }
 
-/* Scrollbar customizada */
 ::-webkit-scrollbar {
     width: 8px;
 }
@@ -1053,7 +1128,6 @@ input[type="number"]::-webkit-inner-spin-button {
     to { opacity: 1; }
 }
 
-/* ESTILOS PARA FORMULÁRIOS DE ADIÇÃO INLINE (NOVO) */
 .add-form-container {
     background: var(--bg-light);
     border: 1px solid var(--primary-color);
@@ -1063,8 +1137,8 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 
 .add-form-container .info-field {
-    background: var(--bg-light); /* Usa o background do contêiner principal do formulário */
-    padding: 0; /* Remove padding extra do .info-field */
+    background: var(--bg-light);
+    padding: 0;
     margin-bottom: 0.75rem;
 }
 
@@ -1091,20 +1165,18 @@ input[type="number"]::-webkit-inner-spin-button {
 
 .form-actions .confirm-btn {
     flex: 1;
-    background: #10b981; /* Cor de sucesso (verde) */
+    background: #10b981;
 }
 
 .form-actions .cancel-btn {
     flex: 1;
-    background: #ef4444; /* Cor de erro/cancelamento (vermelho) */
+    background: #ef4444;
 }
 
 .add-btn[data-action="add-weapon"] {
-    /* Garante que o botão de abrir fique no final */
     margin-top: 0.5rem;
 }
 
-/* ESTILOS PARA PERÍCIAS (ATUALIZADO PARA O MENU FLUTUANTE) */
 #skillsList .skill-entry {
     background: var(--bg-darker);
     padding: 0.5rem;
@@ -1120,24 +1192,39 @@ input[type="number"]::-webkit-inner-spin-button {
 
 #skillsList .skill-info {
     flex: 1;
-    display: flex;
+    display: block;
     align-items: center;
     gap: 0.5rem;
-    font-size: 0.95rem;
+    font-size: 0.75rem;
 }
 
-/* Contêiner do Botão de Toggle e Menu */
+.skill-mod {
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-left: -25px;
+    display: inline-block;
+    width: 30px;
+    text-align: center;
+    margin-right: 0.5rem;
+    color: var(--text-color);
+}
+
+.skill-name{
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
 .skill-level-toggle {
     position: relative;
+    left: 195px;
     z-index: 10;
 }
 
-/* Botão principal que mostra o nível atual */
 .level-icon-btn {
-    width: 30px;
-    height: 30px;
+    width: 18px;
+    height: 18px;
     background: none;
-    border: 2px solid var(--primary-color);
+    border: 1px solid var(--primary-color);
     border-radius: 50%;
     cursor: pointer;
     display: flex;
@@ -1149,7 +1236,6 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 
 .level-icon {
-    /* CORREÇÃO CHAVE: Visibilidade e Proporção */
     color: transparent; 
     display: block;
     width: 100%;
@@ -1159,13 +1245,11 @@ input[type="number"]::-webkit-inner-spin-button {
     --fill-color: var(--primary-color); 
 }
 
-/* NÍVEL 0: SEM TREINO (Vazio) */
 .level-icon.level-0 {
     background: transparent; 
     border: 1px solid var(--primary-color); 
 }
 
-/* NÍVEL 2: PROFICIÊNCIA (Meio Círculo) */
 .level-icon.level-2 {
     background: linear-gradient(to top, var(--fill-color) 50%, transparent 50%);
     background-size: 100% 100%;
@@ -1174,27 +1258,23 @@ input[type="number"]::-webkit-inner-spin-button {
     border: 1px solid var(--primary-color); 
 }
 
-/* NÍVEL 3: EXPERTISE (Círculo Cheio) */
 .level-icon.level-3 {
     background: var(--fill-color);
 }
 
 
-/* ESTILOS PARA PERÍCIAS DENTRO DO MENU (ATUALIZADO) */
-
-/* Menu Flutuante */
 .skill-level-menu {
     position: absolute;
     top: 0; 
-    right: 35px; /* Abre à esquerda do botão */
+    right: 30px; 
     background: var(--bg-dark);
     border: 1px solid var(--border-color);
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-    display: none; /* Inicia oculto */
+    display: none; 
     flex-direction: column;
-    min-width: 150px;
-    overflow: hidden;
+    min-width: 150px; 
+    overflow: auto;
     z-index: 1000; 
 }
 
@@ -1206,12 +1286,10 @@ input[type="number"]::-webkit-inner-spin-button {
     background: none;
     border: none;
     color: var(--text-color);
-    text-align: left;
-    padding: 0.5rem 0.75rem;
+    text-align: initial;
+    padding: 6px 10px;
     cursor: pointer;
     display: flex;
-    align-items: center;
-    gap: 0.5rem;
     transition: background 0.15s;
     font-size: 0.9rem;
 }
@@ -1220,61 +1298,30 @@ input[type="number"]::-webkit-inner-spin-button {
     background: var(--bg-light);
 }
 
-.menu-option-btn.active {
-    background: var(--primary-color);
-}
-
-/* NÍVEL 0: SEM TREINO (Vazio no menu) */
-.menu-option-btn[data-level="0"] .menu-option-icon {
-    background: transparent; 
-    border: 1px solid var(--primary-color); 
-}
-
-/* NÍVEL 2: PROFICIÊNCIA (Meio Círculo no menu) */
-.menu-option-btn[data-level="2"] .menu-option-icon {
-    border: 1px solid var(--primary-color);
-    background: linear-gradient(to top, var(--fill-color-menu) 50%, transparent 50%);
-    background-size: 100% 100%;
-    background-repeat: no-repeat;
-    background-position: center;
-}
-
-/* NÍVEL 3: EXPERTISE (Círculo Cheio no menu) */
-.menu-option-btn[data-level="3"] .menu-option-icon {
-    background: var(--fill-color-menu);
-}
-
-
-/* --- NOVO: ESTRUTURA GRID DA FICHA --- */
 .sheet-grid-container {
-    padding: 0; /* Removido padding do content original para o Grid */
-    max-height: calc(80vh - 45px - 45px); /* Mantém altura máxima */
+    padding: 0;
+    max-height: calc(80vh - 45px - 45px);
     overflow-y: auto;
 }
 
-/* Contêiner principal da aba Personagem */
 .sheet-grid-main {
     display: grid;
-    /* Define as áreas: menu (perícias), content (ficha) */
     grid-template-areas:
       "menu content";
-    /* Colunas: 1.5 partes para o menu (perícias), 3 partes para o conteúdo */
     grid-template-columns: 1.5fr 3fr; 
-    gap: 1rem; /* Espaço entre Perícias e Conteúdo */
-    padding: 1rem; /* Adiciona o padding que tiramos de .sheet-content de volta, dentro do grid */
+    gap: 1rem;
+    padding: 1rem;
 }
-
-/* ESTILOS DE ÁREA DO GRID */
 
 .sheet-grid-menu {
     grid-area: menu;
+    height: 76%;
 }
 
 .sheet-grid-content {
     grid-area: content;
 }
 
-/* Limpa o estilo da seção para a coluna lateral (menu) */
 .sheet-grid-menu .sheet-section {
     margin-bottom: 0;
     padding: 0;
@@ -1287,4 +1334,3 @@ input[type="number"]::-webkit-inner-spin-button {
     margin-bottom: 0.75rem;
     padding: 0 0.5rem;
 }
-/* --- FIM: ESTRUTURA GRID DA FICHA --- */
