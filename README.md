@@ -1,4 +1,4 @@
-## 📜 Documentação Técnica: VTT RPG (Atualizada)
+# 📜 Documentação Técnica: VTT RPG (Atualizada)
 
 Este projeto é um *Virtual Tabletop (VTT)* básico e funcional, construído com tecnologias web puras (HTML, CSS e JavaScript), com foco inicial na interface e funcionalidades locais.
 
@@ -8,16 +8,40 @@ Este projeto é um *Virtual Tabletop (VTT)* básico e funcional, construído com
 
 | Categoria | Funcionalidade | Implementação (Sim/Não) |
 | :--- | :--- | :--- |
-| **Acesso** | Login Personalizado (Nome, Cor, Emoji) | Sim |
-| **Acesso** | Acesso de Mestre (Código `9678` com emoji `👑`) | Sim |
-| **Mapa** | Grid, Pan (Mover) e Zoom | Sim |
-| **Mapa** | Tokens de Jogadores (Renderização) | Sim |
-| **UI** | Ficha de Personagem Arrastável (`#characterSheet`) | Sim |
-| **UI** | Bandeja de Dados (Seleção e Rolagem) | Sim |
-| **UI** | Chat (Agrupamento de Mensagens) | Sim |
-| **Ficha** | Gerenciamento de Armas (Adicionar/Remover) | Sim |
-| **Ficha** | Gerenciamento de Perícias (Nível de Proficiência) | Sim |
-| **Ferramentas** | Seleção de Ferramenta (Mover, Régua, etc.) | Sim |
+| **Acesso** | Login Personalizado (Nome, Cor, Emoji) | ✅ Sim |
+| **Acesso** | Acesso de Mestre (Código `9678` com emoji `👑`) | ✅ Sim |
+| **Mapa** | Grid, Pan (Mover) e Zoom | ✅ Sim |
+| **Mapa** | Tokens de Jogadores (Renderização) | ✅ Sim |
+| **UI** | Ficha de Personagem Arrastável (`#characterSheet`) | ✅ Sim |
+| **UI** | Bandeja de Dados Arrastável (`#diceTray`) | ✅ Sim |
+| **UI** | Chat Arrastável (`#chatContainer`) | ✅ Sim |
+| **UI** | Bandeja de Dados (Seleção e Rolagem) | ✅ Sim |
+| **UI** | Chat (Agrupamento de Mensagens) | ✅ Sim |
+| **Ficha** | Gerenciamento de Armas (Adicionar/Remover) | ✅ Sim |
+| **Ficha** | Gerenciamento de Perícias (Nível de Proficiência) | ✅ Sim |
+| **Ficha** | Atributos Editáveis com Cálculo Automático de Modificadores | ✅ Sim |
+| **Ferramentas** | Seleção de Ferramenta (Mover, Régua, etc.) | ✅ Sim |
+
+---
+
+## 🐛 Bugs Conhecidos e Issues
+
+### 🔴 CRÍTICOS
+- **Nenhum bug crítico identificado**
+
+### 🟡 PROBLEMAS DE USABILIDADE
+1. **Arrastar vs Clicar em Botões** - Corrigido ✅
+   - *Problema:* Ao arrastar as janelas, os botões internos eram acionados
+   - *Solução:* Implementada verificação no `makeMovable()` para ignorar arrasto quando o alvo é um botão
+
+2. **Minimizar Janelas** - Corrigido ✅  
+   - *Problema:* Botões de minimizar (-) não funcionavam
+   - *Solução:* Corrigida inconsistência entre nomes das funções no HTML e JavaScript
+
+### 🟢 MELHORIAS IDENTIFICADAS
+- **Ficha de Personagem** - Campos de texto/número ainda não são persistentes
+- **Sistema de Armas** - Formulário de adição precisa ser implementado completamente
+- **Perícias** - Cálculos automáticos funcionam, mas interface pode ser melhorada
 
 ---
 
@@ -55,46 +79,79 @@ Os atalhos funcionam na `gameScreen` e permitem acesso rápido a ferramentas e j
 * **Zoom:** A função `onCanvasWheel` ajusta a variável `scale` (limitada entre 0.5 e 3) e recalcula os offsets para manter o zoom centrado no ponteiro do mouse.
 * **Token:** A função `drawTokens()` renderiza os tokens dos jogadores, calculando a posição na tela com base nas coordenadas do grid (`x`, `y`), `gridSize`, `scale` e os `offsets` de pan.
 
-### 2. Ficha de Personagem
+### 2. Sistema de Janelas Arrastáveis
+
+* **Arrastar:** O método `makeMovable` permite que **todas as janelas** (Ficha, Chat, Bandeja) sejam arrastadas pelos seus headers.
+* **Correção de Bug:** Implementada verificação para prevenir que botões internos sejam acionados durante o arrasto.
+* **Minimizar/Fechar:** Funções `minimizeChat()`, `minimizeCharacterSheet()`, `minimizeDiceTray()` e respectivas funções `close...()`.
+
+### 3. Ficha de Personagem
 
 * **Armas:** A função `renderWeapons()` exibe dinamicamente a lista de armas do array `characterWeapons` e permite adicionar novos itens através de um formulário *inline* e removê-los.
 * **Perícias:** A função `renderSkills()` renderiza a lista de perícias de D&D 5e e permite ao jogador definir o nível de proficiência (0: Sem, 2: Proficiência, 3: Expertise) através de um menu flutuante.
-* **Arrastar:** O método `makeMovable` permite que a ficha seja arrastada e salva sua última posição (`characterSheetPosition`).
+* **Atributos:** A função `renderAttributes()` exibe os 6 atributos principais com inputs editáveis e calcula automaticamente os modificadores.
+* **Sistema de Cálculo:** Modificadores são calculados em tempo real com `getModifier()` e afetam automaticamente as perícias.
 
 ---
 
-## 🔮 Planos Futuros e Próximos Passos (TODOs)
+## 🎯 PRÓXIMOS PASSOS (PRIORIDADES)
 
-A prioridade atual é **melhorar o gerenciamento de dados na Ficha de Personagem**.
+### 🥇 ALTA PRIORIDADE - FICHA DE PERSONAGEM
+1. **Implementar Persistência de Dados**
+   - Salvar valores dos campos de texto/número (Nome, Classe, Nível, CA, etc.)
+   - Implementar localStorage para manter dados entre sessões
 
-### 1. 🥇 Ficha de Personagem Dinâmica (PRIORIDADE)
+2. **Completar Sistema de Armas**
+   - Finalizar formulário de adição de armas (`openAddWeaponForm`)
+   - Implementar edição de armas existentes
+   - Conectar sistema de rolagem de ataques com modificadores reais
 
-O objetivo é implementar a funcionalidade completa de gerenciamento de conteúdo nas abas e seções da Ficha de Personagem.
+3. **Implementar Abas Magias/História**
+   - Adicionar lógica CRUD para Magias e Habilidades
+   - Implementar campos editáveis para Background e Aparência
 
-* **Implementar Edição de Itens:** Adicionar lógica de edição para itens de Equipamentos e Mochila.
-* **Campos Editáveis:** Tornar os campos de texto/número na ficha (Nome, Classe, Nível, CA, etc.) editáveis e salvar seus valores.
-* **Implementar Abas Magias/História:** Adicionar lógica de CRUD (Criação, Leitura, Atualização e Exclusão) para Magias, Habilidades e textos de Background/Aparência.
+### 🥈 MÉDIA PRIORIDADE - MAPA E MOVIMENTAÇÃO
+1. **Movimentação de Tokens**
+   - Converter coordenadas do mouse para grid
+   - Implementar algoritmo de pathfinding (A*)
+   - Sistema de colisão com obstáculos
 
-### 2. 🗺️ Movimentação e Pathfinding de Token
+### 🥉 BAIXA PRIORIDADE - MULTIPLAYER
+1. **Sincronização em Tempo Real**
+   - Implementar WebSockets para chat multiplayer
+   - Sincronizar posições de tokens entre jogadores
+   - Sistema de lista de jogadores em tempo real
 
-O objetivo é implementar a lógica de movimentação inteligente dos tokens no mapa.
+---
 
-* **Conversão de Coordenadas:** Converter as coordenadas do mouse para coordenadas do grid.
-* **Algoritmo de Pathfinding:** Implementar um algoritmo como o **A\*** (A-star) para encontrar o caminho mais curto no mapa.
-* **Movimentação:** Mover o token do jogador atual para a posição clicada, seguindo o caminho calculado.
-* **Verificação de Colisão:** Integrar a lógica para verificar se o caminho calculado colide com obstáculos de mapa (futura ferramenta Parede).
+## 🔧 Funcionalidades Completas ✅
 
-### 3. 🌐 Sincronização e Multiplayer
+- [x] Sistema de login com personalização
+- [x] Canvas com grid, pan e zoom
+- [x] Renderização de tokens
+- [x] Janelas arrastáveis (Ficha, Chat, Bandeja)
+- [x] Sistema de perícias com proficiência
+- [x] Atributos editáveis com cálculos automáticos
+- [x] Sistema de armas básico
+- [x] Bandeja de dados funcional
+- [x] Chat com mensagens formatadas
+- [x] Atalhos de teclado
+- [x] Ferramentas básicas (Mover, Régua)
 
-O VTT precisa de comunicação em tempo real para ser utilizável.
+---
 
-* **Chat Multiplayer:** Enviar mensagens do chat para outros jogadores, o que exige a implementação de **WebSockets**.
-* **Sincronização de Tokens:** Garantir que as posições e o estado dos tokens de todos os jogadores sejam atualizados em tempo real para todos os clientes.
-* **Sincronização da Lista de Jogadores:** Sincronizar o estado da lista de jogadores com um servidor.
+## 🚀 Como Usar
 
-### 4. 🛠️ Implementação de Ferramentas
+1. **Acesso:** Abra `index.html` em um navegador moderno
+2. **Login:** Digite seu nome, escolha cor e emoji
+3. **Mestre:** Use código `9678` e emoji `👑` para acesso de mestre
+4. **Navegação:**
+   - `V` para mover o mapa
+   - `R` para régua de medição
+   - `Ctrl+C/F/D` para alternar Chat/Ficha/Bandeja
+5. **Ficha:** Edite atributos, perícias e armas diretamente na interface
 
-Adicionar a lógica de desenho e interação para as ferramentas da barra.
+---
 
-* **Régua (Ruler):** Adicionar a lógica de desenho para as diferentes formas de medição (linha, círculo, quadrado, cone).
-* **Parede (Wall):** Permitir que o Mestre desenhe barreiras invisíveis no grid que tokens não podem atravessar.
+**📅 Última Atualização:** Correção de bugs de arrasto e minimizar janelas
+**🎯 Próximo Foco:** Persistência de dados da ficha e sistema completo de armas
