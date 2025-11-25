@@ -154,4 +154,4 @@ Os atalhos funcionam na `gameScreen` e permitem acesso rápido a ferramentas e j
 ---
 
 **📅 Última Atualização:** Correção de bugs de arrasto e minimizar janelas
-**🎯 Próximo Foco:** Correção de bug de arrasto das abas de dado e chat (o comportamento de arrasto deveria ser exclusivo da ficha)
+**🎯 Próximo Foco:** Melhorar estilo da ficha (altura de mods adicionais), adicionar funcionalidades e espaços
