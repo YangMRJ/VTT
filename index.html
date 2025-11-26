@@ -157,29 +157,52 @@
                 <div id="personagemTab" class="tab-content sheet-grid-main">
                     
                     <div class="sheet-section sheet-grid-menu">
-                        <h4>🎯 Perícias (Skills)</h4>
-                        <ul class="item-list" id="skillsList">
-                            </ul>
-                    </div>
-
-                    <div class="sheet-grid-content">
-                        
-                        <div class="info-grid">
-                            <div class="info-field"><label>Nome</label><input type="text" value="Aventureiro"></div>
-                            <div class="info-field"><label>Raça</label><input type="text" value="Humano"></div>
-                            <div class="info-field"><label>Classe</label><input type="text" value="Guerreiro"></div>
-                            <div class="info-field"><label>Nível</label><input type="number" value="1"></div>
+                            <h4>🎯 Perícias </h4>
+                            <ul class="item-list" id="skillsList">
+                                </ul>
                         </div>
+                        
+                        <div class="sheet-section sheet-grid-defenses">
+                            <h4>🛡️ Resistências e Imunidades</h4>
+                            <hr>
+                            <div class="info-grid defenses-grid">
+
+                                <div class="info-field" style="grid-column: span 2;">
+                                    <label>Resistências</label>
+                                    <ul class="item-list" id="resistancesList">
+                                        </ul>
+                                    <button class="add-btn" data-action="add-resistance" onclick="openAddDefenseForm('resistance')">+ Adicionar Resistência</button>
+                                </div>
+
+                                <div class="info-field" style="grid-column: span 2;">
+                                    <label>Imunidades</label>
+                                    <ul class="item-list" id="immunitiesList">
+                                        </ul>
+                                    <button class="add-btn" data-action="add-immunity" onclick="openAddDefenseForm('immunity')">+ Adicionar Imunidade</button>
+                                </div>
+                                
+                            </div>
+                        </div>
+                        <div class="sheet-grid-content">
+                            
+                            <div class="info-grid base-info">
+                                <div class="info-field"><label>Nome</label><input type="text" value="Aventureiro"></div>
+                                <div class="info-field"><label>Raça</label><input type="text" value="Humano"></div>
+                                <div class="info-field"><label>Classe</label><input type="text" value="Guerreiro"></div>
+                                <div class="info-field"><label>Nível</label><input type="number" value="1"></div>
+                            </div>
 
                         <div class="combat-attributes-row"> 
 
                             <div class="attributes-and-mods-column">
                                 <div class="sheet-section">
                                     <h4>⚡ Atributos</h4>
+                                    <hr>
                                     <div id="attributesGrid" class="attributes-grid"></div>
                                 </div>
                                 <div class="sheet-section small-mods">
                                     <h4>⚔️ Mods Adicionais</h4>
+                                    <hr>
                                     <div class="info-grid">
                                         <div class="info-field">
                                             <label>Iniciativa</label>
@@ -233,37 +256,54 @@
                                 </div>
 
                         </div>
-                        <div class="sheet-section">
-                            <h4>⚔️ Armas</h4>
-                            <div id="addWeaponFormContainer" class="add-form-container" style="display: none;"> 
-                                <div class="info-field"><label>Nome da Arma</label><input type="text" id="weaponNameInput"></div>
-                                <div class="info-field"><label>Dado de Dano (ex: 1d8)</label><input type="text" id="weaponDamageInput"></div>
-                                <div class="info-field">
-                                    <label>Tipo de Arma</label>
-                                    <select id="weaponTypeSelect">
-                                        <option value="Comum">Comum</option>
-                                        <option value="Leve">Leve</option>
-                                        <option value="Pesada">Pesada</option>
-                                        <option value="Mágica">Mágica</option>
-                                    </select>
+                        
+                        <div class="sheet-grid-footer">
+                            <div class="sheet-section weapons-block">
+                                <h4>⚔️ Armas</h4>
+                                <hr>
+                                <div id="addWeaponFormContainer" class="add-form-container" style="display: none;"> 
+                                    <div class="info-field"><label>Nome da Arma</label><input type="text" id="weaponNameInput"></div>
+                                    <div class="info-field"><label>Dado de Dano (ex: 1d8)</label><input type="text" id="weaponDamageInput"></div>
+                                    <div class="info-field">
+                                        <label>Tipo de Arma</label>
+                                        <select id="weaponTypeSelect">
+                                            <option value="Comum">Comum</option>
+                                            <option value="Leve">Leve</option>
+                                            <option value="Pesada">Pesada</option>
+                                            <option value="Mágica">Mágica</option>
+                                        </select>
+                                    </div>
+                                    <div class="info-field">
+                                        <label>Descrição</label>
+                                        <textarea id="weaponDescriptionInput" style="width: 100%; min-height: 50px; background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: 6px; padding: 0.5rem; color: var(--text-color);"></textarea>
+                                    </div>
+                                    <div class="form-actions">
+                                        <button class="add-btn confirm-btn" id="confirmAddWeapon">Adicionar</button>
+                                        <button class="add-btn cancel-btn" id="cancelAddWeapon">Cancelar</button>
+                                    </div>
                                 </div>
-                                <div class="info-field">
-                                    <label>Descrição</label>
-                                    <textarea id="weaponDescriptionInput" style="width: 100%; min-height: 50px; background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: 6px; padding: 0.5rem; color: var(--text-color);"></textarea>
-                                </div>
-                                <div class="form-actions">
-                                    <button class="add-btn confirm-btn" id="confirmAddWeapon">Adicionar</button>
-                                    <button class="add-btn cancel-btn" id="cancelAddWeapon">Cancelar</button>
-                                </div>
+                                
+                                <ul class="item-list" id="weaponList"></ul>
+                                <button class="add-btn" data-action="add-weapon" id="openWeaponFormBtn">+ Adicionar Arma</button>
                             </div>
-                            
-                            <ul class="item-list" id="weaponList"></ul>
-                            <button class="add-btn" data-action="add-weapon" id="openWeaponFormBtn">+ Adicionar Arma</button>
-                        </div>
 
-                        <div class="sheet-section"><h4>🛡️ Equipamentos</h4><ul class="item-list"></ul><button class="add-btn">+ Adicionar Equipamento</button></div>
-                        <div class="sheet-section"><h4>🎒 Mochila</h4><ul class="item-list"></ul><button class="add-btn">+ Adicionar Item</button></div>
-                    </div> 
+                            <div class="sheet-section equip-block">
+                                <h4>🛡️ Equipamentos</h4>
+                                <ul class="item-list">
+
+                                </ul>
+                                <button class="add-btn">+ Adicionar Equipamento</button>
+                            </div>
+
+                            <div class="sheet-section backpack-block">
+                                <h4>🎒 Mochila</h4>
+                                <ul class="item-list">
+
+                                </ul>
+                                <button class="add-btn">+ Adicionar Item</button>
+                            </div>
+                        </div>
+                        </div> 
                 </div> 
                 
                 <div id="spellsTab" class="tab-content" style="display: none;">
