@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ficha de Personagem RPG</title>
+    <link rel="stylesheet" href="ficha-styles.css"> 
+</head>
+<body>
+    <div id="characterSheet" class="standalone">
+        
+        <div class="sheet-header">
+            <h2>👤 Ficha de Personagem</h2>
+            <div class="chat-controls">
+                <button class="chat-control-btn" title="Minimizar">_</button>
+                <button class="chat-control-btn" title="Fechar">x</button>
+            </div>
+        </div>
+        
+        <div class="sheet-tabs sheet-grid-header">
+            <div class="sheet-tab active" data-tab="personagem">Personagem</div>
+            <div class="sheet-tab" data-tab="spells">Magias</div>
+            <div class="sheet-tab" data-tab="history">História</div>
+        </div>
+        
+        <div class="sheet-content sheet-grid-container">
+            
+            <div id="personagemTab" class="tab-content sheet-grid-main">
+                
+                <div class="sheet-section sheet-grid-menu">
+                        <h4>🎯 Perícias </h4>
+                        <ul class="item-list" id="skillsList">
+                            </ul>
+                    </div>
+                    
+                    <div class="sheet-section sheet-grid-defenses">
+                        <h4>🛡️ Resistências e Imunidades</h4>
+                        <hr>
+                        <div class="info-grid defenses-grid">
+
+                            <div class="info-field" style="grid-column: span 2;">
+                                <label>Resistências</label>
+                                <ul class="item-list" id="resistancesList">
+                                </ul>
+                                <button class="add-btn" data-action="add-resistance" onclick="openAddDefenseForm('resistance')">+ Adicionar Resistência</button>
+                            </div>
+
+                            <div class="info-field" style="grid-column: span 2;">
+                                <label>Imunidades</label>
+                                <ul class="item-list" id="immunitiesList">
+                                </ul>
+                                <button class="add-btn" data-action="add-immunity" onclick="openAddDefenseForm('immunity')">+ Adicionar Imunidade</button>
+                            </div>
+                            
+                        </div>
+                    </div>
+                    
+                    <div class="sheet-grid-content">
+                        
+                        <div class="info-grid base-info">
+                            <div class="info-field"><label>Nome</label><input type="text" value="Aventureiro"></div>
+                            <div class="info-field"><label>Raça</label><input type="text" value="Humano"></div>
+                            <div class="info-field"><label>Classe</label><input type="text" value="Guerreiro"></div>
+                            <div class="info-field"><label>Nível</label><input type="number" value="1"></div>
+                        </div>
+
+                    <div class="combat-attributes-row"> 
+
+                        <div class="attributes-and-mods-column">
+                            <div class="sheet-section">
+                                <h4>⚡ Atributos</h4>
+                                <hr>
+                                <div id="attributesGrid" class="attributes-grid">
+                                    <div class="attr-item">
+                                        <label>Força (FOR)</label>
+                                        <div class="attr-mod" data-attr="str">+0</div>
+                                        <input type="number" class="attr-score-input" data-attr="str" value="10" min="1" max="30">
+                                    </div>
+                                    <div class="attr-item">
+                                        <label>Destreza (DES)</label>
+                                        <div class="attr-mod" data-attr="dex">+0</div>
+                                        <input type="number" class="attr-score-input" data-attr="dex" value="10" min="1" max="30">
+                                    </div>
+                                    <div class="attr-item">
+                                        <label>Constituição (CON)</label>
+                                        <div class="attr-mod" data-attr="con">+0</div>
+                                        <input type="number" class="attr-score-input" data-attr="con" value="10" min="1" max="30">
+                                    </div>
+                                    <div class="attr-item">
+                                        <label>Inteligência (INT)</label>
+                                        <div class="attr-mod" data-attr="int">+0</div>
+                                        <input type="number" class="attr-score-input" data-attr="int" value="10" min="1" max="30">
+                                    </div>
+                                    <div class="attr-item">
+                                        <label>Sabedoria (SAB)</label>
+                                        <div class="attr-mod" data-attr="wis">+0</div>
+                                        <input type="number" class="attr-score-input" data-attr="wis" value="10" min="1" max="30">
+                                    </div>
+                                    <div class="attr-item">
+                                        <label>Carisma (CAR)</label>
+                                        <div class="attr-mod" data-attr="cha">+0</div>
+                                        <input type="number" class="attr-score-input" data-attr="cha" value="10" min="1" max="30">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="sheet-section small-mods">
+                                <h4>⚔️ Mods Adicionais</h4>
+                                <hr>
+                                <div class="info-grid">
+                                    <div class="info-field">
+                                        <label>Iniciativa</label>
+                                        <input type="text" id="initiativeModDisplay" value="+0" readonly>
+                                    </div>
+                                    <div class="info-field">
+                                        <label>Proficiência</label>
+                                        <input type="text" id="proficiencyBonusDisplay" value="+2" readonly>
+                                    </div>
+                                    <div class="info-field" style="grid-column: span 2;">
+                                        <label>Inspiração</label>
+                                        <input type="checkbox" style="width: auto; margin-top: 5px;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="combat-stats-wrapper">
+                            <div class="sheet-section combat-stats">
+                                <h4>🛡️ CA e Deslocamento</h4>
+                                <hr>
+                                <div class="stat-block ac-block">
+                                    <div class="stat-main">
+                                        <label>CLASSE DE ARMADURA</label>
+                                        <div class="combat-value-shield">
+                                            <input type="text" id="totalACDisplay" value="10" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="stat-breakdown info-grid ac-grid">
+                                        <div class="info-field"><input type="number" id="baseACInput" value="10" min="0"><h3>Armadura</h3></div>
+                                        <div class="info-field"><input type="text" id="dexModACDisplay" value="+0" readonly><h3>Destreza</h3></div>
+                                        <div class="info-field"><input type="number" id="shieldACInput" value="0" min="0"><h3>Escudo</h3></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="stat-block speed-block">
+                                    <div class="stat-main">
+                                        <hr>
+                                        <label>DESLOCAMENTO (PÉ)</label>
+                                        <div class="combat-value-box">
+                                            <input type="number" id="walkSpeedInput" value="9" min="0" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="stat-breakdown info-grid speed-grid">
+                                        <div class="info-field"><input type="number" id="climbSpeedInput" value="0" min="0"><h3>Escalada</h3></div>
+                                        <div class="info-field"><input type="number" id="flySpeedInput" value="0" min="0"><h3>Voo</h3></div>
+                                        <div class="info-field"><input type="number" id="swimSpeedInput" value="0" min="0"><h3>Natação</h3></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            </div>
+
+                    </div>
+                    
+                    <div class="sheet-grid-footer">
+                        <div class="sheet-section weapons-block">
+                            <h4>⚔️ Armas</h4>
+                            <hr>
+                            <div id="addWeaponFormContainer" class="add-form-container" style="display: none;"> 
+                                <div class="info-field"><label>Nome da Arma</label><input type="text" id="weaponNameInput"></div>
+                                <div class="info-field"><label>Dado de Dano (ex: 1d8)</label><input type="text" id="weaponDamageInput"></div>
+                                <div class="info-field">
+                                    <label>Tipo de Arma</label>
+                                    <select id="weaponTypeSelect">
+                                        <option value="Comum">Comum</option>
+                                        <option value="Leve">Leve</option>
+                                        <option value="Pesada">Pesada</option>
+                                        <option value="Mágica">Mágica</option>
+                                    </select>
+                                </div>
+                                <div class="info-field">
+                                    <label>Descrição</label>
+                                    <textarea id="weaponDescriptionInput" style="width: 100%; min-height: 50px; background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: 6px; padding: 0.5rem; color: var(--text-color);"></textarea>
+                                </div>
+                                <div class="form-actions">
+                                    <button class="add-btn confirm-btn" id="confirmAddWeapon">Adicionar</button>
+                                    <button class="add-btn cancel-btn" id="cancelAddWeapon">Cancelar</button>
+                                </div>
+                            </div>
+                            
+                            <ul class="item-list" id="weaponList"></ul>
+                            <button class="add-btn" data-action="add-weapon" id="openWeaponFormBtn">+ Adicionar Arma</button>
+                        </div>
+
+                        <div class="sheet-section equip-block">
+                            <h4>🛡️ Equipamentos</h4>
+                            <ul class="item-list">
+
+                            </ul>
+                            <button class="add-btn">+ Adicionar Equipamento</button>
+                        </div>
+
+                        <div class="sheet-section backpack-block">
+                            <h4>🎒 Mochila</h4>
+                            <ul class="item-list">
+
+                            </ul>
+                            <button class="add-btn">+ Adicionar Item</button>
+                        </div>
+                    </div>
+                    </div> 
+            </div> 
+            
+            <div id="spellsTab" class="tab-content" style="display: none;">
+                <div class="sheet-section"><h4>✨ Magias</h4><ul class="item-list"></ul><button class="add-btn">+ Adicionar Magia</button></div>
+                <div class="sheet-section"><h4>💪 Habilidades</h4><ul class="item-list"></ul><button class="add-btn">+ Adicionar Habilidade</button></div>
+            </div>
+
+            <div id="historyTab" class="tab-content" style="display: none;">
+                <div class="sheet-section"><h4>👤 Aparência</h4><textarea style="width: 100%; min-height: 100px; background: var(--bg-darker); border: 1px solid var(--border-color); border-radius: 6px; padding: 0.75rem; color: var(--text-color);" placeholder="Descreva a aparência do seu personagem..."></textarea></div>
+                <div class="sheet-section"><h4>📖 Background</h4><textarea style="width: 100%; min-height: 150px; background: var(--bg-darker); border: 1px solid var(--border-color); border-radius: 6px; padding: 0.75rem; color: var(--text-color);" placeholder="Conte a história do seu personagem..."></textarea></div>
+            </div>
+        </div> 
+    </div>
+</body>
+</html>
