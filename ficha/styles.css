@@ -1,0 +1,16 @@
+/* REGRAS ADICIONAIS PARA MODO STANDALONE */
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+    overflow: auto; /* Permite rolagem do corpo se a ficha for muito grande */
+}
+
+#characterSheet.standalone {
+    position: static; /* Remove o posicionamento fixed do VTT */
+    transform: none;
+    max-height: 90vh; /* Ajusta a altura máxima para o modo standalone */
+    margin: auto;
+}
