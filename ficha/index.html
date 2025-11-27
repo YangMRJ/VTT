@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ficha de Personagem</title>
+</head>
+<body>
+
+    <div class="character-sheet">
+        <header class="sheet-header">
+            <div class="header-content">
+                <h1>📄 Ficha de Personagem</h1>
+                <div class="controls">
+                    <button id="minimize-btn" title="Minimizar Ficha">_</button>
+                    <button id="close-btn" title="Fechar Ficha">X</button>
+                </div>
+            </div>
+        </header>
+
+        <section class="sheet-body">
+            <div class="top-group">
+                <div class="main-info-box">
+                    <div class="info-label">Info
+                        <hr>
+                    </div>
+                    <div class="info-inputs">
+                        <div>
+                            <label for="Nome">Nome</label>
+                            <input type="text" name="Nome" id="">
+                        </div>
+                        <div>
+                            <label for="Raça">Raça</label>
+                            <input type="text" name="Raça" id="">
+                        </div>
+                        <div>
+                            <label for="Classe">Classe</label>
+                            <input type="text" name="Classe" id="">
+                        </div>
+                        <div>
+                            <label for="Nivel">Nivel</label>
+                            <input type="text" name="Nivel" id="">
+                        </div>
+                    </div>
+                </div>
+                <div class="hp-box">
+                    <div class="hp-label">Hit Points</div>
+                    
+                    <hr>
+                    
+                    <div class="hp-values-group">
+                        <div class="hp-display">
+                            <label for="HPMaxDisplay">Atual/Max</label>
+                            <input type="text" name="HPMaxDisplay" id="HPMaxDisplay" value="10/10" readonly title="HP Atual/Máximo do Personagem">
+                            <input type="hidden" name="HPMax" id="HPMax" value="10" min="0">
+                        </div>
+
+                        <div class="hp-temp-input">
+                            <label for="HPTemp">Temp</label>
+                            <input type="number" name="HPTemp" id="HPTemp" value="0" min="0" title="HP Temporário (adiciona-se ao HP Atual)">
+                        </div>
+
+                        <div class="hp-dice-input">
+                            <label for="DadoHP">Dado</label>
+                            <div class="custom-select" id="DadoHPSelect">
+                                <div class="select-selected" id="DadoHPSelected" data-value="D8">D8</div>
+                                <div class="select-items select-hide">
+                                    <div data-value="D4">D4</div>
+                                    <div data-value="D6">D6</div>
+                                    <div data-value="D8">D8</div>
+                                    <div data-value="D10">D10</div>
+                                    <div data-value="D12">D12</div>
+                                    <div data-value="D20">D20</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="lower-hpgroup">
+                        <div class="hp-input-group">
+                            <label for="HPCurrentInput">Curar/Dano</label>
+                            <div class="quantity-input">
+                                <button id="decrement-hp" type="button" aria-label="Aplicar Dano (Subtrair HP)">Dano</button>
+                                <input type="number" name="HPCurrentInput" id="HPCurrentInput" value="0" title="Valor a ser Curado ou Aplicado como Dano">
+                                <button id="increment-hp" type="button" aria-label="Aplicar Cura (Adicionar HP)">Cura</button>
+                            </div>
+                        </div>
+
+                        <div class="rest-buttons">
+                            <button id="short-rest-btn" title="Recupera todo o HP do dado de vida."><span>Descanso Curto</span></button>
+                            <button id="long-rest-btn" title="Recupera todo o HP Máximo."><span>Descanso Longo</span></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="middle-group">
+                <div class="attributes-block">
+                    <label for="Atributos">Atributos</label>
+                    <hr>
+                    <div class="skill-block">
+                        <label for="skill-block">Percepção (SAB)</label>
+                    </div>
+                </div>
+                <div class="attack-block">
+                    <label for="Ataques">Ataques</label>
+                    <hr>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
