@@ -688,3 +688,11 @@ input[type="number"] {
     color: var(--text-color);
     margin-bottom: 5px;
 }
+
+.attributes-block label {
+    padding: 0.5rem;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-color);
+    margin-bottom: 5px;
+}
