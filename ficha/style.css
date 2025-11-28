@@ -564,7 +564,7 @@ input[type="number"] {
     font-size: 0.9em;
     font-weight: 500;
     color: var(--text-color);
-    margin: 0;
+    margin-top: -8px;
 }
 
 /* Container do Círculo SVG */
