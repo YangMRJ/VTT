@@ -956,12 +956,11 @@ input[type="number"] {
 }
 
 .middle-group-grid{
+    display: grid;
     grid-template-columns: 1fr 2fr;
     /* Duas linhas: ambas com altura automática */
     grid-template-rows: 270px 270px;
     gap: 1rem;
-    grid-column: 2;
-    grid-row: 1;
 }
 
 .main-combat-block{
