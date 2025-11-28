@@ -773,13 +773,6 @@ input[type="number"] {
     
 }
 
-.small-stats-block .stats-grid hr{
-  min-height: 100%;
-  max-height: 100vh;
-  margin: 0;
-
-}
-
 .ac-group{
     display: flex;
     width: 50%;
