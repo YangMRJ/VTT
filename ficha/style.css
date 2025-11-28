@@ -174,8 +174,12 @@ input[type="number"] {
     transition: border-color 0.2s;
 }
 
-input[type="checkbox"]{
-    background-color: var(--bg-darker);
+input[type="checkbox"] {
+    /* 1. Esconde o checkbox nativo */
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
 }
 
 input[type="text"]:focus, 
