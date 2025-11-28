@@ -697,6 +697,7 @@ input[type="number"] {
     height:270px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.2); 
     grid-column: 1;
+    grid-row: 1;
 }
 
 .attributes-block input{
