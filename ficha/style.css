@@ -692,4 +692,5 @@ input[type="number"] {
 .attribute-label label {
     font-size: 0.9em;
     text-align: center;
+    font-weight: 600;
 }
