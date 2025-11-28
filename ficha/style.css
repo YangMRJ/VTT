@@ -544,7 +544,7 @@ input[type="number"] {
 .skill-block {
     /* Ajuste para acomodar o novo conteúdo */
     width: 90%;
-    margin: 5% auto 10px; /* Centraliza e adiciona margem inferior */
+    margin: 10% auto 10px; /* Centraliza e adiciona margem inferior */
     background: var(--bg-darker); /* Fundo mais escuro */
     border: 1px solid var(--border-color); 
     border-radius: 4px; 
