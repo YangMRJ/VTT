@@ -541,7 +541,7 @@ input[type="number"] {
 
 .middle-group{
     display: flex;
-    justify-content: center;
+    justify-content: left;
     gap: 1rem;
 }
 
