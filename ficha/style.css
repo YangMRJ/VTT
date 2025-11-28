@@ -716,6 +716,11 @@ input[type="number"] {
     grid-template-columns: 1fr 1fr 1fr;
 }
 
+.attribute-input .modifier input{
+    width: 30px;
+    height: 30px;
+}
+
 
 
 
