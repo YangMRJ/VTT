@@ -912,3 +912,13 @@ input[type="number"] {
     width: 30px;
     height: 30px;
 }
+
+.small-stats label[for*="Inspiração"] {
+    /* O label do checkbox precisa de um espaço para o elemento visual */
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Centraliza o texto */
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: 600; /* Mantenha a fonte */
+}
