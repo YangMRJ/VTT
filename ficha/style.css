@@ -934,7 +934,7 @@ input[type="number"] {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    color: var(--text-color);
+    color: var(--bg-darker);
     font-size: 1rem;
     font-weight: bold;
 }
