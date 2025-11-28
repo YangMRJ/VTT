@@ -720,7 +720,7 @@ input[type="number"] {
     font-size: 0.9em;
     width: 55px;
     padding: 0;
-    margin: 10px;
+    margin-bottom: 15px;
     justify-self: center;
     font-weight: 400;
     color: var(--primary-color);
