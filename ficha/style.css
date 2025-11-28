@@ -950,4 +950,5 @@ input[type="number"] {
 
 .middle-group-grid{
     display: flex;
+    gap: 1rem;
 }
