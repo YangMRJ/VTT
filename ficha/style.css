@@ -759,6 +759,7 @@ input[type="number"] {
     background: var(--bg-light); 
     border: 1px solid var(--border-color); 
     border-radius: 8px; 
+    margin-left: -400px;
     height: 270px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.2); 
     grid-column: 2;
@@ -960,7 +961,6 @@ input[type="number"] {
     grid-template-columns: 1fr 2fr;
     /* Duas linhas: ambas com altura automática */
     grid-template-rows: 270px 270px;
-    margin-left: -200px;
     gap: 1rem;
 }
 
