@@ -720,6 +720,7 @@ input[type="number"] {
     width: 30px;
     height: 30px;
     font-size: small;
+    font-weight: 100;
 }
 
 
