@@ -765,6 +765,11 @@ input[type="number"] {
 
 }
 
+.ac-group input{
+    width: 30px;
+    height: 30px;
+}
+
 .ac-group label{
     font-size: 0.9em;
     width: 55px;
