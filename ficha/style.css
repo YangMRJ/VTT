@@ -723,6 +723,13 @@ input[type="number"] {
     color: var(--primary-color);
 }
 
+.attribute-label label:hover {
+    font-size: 0.9em;
+    text-align: center;
+    font-weight: 400;
+    color: var(--primary-color);
+}
+
 .attribute-grid{
     margin-top: -10px;
     display: grid;
