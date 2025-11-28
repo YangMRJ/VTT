@@ -781,8 +781,7 @@ input[type="number"] {
 .ac-head{
     margin-top: 30px;
     margin-left: 10px;
-    border-right: 1px #3b82f6;
-    height: 100%;
+
 }
 
 .ac-head input{
