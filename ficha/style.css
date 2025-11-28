@@ -824,6 +824,7 @@ input[type="number"] {
     width: 50%;
 }
 .speed-head{
+    margin-top: -10px;
     margin-left: 58px;
 }
 
