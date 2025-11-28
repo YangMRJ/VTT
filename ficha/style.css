@@ -128,7 +128,8 @@ hr {
     display: flex;
     flex-direction: column; /* Coloca os elementos um abaixo do outro */
     gap: 20px; /* Espaço entre as linhas de conteúdo */
-    overflow: scroll;
+    overflow-y: auto; /* Adiciona a scrollbar vertical se o conteúdo exceder a altura máxima */
+    overflow-x: hidden;
 }
 
 /* Estilos genéricos para Inputs e Labels */
