@@ -692,6 +692,6 @@ input[type="number"] {
 .attribute-label label {
     font-size: 0.9em;
     text-align: center;
-    font-weight: 300;
+    font-weight: 400;
     color: var(--primary-color);
 }
