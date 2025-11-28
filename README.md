@@ -154,4 +154,4 @@ Os atalhos funcionam na `gameScreen` e permitem acesso rápido a ferramentas e j
 ---
 
 **📅 Última Atualização:** Correção de bugs de arrasto e minimizar janelas
-**🎯 Próximo Foco:** Melhorar estilo da ficha (altura de mods adicionais), adicionar funcionalidades e espaços
+**🎯 Próximo Foco:** Continuar a estilização da ficha, focar em "comabt-block" e "backpack-block"
