@@ -546,7 +546,8 @@ input[type="number"] {
 }
 
 .skills-block{
-    width: 30px;
+    justify-self: left;
+    width: 530px;
     background: var(--bg-light); 
     border: 1px solid var(--border-color); 
     border-radius: 8px; 
