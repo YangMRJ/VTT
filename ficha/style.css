@@ -805,7 +805,8 @@ input[type="number"] {
     font-size: 0.9em;
     width: 55px;
     padding: 0;
-    margin-left: 3px;
+    text-align: center;
+    margin-left: 1px;
     font-weight: 400;
     color: var(--primary-color);
 }
