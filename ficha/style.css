@@ -540,7 +540,7 @@ input[type="number"] {
 }
 
 .middle-group{
-    display: flex;
+    display: flexbox;
     justify-content: center;
     gap: 1rem;
 }
