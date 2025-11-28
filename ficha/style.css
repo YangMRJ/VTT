@@ -773,6 +773,7 @@ input[type="number"] {
 }
 
 .ac-group{
+    display: flex;
     width: 50%;
 }
 .ac-head{
