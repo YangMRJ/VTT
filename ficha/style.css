@@ -778,13 +778,14 @@ input[type="number"] {
     width: 50%;
     border-right: 1px solid var(--border-color); /* Linha divisória vertical */
     padding-right: 15px; /* Espaço entre o conteúdo do AC e a linha */
+    border-top: 100px;
 }
 
 .speed-group{
     display: flex;
     width: 50%;
     padding-left: 15px; /* Espaço entre o conteúdo do Speed e a linha */
-    border-top: 100px;
+
 }
 /* --- FIM ALTERAÇÕES --- */
 
