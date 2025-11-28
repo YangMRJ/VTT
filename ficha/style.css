@@ -779,6 +779,7 @@ input[type="number"] {
     border-right: 1px solid var(--border-color); /* Linha divisória vertical */
     padding-right: 15px; /* Espaço entre o conteúdo do AC e a linha */
     border-top: 100px;
+    border-spacing: 100px;
 }
 
 .speed-group{
