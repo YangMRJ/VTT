@@ -163,8 +163,7 @@ label {
 }
 
 input[type="text"], 
-input[type="number"],
-input[type="checkbox"] {
+input[type="number"] {
     width: 100%;
     padding: 8px 10px;
     background: var(--bg-darker); /* Fundo mais escuro para os inputs */
