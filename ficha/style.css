@@ -726,8 +726,8 @@ input[type="number"] {
 .attribute-label label:hover {
     font-size: 0.9em;
     text-align: center;
-    font-weight: 400;
-    color: var(--primary-color);
+    font-weight: 800;
+    color: var(--text-color);
 }
 
 .attribute-grid{
