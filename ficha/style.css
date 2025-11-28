@@ -926,3 +926,9 @@ input[type="number"] {
     font-size: 0.9em;
     font-weight: 600; /* Mantenha a fonte */
 }
+
+.small-stats input[type="checkbox"]:focus + label::before,
+.small-stats label:hover::before {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(107, 114, 128, 0.5); /* Sombra suave no foco/hover */
+}
