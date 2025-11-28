@@ -787,7 +787,7 @@ input[type="number"] {
 }
 
 .ac-grid{
-    margin-top: -10px;
+    margin-top: 0px;
     display: block;
     grid-template-columns: 1fr 1fr 1fr;
 }
