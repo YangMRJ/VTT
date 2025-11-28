@@ -772,14 +772,14 @@ input[type="number"] {
 }
 
 .ac-grid{
-    width: 30px;
-    height: 30px;
-}
-
-.ac-grid input{
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     justify-content: center;
+}
+
+.ac-grid input{
+    width: 30px;
+    height: 30px;
 }
 
 .ac-group label{
