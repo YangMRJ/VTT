@@ -541,6 +541,7 @@ input[type="number"] {
 
 .middle-group{
     display: flex;
+    flex-direction: column-reverse;
     justify-content: center;
     gap: 1rem;
 }
@@ -954,7 +955,6 @@ input[type="number"] {
 }
 
 .main-combat-block{
-    flex-direction: column;
     width: 300px;
     background: var(--bg-light); 
     border: 1px solid var(--border-color); 
