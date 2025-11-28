@@ -793,7 +793,7 @@ input[type="number"] {
 }
 
 .ac-grid input{
-
+    display: block;
     width: 30px;
     height: 30px;
     justify-self: center;
