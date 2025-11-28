@@ -893,6 +893,7 @@ input[type="number"] {
     height: 30px;
     margin-top: 0px;
     justify-self: center;
+    padding: 0;
 }
 
 .small-stats label{
