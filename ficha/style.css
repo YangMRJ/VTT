@@ -954,7 +954,7 @@ input[type="number"] {
 }
 
 .main-combat-block{
-    margin-left: 100px;
+    flex: 1;
     width: 300px;
     background: var(--bg-light); 
     border: 1px solid var(--border-color); 
