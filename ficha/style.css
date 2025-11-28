@@ -850,6 +850,7 @@ input[type="number"] {
     margin-top: -95px;
     display: block;
     padding-top: 100px;
+    margin-left: 10px;
 }
 
 .speed-grid input{
