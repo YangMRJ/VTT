@@ -767,7 +767,7 @@ input[type="number"] {
 
 .small-stats-block hr{
     rotate: 90deg;
-    left: 300px;
+    top: 300px;
 }
 
 .ac-group{
