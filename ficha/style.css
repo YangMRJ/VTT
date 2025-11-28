@@ -770,7 +770,7 @@ input[type="number"] {
     display: flex; /* Mudança para Flexbox */
     gap: 0px;
     margin-top: -15px;
-    padding: 0 10px; /* Adiciona padding lateral para afastar das bordas */
+    padding: 0 0px; /* Adiciona padding lateral para afastar das bordas */
 }
 
 .ac-group{
