@@ -907,7 +907,7 @@ input[type="number"] {
     display: flexbox;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
+    
 }
 
 .small-stats input[type="checkbox"] {
