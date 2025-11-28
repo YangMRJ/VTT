@@ -589,6 +589,10 @@ input[type="number"] {
     margin-top: -8px;
 }
 
+.skill-block .modifier input{
+    width: 35px;
+}
+
 /* Container do Círculo SVG */
 .proficiency-circle {
     position: absolute;
