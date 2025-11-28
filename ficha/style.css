@@ -924,7 +924,7 @@ input[type="number"] {
 }
 
 .small-stats input[type="checkbox"]:checked {
-    background: var(--primary-color);
+    background: var(--dice-color);
     border-color: var(--primary-color);
 }
 
