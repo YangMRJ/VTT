@@ -765,18 +765,28 @@ input[type="number"] {
 
 }
 
+/* --- ALTERAÇÕES PARA DIVISOR VERTICAL --- */
 .stats-grid{
-    display: grid;
+    display: flex; /* Mudança para Flexbox */
     gap: 0px;
-    grid-template-columns: 100px 150px;
     margin-top: -15px;
-    
+    padding: 0 10px; /* Adiciona padding lateral para afastar das bordas */
 }
 
 .ac-group{
     display: flex;
     width: 50%;
+    border-right: 1px solid var(--border-color); /* Linha divisória vertical */
+    padding-right: 15px; /* Espaço entre o conteúdo do AC e a linha */
 }
+
+.speed-group{
+    display: flex;
+    width: 50%;
+    padding-left: 15px; /* Espaço entre o conteúdo do Speed e a linha */
+}
+/* --- FIM ALTERAÇÕES --- */
+
 
 .ac-head{
     margin-top: 30px;
@@ -825,10 +835,6 @@ input[type="number"] {
     color: var(--primary-color);
 }
 
-.speed-group{
-    display: flex;
-    width: 50%;
-}
 .speed-head{
     margin-top: 30px;
     margin-left: 10px;
