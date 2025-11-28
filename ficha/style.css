@@ -770,18 +770,19 @@ input[type="number"] {
     gap: 0px;
     grid-template-columns: 100px 150px;
     margin-top: -15px;
-        border-right: 1px #3b82f6;
-    height: 100%;
+    
 }
 
 .ac-group{
     display: flex;
     width: 50%;
-
 }
+
 .ac-head{
     margin-top: 30px;
     margin-left: 10px;
+    border-right: 1px #3b82f6;
+    height: 100%;
 }
 
 .ac-head input{
