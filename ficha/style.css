@@ -734,3 +734,11 @@ input[type="number"] {
     height: 150px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.2); 
 }
+
+.small-stats-block label {
+    padding: 0.5rem;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-color);
+
+}
