@@ -827,37 +827,36 @@ input[type="number"] {
     width: 50%;
 }
 .speed-head{
-    margin-left: 58px;
+    margin-top: 30px;
+    margin-left: 10px;
 }
 
 .speed-head input{
-    margin-top: -10px;
     width: 50px;
     height: 50px;
-    justify-self: center;
 }
 
 .speed-grid{
-    margin-top: -10px;
+    margin-top: -95px;
     display: block;
-    grid-template-columns: 1fr 1fr 1fr;
-
+    padding-top: 100px;
 }
 
 .speed-grid input{
-    margin-top: -10px;
     width: 30px;
     height: 30px;
     justify-self: center;
+    font-size: 0.9rem;
+    padding: 0;
+    text-align: center;
 }
 
 .speed-grid label{
     font-size: 0.9em;
     width: 55px;
     padding: 0;
-    margin-top: 10px;
-
     text-align: center;
+    margin-left: -12px;
     font-weight: 400;
     color: var(--primary-color);
 }
