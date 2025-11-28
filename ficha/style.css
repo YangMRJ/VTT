@@ -890,7 +890,6 @@ input[type="number"] {
 .small-stats{
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr;
-    justify-content: cener;
     gap: 0px;
 }
 
