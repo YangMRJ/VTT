@@ -138,6 +138,21 @@ hr {
     padding-right: 8px;            /* Espaço para evitar que o conteúdo cole na scrollbar */
 }
 
+/* --- Estilização da Scrollbar para WebKit (Chrome, Safari, Edge) --- */
+.sheet-body::-webkit-scrollbar {
+    width: 8px; /* Largura da barra de rolagem vertical */
+}
+
+.sheet-body::-webkit-scrollbar-track {
+    background: var(--bg-dark); /* Fundo da trilha da scrollbar */
+}
+
+.sheet-body::-webkit-scrollbar-thumb {
+    background-color: var(--primary-color); /* Cor da "alça" (o polegar) da scrollbar */
+    border-radius: 20px; /* Bordas arredondadas */
+    border: 2px solid var(--bg-dark); /* Espaçamento interno */
+}
+
 /* Estilos genéricos para Inputs e Labels */
 label {
     display: block;
