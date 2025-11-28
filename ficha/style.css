@@ -177,7 +177,7 @@ input[type="number"] {
 input[type="checkbox"] {
     /* 1. Esconde o checkbox nativo */
     position: absolute;
-    opacity: ;
+    opacity: 0;
     width: 0;
     height: 0;
 }
