@@ -717,8 +717,8 @@ input[type="number"] {
 
 
 
-.-block{
-    width: 70%;
+.small-stats-block{
+    width: 30%;
     background: var(--bg-light); 
     border: 1px solid var(--border-color); 
     border-radius: 8px; 
