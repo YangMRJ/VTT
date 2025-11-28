@@ -894,13 +894,10 @@ input[type="number"] {
 }
 
 .small-stats label{
-    align-self: center;
     font-size: 0.7em;
     width: 55px;
     padding: 0;
-    text-align: center;
-    margin-left: px;
-    margin-top: -1;
+    margin-top: -5px;
     font-weight: 400;
     color: var(--primary-color);
 }
