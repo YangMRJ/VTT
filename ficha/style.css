@@ -948,3 +948,6 @@ input[type="number"] {
     font-weight: bold;
 }
 
+.middle-group-grid{
+    display: flex;
+}
