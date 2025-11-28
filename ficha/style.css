@@ -932,3 +932,37 @@ input[type="number"] {
     border-color: var(--primary-color);
     box-shadow: 0 0 0 2px rgba(107, 114, 128, 0.5); /* Sombra suave no foco/hover */
 }
+
+.small-stats input[type="checkbox"] + label::before {
+    content: '';
+    display: inline-block;
+    width: 25px; /* Tamanho do "quadrado" */
+    height: 25px;
+    margin-right: 0px; /* Espaço entre o quadrado e o texto (opcional) */
+    background: var(--bg-darker); /* Cor de fundo igual a outros inputs */
+    border: 1px solid var(--border-color);
+    border-radius: 4px; /* Bordas arredondadas */
+    transition: all 0.2s ease;
+    
+    /* Configuração Flex/Grid para centralizar o checkmark */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    /* MODIFICAÇÃO: Ajustar o input do small-stats para que ele não se sobreponha */
+    position: absolute; /* Para posicionar o quadrado */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, 0%); /* Centraliza horizontalmente e ajusta verticalmente */
+}
+
+/* 3. Estiliza o checkmark quando o checkbox estiver marcado */
+.small-stats input[type="checkbox"]:checked + label::before {
+    background-color: var(--primary-color); /* Cor de fundo quando marcado */
+    border-color: var(--primary-color);
+    /* Adiciona o ícone de checkmark */
+    content: '✔'; 
+    color: var(--text-color); /* Cor do checkmark */
+    font-size: 1.2em;
+    font-weight: bold;
+}
