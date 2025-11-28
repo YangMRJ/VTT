@@ -174,6 +174,10 @@ input[type="number"] {
     transition: border-color 0.2s;
 }
 
+input[type="checkbox"]{
+    background-color: var(--bg-darker);
+}
+
 input[type="text"]:focus, 
 input[type="number"]:focus,
 input[type="checkbox"]:focus {
@@ -890,81 +894,7 @@ input[type="number"] {
     gap: 30px;
 }
 
-/* Estilo para os inputs na seção small-stats */
-.small-stats input[type="number"] {
+.small-stats input{
     width: 30px;
     height: 30px;
-    margin: 0 auto;
 }
-
-/* --- ESTILIZAÇÃO CUSTOMIZADA DO CHECKBOX --- */
-
-/* 1. Esconde o checkbox nativo */
-.small-stats input[type="checkbox"] {
-    position: absolute;
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-/* Ajusta o contêiner do checkbox/label */
-.small-stats > :nth-child(4) { /* O quarto item é o checkbox + label */
-    position: relative; /* Define o contexto de posicionamento para o quadrado */
-}
-
-/* 2. Estiliza o elemento customizado (o quadrado) usando o pseudo-elemento ::before do label */
-.small-stats input[type="checkbox"] + label {
-    /* O label precisa de um espaço para o elemento visual */
-    display: flex;
-    align-items: center;
-    justify-content: center; 
-    cursor: pointer;
-    font-size: 0.9em;
-    font-weight: 600;
-    color: var(--primary-color);
-    text-align: center;
-    position: relative;
-    /* Faz o label ocupar o mesmo espaço que o input number */
-    height: 30px;
-}
-
-.small-stats input[type="checkbox"] + label::before {
-    content: '';
-    display: inline-block;
-    width: 30px; /* Tamanho do "quadrado" */
-    height: 30px;
-    background: var(--bg-darker); /* Cor de fundo igual a outros inputs */
-    border: 1px solid var(--border-color);
-    border-radius: 4px; /* Bordas arredondadas */
-    transition: all 0.2s ease;
-    
-    /* Configuração para posicionar o quadrado no lugar do input */
-    position: absolute; 
-    top: 0; 
-    left: 50%;
-    transform: translateX(-50%); 
-    
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* 3. Estiliza o checkmark quando o checkbox estiver marcado */
-.small-stats input[type="checkbox"]:checked + label::before {
-    background-color: #10b981; /* Verde para marcado */
-    border-color: #10b981;
-    /* Adiciona o ícone de checkmark */
-    content: '✔'; 
-    color: var(--text-color); /* Cor do checkmark */
-    font-size: 1.2em;
-    font-weight: bold;
-}
-
-/* Opcional: Efeito de foco/hover */
-.small-stats input[type="checkbox"]:focus + label::before,
-.small-stats input[type="checkbox"] + label:hover::before {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(107, 114, 128, 0.5); /* Sombra suave no foco/hover */
-}
-
-/* --- FIM ESTILIZAÇÃO CUSTOMIZADA DO CHECKBOX --- */
