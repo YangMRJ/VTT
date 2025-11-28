@@ -901,6 +901,7 @@ input[type="number"] {
     text-align: center;
     margin-left: -12px;
     font-weight: 400;
+    gap: 100px;
     color: var(--primary-color);
 }
 
