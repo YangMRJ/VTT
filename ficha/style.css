@@ -765,3 +765,14 @@ input[type="number"] {
 
 }
 
+.ac-group label{
+    font-size: 0.9em;
+    width: 55px;
+    padding: 0;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    margin-left: 30px;
+    justify-self: center;
+    font-weight: 400;
+    color: var(--primary-color);
+}
