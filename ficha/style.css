@@ -768,14 +768,13 @@ input[type="number"] {
 .stats-grid{
     display: grid;
     grid-template-columns: 1fr 1fr;
-    margin-right: -10px;
 }
 
 .ac-group{
     width: 50%;
 }
 .ac-head{
-    justify-self: center;
+    margin-left: 58px;
 }
 
 .ac-head input{
@@ -787,7 +786,6 @@ input[type="number"] {
 .ac-grid{
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-    justify-content: center;
 }
 
 .ac-grid input{
@@ -822,7 +820,7 @@ input[type="number"] {
     width: 50%;
 }
 .speed-head{
-    justify-self: center;
+    margin-left: 58px;
 }
 
 .speed-head input{
@@ -834,7 +832,7 @@ input[type="number"] {
 .speed-grid{
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-    justify-content: center;
+
 }
 
 .speed-grid input{
