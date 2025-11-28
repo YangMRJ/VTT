@@ -899,7 +899,7 @@ input[type="number"] {
     width: 55px;
     padding: 0;
     text-align: center;
-    margin-left: -12px;
+    margin-left: px;
     margin-top: -1;
     font-weight: 400;
     color: var(--primary-color);
