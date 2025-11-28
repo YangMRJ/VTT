@@ -556,7 +556,6 @@ input[type="number"] {
 
 .skill-item {
     display: flex;
-    align-items: ri;
     gap: 10px;
 }
 
