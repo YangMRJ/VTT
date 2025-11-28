@@ -126,10 +126,16 @@ hr {
 .sheet-body {
     padding: 1rem;
     display: flex;
-    flex-direction: column; /* Coloca os elementos um abaixo do outro */
-    gap: 20px; /* Espaço entre as linhas de conteúdo */
-    overflow-y: auto; /* Adiciona a scrollbar vertical se o conteúdo exceder a altura máxima */
-    overflow-x: hidden;
+    flex-direction: column;
+    gap: 20px;
+
+    /* ALTURA MÁXIMA FIXA para ativar o scroll interno */
+    max-height: calc(100vh - 200px); /* Ajuste o 200px conforme sua necessidade */
+    /* ou use uma altura fixa se preferir: */
+    /* max-height: 700px; */
+
+    overflow-y: auto;         /* Ativa scroll apenas no corpo */
+    padding-right: 8px;            /* Espaço para evitar que o conteúdo cole na scrollbar */
 }
 
 /* Estilos genéricos para Inputs e Labels */
