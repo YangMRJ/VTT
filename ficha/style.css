@@ -565,7 +565,8 @@ input[type="number"] {
 /* --- ESTILOS DO NOVO BLOCO DE PERÍCIA COM CÍRCULO SVG --- */
 
 .skill-block {
-    display:  flex;
+    display:  grid;
+    grid-template-columns: 1fr 1fr;
     /* Ajuste para acomodar o novo conteúdo */
     width: 90%;
     margin: 5% auto 10px; /* Centraliza e adiciona margem inferior */
