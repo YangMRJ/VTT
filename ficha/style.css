@@ -595,6 +595,7 @@ input[type="number"] {
     justify-self: right;
     margin-top: -5px;
     right: 25px;
+    background-color: transparent;
     height: 28px;
     padding: 0;
     text-align: center;
