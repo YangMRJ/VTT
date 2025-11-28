@@ -841,7 +841,7 @@ input[type="number"] {
 
 .speed-grid{
     margin-top: -10px;
-    display: grid;
+    display: block;
     grid-template-columns: 1fr 1fr 1fr;
 
 }
