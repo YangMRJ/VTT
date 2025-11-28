@@ -900,6 +900,7 @@ input[type="number"] {
     padding: 0;
     text-align: center;
     margin-left: -12px;
+    margin-top: -1;
     font-weight: 400;
     color: var(--primary-color);
 }
