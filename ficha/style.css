@@ -545,7 +545,7 @@ input[type="number"] {
     gap: 1rem;
 }
 
-.attributes-block{
+.skills-block{
     width: 30%;
     background: var(--bg-light); 
     border: 1px solid var(--border-color); 
@@ -554,7 +554,7 @@ input[type="number"] {
     box-shadow: 0 4px 6px rgba(0,0,0,0.2); 
 }
 
-.attributes-block label {
+.skills-block label {
     padding: 0.5rem;
     font-size: 1.2rem;
     font-weight: 700;
