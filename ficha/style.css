@@ -550,7 +550,7 @@ input[type="number"] {
     border-radius: 4px; 
     box-shadow: 0 2px 4px rgba(0,0,0,0.2); 
     position: relative; /* Importante para o menu flutuante */
-    padding: 5px;
+    padding: 2px;
     height: 30px; /* Ajusta a altura automaticamente */
 }
 
