@@ -591,6 +591,8 @@ input[type="number"] {
 
 .skill-block .modifier input{
     width: 35px;
+    position: absolute;
+    margin-top: -5;
     height: 35px;
     padding: 0;
     text-align: center;
