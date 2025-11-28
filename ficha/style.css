@@ -697,7 +697,7 @@ input[type="number"] {
     font-size: 1.2rem;
     font-weight: 700;
     color: var(--text-color);
-    margin-bottom: px;
+    margin-top: -10px;
 }
 
 .attribute-label label {
