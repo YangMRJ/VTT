@@ -767,7 +767,9 @@ input[type="number"] {
 }
 
 .small-stats-block hr{
-width: 1px;
+    width: 1px;
+    border: #047857;
+    height: 50px;
 }
 
 .ac-group{
