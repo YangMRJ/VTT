@@ -768,7 +768,7 @@ input[type="number"] {
 .stats-grid{
     display: grid;
     grid-template-columns: 1fr 1fr;
-    left: 100px;
+    margin-left: 200px;
 }
 
 .ac-group{
