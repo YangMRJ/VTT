@@ -573,8 +573,8 @@ input[type="number"] {
     justify-self: right;
     width: 15px; /* Tamanho do círculo */
     height: 15px;
-    margin-top: -10px;
-    margin-right: 50px;
+    margin-top: 0px;
+    margin-left: 50px;
     cursor: pointer;
 }
 
