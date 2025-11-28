@@ -804,7 +804,7 @@ input[type="number"] {
     margin-top: -105px;
     display: block;
     padding-top: 100px;
-    margin-left: 30px;
+    left: 30px;
 }
 
 .ac-grid input{
