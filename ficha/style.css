@@ -566,7 +566,7 @@ input[type="number"] {
 
 .skill-block {
     /* Ajuste para acomodar o novo conteúdo */
-    width: 100%;
+    width: 120%;
     margin: 5% auto 10px; /* Centraliza e adiciona margem inferior */
     background: var(--bg-darker); /* Fundo mais escuro */
     border: 1px solid var(--border-color); 
