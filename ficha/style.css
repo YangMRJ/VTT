@@ -128,6 +128,7 @@ hr {
     display: flex;
     flex-direction: column; /* Coloca os elementos um abaixo do outro */
     gap: 20px; /* Espaço entre as linhas de conteúdo */
+    overflow: scroll;
 }
 
 /* Estilos genéricos para Inputs e Labels */
