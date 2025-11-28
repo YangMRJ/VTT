@@ -767,6 +767,7 @@ input[type="number"] {
 
 .stats-grid{
     display: grid;
+    gap: 50px;
     grid-template-columns: 100px 100px;
     margin-top: -15px;
 }
