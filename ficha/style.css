@@ -686,7 +686,7 @@ input[type="number"] {
     width: 30px;
     height: 30px;
     justify-self: center;
-    background: var(--bg-light); 
+    background: var(--bg-darker); 
     border: 1px solid var(--border-color); 
     border-radius: 8px; 
     box-shadow: 0 4px 6px rgba(0,0,0,0.2); 
