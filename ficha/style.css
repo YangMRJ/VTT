@@ -892,6 +892,7 @@ input[type="number"] {
 .small-stats input{
     width: 50px;
     height: 50px;
+    gap: 100px;
 }
 
 .small-stats label{
@@ -901,7 +902,6 @@ input[type="number"] {
     text-align: center;
     margin-left: -12px;
     font-weight: 400;
-    gap: 100px;
     color: var(--primary-color);
 }
 
