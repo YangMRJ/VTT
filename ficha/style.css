@@ -748,11 +748,6 @@ input[type="number"] {
     text-align: center;
 }
 
-
-
-
-
-
 .small-stats-block{
     width: 620px;
     background: var(--bg-light); 
@@ -769,3 +764,4 @@ input[type="number"] {
     color: var(--text-color);
 
 }
+
