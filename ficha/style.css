@@ -768,7 +768,7 @@ input[type="number"] {
 
 .small-stats-block hr{
     width: 1px;
-    border: #047857;
+    border: 2px #047857;
     height: 50px;
 }
 
