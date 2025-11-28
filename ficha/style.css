@@ -542,6 +542,8 @@ input[type="number"] {
 .middle-group{
     display: grid;
     grid-template-columns: 1fr 2fr;
+    /* Duas linhas: ambas com altura automática */
+    grid-template-rows: auto auto;
     justify-content: ceter;
     gap: 1rem;
 }
