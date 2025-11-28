@@ -920,7 +920,7 @@ input[type="number"] {
 }
 
 .small-stats input[type="checkbox"]:hover {
-    border-color: var(--primary-color);
+    border-color: var(--dice-color);
 }
 
 .small-stats input[type="checkbox"]:checked {
