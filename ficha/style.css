@@ -744,7 +744,7 @@ input[type="number"] {
 
 
 .small-stats-block{
-    width: 50%;
+    width: 400px;
     background: var(--bg-light); 
     border: 1px solid var(--border-color); 
     border-radius: 8px; 
