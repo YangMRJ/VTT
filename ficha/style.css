@@ -718,9 +718,8 @@ input[type="number"] {
 
 .attribute-label label {
     font-size: 0.9em;
-    width: 20px;
+    width:5px;
     justify-self: center;
-    text-align: cen;
     font-weight: 400;
     color: var(--primary-color);
 }
