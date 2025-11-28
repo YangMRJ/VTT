@@ -775,7 +775,7 @@ input[type="number"] {
 .ac-group{
     display: flex;
     width: 50%;
-    border-right: 1px var(--bg-light);
+    border-right: 1px #3b82f6;
     height: 100%;
 }
 .ac-head{
