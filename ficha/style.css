@@ -908,9 +908,13 @@ input[type="number"] {
     color: var(--primary-color);
 }
 
-.small-stats input{
+.small-stats input[type="number"],
+.small-stats input[type="checkbox"] {
+    /* O tamanho original de 30px x 30px se aplica aqui */
     width: 30px;
     height: 30px;
+    margin: 0 auto; /* Centraliza dentro da célula do grid */
+    position: relative; /* Para que o quadrado do checkbox funcione */
 }
 
 .small-stats label[for*="Inspiração"] {
