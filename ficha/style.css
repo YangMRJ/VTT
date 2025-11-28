@@ -891,7 +891,7 @@ input[type="number"] {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr;
     justify-content: center;
-    gap: 30px;
+    gap: 10px;
 }
 
 .small-stats input{
