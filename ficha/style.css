@@ -908,7 +908,8 @@ input[type="number"] {
 
 .small-stats input[type="checkbox"] {
     appearance: none;
-
+    min-width: 40px;
+    min-height: 40px;
     background: var(--bg-darker);
     border: 1px solid var(--border-color);
     border-radius: 4px;
