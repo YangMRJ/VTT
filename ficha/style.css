@@ -789,11 +789,11 @@ input[type="number"] {
 .ac-grid{
     margin-top: 0px;
     display: block;
-    padding-top: -200px;
+    padding-top: 100px;
 }
 
 .ac-grid input{
-    margin-top: -10px;
+
     width: 30px;
     height: 30px;
     justify-self: center;
