@@ -540,8 +540,8 @@ input[type="number"] {
 }
 
 .middle-group{
-    display: flex;
-    flex-direction: row;
+    display: grid;
+
     justify-content: center;
     gap: 1rem;
 }
