@@ -593,12 +593,12 @@ input[type="number"] {
 
 /* Container do Círculo SVG */
 .proficiency-circle {
-    position: relative;
+    position: absolute;
     justify-self: right;
     width: 15px; /* Tamanho do círculo */
     height: 15px;
     margin-top: 2px;
-
+    margin-left: -50px;
     cursor: pointer;
 }
 
