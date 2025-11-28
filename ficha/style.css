@@ -824,11 +824,11 @@ input[type="number"] {
     width: 50%;
 }
 .speed-head{
-    margin-top: -10px;
     margin-left: 58px;
 }
 
 .speed-head input{
+    margin-top: -10px;
     width: 50px;
     height: 50px;
     justify-self: center;
