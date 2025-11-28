@@ -539,20 +539,113 @@ input[type="number"] {
     margin-bottom: 5px;
 }
 
-.skill-block{
+/* --- ESTILOS DO NOVO BLOCO DE PERÍCIA COM CÍRCULO SVG --- */
+
+.skill-block {
+    /* Ajuste para acomodar o novo conteúdo */
     width: 90%;
-    height: 20%;
-    margin-left: 5%;
-    background: var(--bg-dark); 
+    margin: 5% auto 10px; /* Centraliza e adiciona margem inferior */
+    background: var(--bg-darker); /* Fundo mais escuro */
     border: 1px solid var(--border-color); 
-    border-radius: 8px; 
-    box-shadow: 0 4px 6px rgba(0,0,0,0.2); 
+    border-radius: 4px; 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2); 
+    position: relative; /* Importante para o menu flutuante */
+    padding: 5px;
+    height: auto; /* Ajusta a altura automaticamente */
 }
-.skill-block label{
-    margin-top: -2px;
-    font-size: 0.7rem;
-    font-weight: normal;
+
+.skill-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
+
+.skill-info label {
+    font-size: 0.9em;
+    font-weight: 500;
+    color: var(--text-color);
+    margin: 0;
+}
+
+/* Container do Círculo SVG */
+.proficiency-circle {
+    position: relative;
+    width: 30px; /* Tamanho do círculo */
+    height: 30px;
+    cursor: pointer;
+}
+
+.proficiency-circle svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* O preenchimento interno do círculo */
+.proficiency-circle .circle-fill {
+    /* Cor de preenchimento base (azul claro da imagem) */
+    fill: #a0c4ff; 
+    transition: fill 0.3s, stroke 0.3s;
+}
+
+/* 1. Sem Treino (Vazio - Default) */
+.proficiency-circle[data-proficiency="none"] .circle-fill {
+    fill: transparent; /* Apenas a borda fica visível */
+    stroke: var(--primary-color);
+}
+
+/* 2. Proficiente (Metade Preenchido) */
+.proficiency-circle[data-proficiency="half"] .circle-fill {
+    fill: #60a5fa; /* Cor mais escura para metade */
+    clip-path: inset(50% 0 0 0); /* Corta a metade superior */
+    stroke: var(--dice-color);
+}
+
+/* 3. Expertise (Totalmente Preenchido) */
+.proficiency-circle[data-proficiency="full"] .circle-fill {
+    fill: #3b82f6; /* Cor escura para preenchido */
+    clip-path: none; /* Sem corte */
+    stroke: var(--dice-color);
+}
+
+/* O Botão escondido que age como "alça" para o menu */
+.proficiency-btn {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+/* Menu de Proficiência (Dropdown) */
+.proficiency-menu {
+    position: absolute;
+    background-color: var(--bg-darker);
+    border: 1px solid var(--border-color);
+    top: 100%; /* Posiciona abaixo do skill-block */
+    left: 0;
+    z-index: 100;
+    border-radius: 4px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    min-width: 150px;
+    margin-top: 5px;
+}
+
+.proficiency-menu div {
+    color: var(--text-color);
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background-color 0.2s;
+}
+
+.proficiency-menu div:hover {
+    background-color: var(--bg-light);
+}
+
 
 .attack-block{
     width: 70%;
