@@ -894,6 +894,7 @@ input[type="number"] {
 }
 
 .small-stats label{
+    text-align: center;
     font-size: 0.7em;
     width: 55px;
     padding: 0;
