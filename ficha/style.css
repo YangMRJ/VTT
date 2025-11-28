@@ -960,6 +960,7 @@ input[type="number"] {
     grid-template-columns: 1fr 2fr;
     /* Duas linhas: ambas com altura automática */
     grid-template-rows: 270px 270px;
+    margin-left: -200px;
     gap: 1rem;
 }
 
