@@ -284,4 +284,60 @@ document.addEventListener('DOMContentLoaded', () => {
     // Fecha o dropdown se o usuário clicar fora dele
     document.addEventListener('click', closeAllSelect);
 
+    // ----------------------------------------------------------------------
+    // --- LÓGICA DE PROFICIÊNCIA DE PERÍCIAS (SKILL PROFICIENCY) ---
+    // ----------------------------------------------------------------------
+
+    const proficiencyItems = document.querySelectorAll('.skill-item');
+    const proficiencyMenus = document.querySelectorAll('.proficiency-menu');
+
+    // Função para fechar todos os menus de proficiência abertos
+    const closeAllProficiencyMenus = (exceptMenu) => {
+        proficiencyMenus.forEach(menu => {
+            if (menu !== exceptMenu) {
+                menu.classList.add('select-hide');
+            }
+        });
+    }
+
+    proficiencyItems.forEach(item => {
+        const circleContainer = item.querySelector('.proficiency-circle');
+        const proficiencyBtn = item.querySelector('.proficiency-btn');
+        const menu = item.nextElementSibling; // Assume que o menu está logo após o skill-item
+
+        // Lógica para abrir/fechar o menu ao clicar no botão/círculo
+        proficiencyBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            
+            // Fecha outros menus antes de abrir este
+            closeAllProficiencyMenus(menu);
+
+            // Alterna a visibilidade do menu
+            menu.classList.toggle('select-hide');
+        });
+
+        // Lógica para selecionar uma opção do menu
+        menu.querySelectorAll('div').forEach(option => {
+            option.addEventListener('click', (e) => {
+                const newProficiency = e.target.getAttribute('data-value');
+                
+                // 1. Atualiza o atributo de dado do círculo
+                circleContainer.setAttribute('data-proficiency', newProficiency);
+                
+                // 2. Fecha o menu
+                menu.classList.add('select-hide');
+            });
+        });
+        
+        // Impede que o clique no menu feche-o (pelo handler de 'document')
+        menu.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+    });
+
+    // Fecha o menu de proficiência se o usuário clicar em qualquer outro lugar
+    document.addEventListener('click', () => {
+        closeAllProficiencyMenus(null);
+    });
+
 });
