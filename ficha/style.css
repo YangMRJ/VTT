@@ -687,7 +687,7 @@ input[type="number"] {
 
 
 .attributes-block{
-    width: 450px;
+    width: 250px;
     background: var(--bg-light); 
     border: 1px solid var(--border-color); 
     border-radius: 8px; 
