@@ -768,6 +768,9 @@ input[type="number"] {
 .ac-group{
     width: 50%;
 }
+.ac-head{
+    justify-self: center;
+}
 
 .ac-head input{
     width: 50px;
