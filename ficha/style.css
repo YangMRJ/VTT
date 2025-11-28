@@ -651,7 +651,7 @@ input[type="number"] {
     background-color: var(--bg-darker);
     border: 1px solid var(--border-color);
     top: 100%; /* Posiciona abaixo do skill-block */
-    left: 200px;
+    left: 120px;
     z-index: 100;
     border-radius: 4px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
