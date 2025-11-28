@@ -765,6 +765,10 @@ input[type="number"] {
 
 }
 
+.small-stats-block hr{
+    rotate: 90deg;
+}
+
 .ac-group{
     width: 50%;
 }
