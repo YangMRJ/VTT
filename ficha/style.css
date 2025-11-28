@@ -707,8 +707,8 @@ input[type="number"] {
     color: var(--primary-color);
 }
 
-.attributes-grid{
+.attribute-grid{
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-    gap: 10px;
+    gap: 1px;
 }
