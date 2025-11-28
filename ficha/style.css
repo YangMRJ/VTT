@@ -683,6 +683,7 @@ input[type="number"] {
 
 .attributes-block input{
     width: 30px;
+    height: width;
     background: var(--bg-light); 
     border: 1px solid var(--border-color); 
     border-radius: 8px; 
