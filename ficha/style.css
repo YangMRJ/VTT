@@ -749,8 +749,6 @@ input[type="number"] {
 }
 
 .small-stats-block{
-    display: grid;
-    grid-template-columns: 1fr 1fr;
     width: 620px;
     background: var(--bg-light); 
     border: 1px solid var(--border-color); 
@@ -765,6 +763,12 @@ input[type="number"] {
     font-weight: 700;
     color: var(--text-color);
 
+}
+
+.stats-grid{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    margin-left: 100px;
 }
 
 .ac-group{
