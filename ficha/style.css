@@ -174,17 +174,8 @@ input[type="number"] {
     transition: border-color 0.2s;
 }
 
-input[type="checkbox"] {
-    /* 1. Esconde o checkbox nativo */
-    position: absolute;
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
 input[type="text"]:focus, 
-input[type="number"]:focus,
-input[type="checkbox"]:focus {
+input[type="number"]:focus {
     outline: none;
     border-color: var(--primary-color); /* Destaque ao focar */
 }
@@ -908,61 +899,42 @@ input[type="number"] {
     color: var(--primary-color);
 }
 
-.small-stats input[type="number"],
-.small-stats input[type="checkbox"] {
-    /* O tamanho original de 30px x 30px se aplica aqui */
-    width: 30px;
-    height: 30px;
-    margin: 0 auto; /* Centraliza dentro da célula do grid */
-    position: relative; /* Para que o quadrado do checkbox funcione */
-}
-
-.small-stats label[for*="Inspiração"] {
-    /* O label do checkbox precisa de um espaço para o elemento visual */
-    display: flex;
-    align-items: center;
-    justify-content: center; /* Centraliza o texto */
-    cursor: pointer;
-    font-size: 0.9em;
-    font-weight: 600; /* Mantenha a fonte */
-}
-
-.small-stats input[type="checkbox"]:focus + label::before,
-.small-stats label:hover::before {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(107, 114, 128, 0.5); /* Sombra suave no foco/hover */
-}
-
-.small-stats input[type="checkbox"] + label::before {
-    content: '';
-    display: inline-block;
-    width: 25px; /* Tamanho do "quadrado" */
-    height: 25px;
-    margin-right: 0px; /* Espaço entre o quadrado e o texto (opcional) */
-    background: var(--bg-darker); /* Cor de fundo igual a outros inputs */
-    border: 1px solid var(--border-color);
-    border-radius: 4px; /* Bordas arredondadas */
-    transition: all 0.2s ease;
-    
-    /* Configuração Flex/Grid para centralizar o checkmark */
-    display: flex;
+.small-stats:has(input[type="checkbox"]) {
+    display: flexbox;
     align-items: center;
     justify-content: center;
-    
-    /* MODIFICAÇÃO: Ajustar o input do small-stats para que ele não se sobreponha */
-    position: absolute; /* Para posicionar o quadrado */
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, 0%); /* Centraliza horizontalmente e ajusta verticalmente */
+    gap: 0.5rem;
 }
 
-/* 3. Estiliza o checkmark quando o checkbox estiver marcado */
-.small-stats input[type="checkbox"]:checked + label::before {
-    background-color: var(--primary-color); /* Cor de fundo quando marcado */
+.small-stats input[type="checkbox"] {
+    appearance: none;
+    min-width: 40px;
+    min-height: 40px;
+    background: var(--bg-darker);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+    margin-top: 0;
+}
+
+.small-stats input[type="checkbox"]:hover {
     border-color: var(--primary-color);
-    /* Adiciona o ícone de checkmark */
-    content: '✔'; 
-    color: var(--text-color); /* Cor do checkmark */
-    font-size: 1.2em;
+}
+
+.small-stats input[type="checkbox"]:checked {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.small-stats input[type="checkbox"]:checked::after {
+    content: ''; 
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--text-color);
+    font-size: 1rem;
     font-weight: bold;
 }
