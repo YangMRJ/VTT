@@ -971,7 +971,7 @@ input[type="number"] {
     background: var(--bg-light); 
     border: 1px solid var(--border-color); 
     border-radius: 8px; 
-    height: 270px;
+    height: 275px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.2);
     grid-column: 1;
     grid-row: 2;    
