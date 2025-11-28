@@ -543,7 +543,7 @@ input[type="number"] {
     display: grid;
     grid-template-columns: 1fr 2fr;
     /* Duas linhas: ambas com altura automática */
-    grid-template-rows: auto auto;
+    grid-template-rows: 500px auto;
     justify-content: ceter;
     gap: 1rem;
 }
