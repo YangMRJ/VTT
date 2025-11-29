@@ -598,7 +598,7 @@ input[type="number"] {
     position: absolute;
     justify-self: right;
     margin-top: -5px;
-    right: 25px;
+    right: 30px;
     background-color: transparent;
     height: 28px;
     padding: 0;
@@ -712,7 +712,7 @@ input[type="number"] {
     margin-top: -10px;
     font-size: 1.5rem;
     font-weight: bolder;
-    margin-right: 7px;
+    margin-left: 8px;
 }
 
 .attributes-block label {
@@ -729,7 +729,7 @@ input[type="number"] {
     padding: 0;
     margin-top: 10px;
     margin-bottom: 10px;
-    margin-left: 30px;
+    margin-left: 27px;
     justify-self: center;
     font-weight: 400;
     color: var(--primary-color);
@@ -753,6 +753,7 @@ input[type="number"] {
     font-weight: 700;
     padding: 0;
     text-align: center;
+    margin-left: 22px;
 }
 
 .small-stats-block{
@@ -801,7 +802,7 @@ input[type="number"] {
 
 .ac-head{
     margin-top: 20px;
-    margin-left: 10px;
+    margin-left: 6px;
 
 }
 
@@ -850,7 +851,7 @@ input[type="number"] {
 
 .speed-head{
     margin-top: 30px;
-    margin-left: 10px;
+    margin-left: 6px;
 }
 
 .speed-head input{
@@ -962,29 +963,54 @@ input[type="number"] {
     display: grid;
     grid-template-columns: 1fr 2fr;
     /* Duas linhas: ambas com altura automática */
-    grid-template-rows: 270px 270px;
+    grid-template-rows: auto auto;
     gap: 1rem;
 }
 
-.main-combat-block{
+.main-block {
     width: 565px;
     background: var(--bg-light); 
     border: 1px solid var(--border-color); 
     border-radius: 8px; 
-    height: 275px;
+    height: 564px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.2);
     grid-column: 1;
     grid-row: 2;    
 }
 
-.backpack-block {
-    width: 565px;
-    background: var(--bg-light); 
-    border: 1px solid var(--border-color); 
-    border-radius: 8px; 
-    height: 275px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-    grid-column: 1;
-    grid-row: 3; 
-    margin-top: 0.15rem;
+.main-buttons{
+    display: inline-block;
+    margin: 10px;
+}
+
+.main-buttons button{
+    background-color: transparent;
+    border: none;
+    font-size: 1rem;
+    font-weight: 400;
+    color: var(--primary-color);
+    cursor: pointer;
+    margin-left: 25px;
+}
+
+.main-buttons button:hover{
+    color: var(--text-color);
+}
+
+.add-button button{
+    background-color: var(--bg-darker);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 1rem;
+    font-weight: 400;
+    width: 90%;
+    height: 30px;
+    color: var(--primary-color);
+    cursor: pointer;
+    margin-left: 25px;
+}
+
+.add-button button:hover{
+    background-color: var(--dice-color);
+    color: var(--text-color);
 }
