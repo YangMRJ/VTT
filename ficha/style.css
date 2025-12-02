@@ -688,71 +688,7 @@ input[type="number"] {
     background-color: var(--bg-light);
 }
 
-
-.attributes-block{
-    width: 250px;
-    background: var(--bg-light); 
-    border: 1px solid var(--border-color); 
-    border-radius: 8px; 
-    height:270px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.2); 
-    grid-column: 1;
-    grid-row: 1;
-}
-
-.attributes-block input{
-    display: flex;
-    width: 60px;
-    height: 60px;
-    justify-self: center;
-    background: var(--bg-darker); 
-    border: 1px solid var(--border-color); 
-    border-radius: 8px; 
-    box-shadow: 0 4px 6px rgba(0,0,0,0.2); 
-    margin-top: -10px;
-    font-size: 1.5rem;
-    font-weight: bolder;
-}
-
-.attributes-block label {
-    padding: 0.5rem;
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: var(--text-color);
-
-}
-
-.attribute-label label {
-    font-size: 0.9em;
-    width: 55px;
-    padding: 0;
-    margin-top: 10px;
-    margin-bottom: 10px;
-    margin-left: 25%;
-    justify-self: center;
-    font-weight: 400;
-    color: var(--primary-color);
-}
-
-.attribute-label label:hover {
-    font-weight: 600;
-    color: var(--text-color);
-}
-
-.attribute-grid{
-    margin-top: -10px;
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-}
-
-.attribute-input .modifier input{
-    width: 35px;
-    height: 35px;
-    font-size: 1rem;
-    font-weight: 700;
-    padding: 0;
-    text-align: center;
-}
+.attributes.grid
 
 .small-stats-block{
     width: 300px;
