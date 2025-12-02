@@ -741,6 +741,7 @@ input[type="number"] {
     grid-row: 3;
     width: 40px;
     height: 40px;
+    margin-top: -10%;
     margin-left: 17%;
 }
 
