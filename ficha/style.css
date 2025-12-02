@@ -738,6 +738,8 @@ input[type="number"] {
 
 .attribute-input .modifier input{
     grid-row: 3;
+    width: 30px;
+    height: 30px;
 }
 
 .small-stats-block{
