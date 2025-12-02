@@ -724,6 +724,7 @@ input[type="number"] {
     font-size: 0.9em;
     font-weight: 400;
     color: var(--primary-color);
+    grid-row: 1;
 }
 
 .attribute-label label:hover {
