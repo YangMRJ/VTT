@@ -739,6 +739,10 @@ input[type="number"] {
     justify-items: center;
 }
 
+.attribute-input .modifier{
+    margin-top: 50%;
+}
+
 .attribute-input .modifier input{
     grid-row: 3;
     width: 35px;
