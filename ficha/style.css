@@ -748,6 +748,7 @@ input[type="number"] {
     padding: 0;
     font-weight: 400;
     font-size: 1rem;
+    text-align: center;
 }
 
 .small-stats-block{
