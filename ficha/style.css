@@ -724,11 +724,6 @@ input[type="number"] {
 
 .attribute-label label {
     font-size: 0.9em;
-
-
-    margin-bottom: 10px;
-    margin-left: 25%;
-    justify-self: center;
     font-weight: 400;
     color: var(--primary-color);
 }
