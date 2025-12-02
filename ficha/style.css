@@ -724,7 +724,7 @@ input[type="number"] {
     font-weight: 400;
     color: var(--primary-color);
     grid-row: 1;
-    margin-left: 25%;
+    margin-left: 30%;
     padding: 0;
 }
 
