@@ -740,14 +740,13 @@ input[type="number"] {
 }
 
 .attribute-input .modifier{
-    margin-top: -10%;
+    margin-top: -20%;
 }
 
 .attribute-input .modifier input{
     grid-row: 3;
     width: 35px;
     height: 35px;
-    margin-top: -100%;
     margin-left: 22%;
     padding: 0;
     font-weight: 400;
