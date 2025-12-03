@@ -134,7 +134,7 @@ hr {
     /* ou use uma altura fixa se preferir: */
     /* max-height: 700px; */
 
-    overflow-y: auto;         /* Ativa scroll apenas no corpo */
+    overflow-x: auto;         /* Ativa scroll apenas no corpo */
     padding-right: 8px;            /* Espaço para evitar que o conteúdo cole na scrollbar */
 }
 
