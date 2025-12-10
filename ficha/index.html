@@ -613,24 +613,50 @@
                         </div>
                     </div>
                     <div class="main-block">
-                        <div class="main-buttons">
-                            <button class="main-header-button">Armas</button>
-                        </div>
-                        <div class="main-buttons">
-                            <button class="main-header-button">Magias</button>
-                        </div>
-                        <div class="main-buttons">
-                            <button class="main-header-button">Traços</button>
-                        </div>
-                        <div class="main-buttons">
-                            <button class="main-header-button">Proficiências</button>
-                        </div>
-                        <div class="main-buttons">
-                            <button class="main-header-button">Inventario</button>
+                        <div class="main-buttons-container">
+                            <div class="main-buttons">
+                                <button class="main-header-button active" data-tab="armas" id="btn-armas">Armas</button>
+                            </div>
+                            <div class="main-buttons">
+                                <button class="main-header-button" data-tab="magias" id="btn-magias">Magias</button>
+                            </div>
+                            <div class="main-buttons">
+                                <button class="main-header-button" data-tab="tracos" id="btn-tracos">Traços</button>
+                            </div>
+                            <div class="main-buttons">
+                                <button class="main-header-button" data-tab="proficiencias" id="btn-proficiencias">Proficiências</button>
+                            </div>
+                            <div class="main-buttons">
+                                <button class="main-header-button" data-tab="inventario" id="btn-inventario">Inventario</button>
+                            </div>
                         </div>
                         <hr>
+                        
+                        <div class="main-content-area">
+                            <div id="tab-armas" class="tab-content active">
+                                <p class="placeholder-text">Adicione suas armas ou ataques.</p>
+                            </div>
+                            
+                            <div id="tab-magias" class="tab-content">
+                                <p class="placeholder-text">Adicione suas magias.</p>
+                            </div>
+                            
+                            <div id="tab-tracos" class="tab-content">
+                                <p class="placeholder-text">Adicione traços de raça ou classe.</p>
+                            </div>
+                            
+                            <div id="tab-proficiencias" class="tab-content">
+                                <p class="placeholder-text">Adicione proficiências em ferramentas e idiomas.</p>
+                            </div>
+    
+                            <div id="tab-inventario" class="tab-content">
+                                <p class="placeholder-text">Adicione itens e moedas.</p>
+                            </div>
+    
+                        </div>
+    
                         <div class="add-button">
-                            <button>ADICIONAR</button>
+                            <button id="add-item-btn">ADICIONAR</button>
                         </div>
                     </div>
                 </div>
