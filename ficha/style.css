@@ -164,7 +164,8 @@ label {
 
 input[type="text"], 
 input[type="number"],
-textarea {
+textarea,
+select { /* Adicionado SELECT */
     width: 100%;
     padding: 8px 10px;
     background: var(--bg-darker); /* Fundo mais escuro para os inputs */
@@ -178,7 +179,8 @@ textarea {
 
 input[type="text"]:focus, 
 input[type="number"]:focus,
-textarea:focus {
+textarea:focus,
+select:focus {
     outline: none;
     border-color: var(--primary-color); /* Destaque ao focar */
 }
@@ -1077,39 +1079,57 @@ input[type="number"] {
     padding: 20px 0;
 }
 
-/* --- ESTILOS DE ITENS DINÂMICOS --- */
+/* --- ESTILOS DE ITENS DINÂMICOS (ARMAS) --- */
 
-.weapon-entry, .generic-entry {
-    background: var(--bg-darker);
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    padding: 10px;
-    margin-bottom: 10px;
+#weapon-list-container {
+    padding-top: 5px;
+}
+
+.weapon-entry {
     display: flex;
     justify-content: space-between;
     align-items: center;
-}
-
-.weapon-details input[type="text"] {
-    width: 120px;
-    margin-right: 10px;
-    padding: 4px 8px;
+    background: var(--bg-darker);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 5px 10px; 
+    margin-bottom: 5px;
     font-size: 0.9em;
 }
 
-.generic-entry .generic-details {
+.weapon-entry .weapon-details {
+    display: flex;
+    gap: 5px;
     flex-grow: 1;
-    margin-right: 10px;
+    align-items: center;
 }
 
-.generic-entry input[type="text"],
-.generic-entry textarea {
-    width: 100%;
-    padding: 4px 8px;
+.weapon-entry .weapon-details > * {
+    padding: 4px;
     font-size: 0.9em;
+    height: 30px;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-dark);
+    color: var(--text-color);
 }
 
-.delete-btn {
+/* Configurações específicas de largura para inputs de arma */
+.weapon-entry .weapon-details select[name="weapon-name"] {
+    width: 140px; 
+}
+
+.weapon-entry .weapon-details input[name="weapon-dano"] {
+    width: 80px; 
+}
+
+.weapon-entry .weapon-details input[name="weapon-props"] {
+    width: 230px; 
+}
+
+.weapon-entry .delete-btn {
+    margin-left: 10px;
+    min-width: 50px;
+    height: 30px;
     background: #ef4444;
     color: var(--text-color);
     border: none;
@@ -1120,53 +1140,31 @@ input[type="number"] {
     font-weight: bold;
 }
 
-.delete-btn:hover {
+.weapon-entry .delete-btn:hover {
     background: #b91c1c;
 }
 
-/* --- ESTILOS DE TABELA DE ARMAS (Nova seção) --- */
+/* --- ESTILOS DE ITENS GENÉRICOS --- */
 
-#tab-armas {
-    /* Permite rolagem horizontal se a tabela for muito larga */
-    overflow-x: auto; 
+.generic-entry {
+    background: var(--bg-darker);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-.weapon-table {
+.generic-entry .generic-details {
+    flex-grow: 1;
+    margin-right: 10px;
+}
+
+.generic-entry .generic-details input[type="text"],
+.generic-entry .generic-details textarea {
     width: 100%;
-    border-collapse: collapse;
+    padding: 4px 8px;
     font-size: 0.9em;
-    min-width: 500px; /* Garante que a tabela tenha uma largura mínima */
-}
-
-.weapon-table th, .weapon-table td {
-    padding: 8px 10px;
-    text-align: left;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.weapon-table th {
-    background-color: var(--bg-light);
-    color: var(--primary-color);
-    font-weight: 600;
-    text-transform: uppercase;
-    position: sticky;
-    top: 0; /* Fixa o cabeçalho na rolagem interna da aba */
-}
-
-.weapon-table tr:hover td {
-    background-color: var(--bg-darker);
-}
-
-.weapon-table .maestria {
-    color: var(--dice-color);
-    font-weight: bold;
-}
-
-.weapon-table .dano {
-    font-weight: 600;
-}
-
-.weapon-table .propriedades {
-    font-size: 0.8em;
-    color: var(--primary-color);
 }

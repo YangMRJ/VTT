@@ -1,4 +1,4 @@
-// script.js (Código Completo Atualizado: Armas se tornam itens adicionáveis)
+// script.js (Código Completo Atualizado com Seleção de Armas e Preenchimento Automático)
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- LÓGICA DE UTILIDADE DA FICHA ---
@@ -173,9 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.addEventListener('click', (e) => {
-        if (!e.target.closest('.custom-select')) {
-            closeAllSelect({ nextSibling: null });
-        }
+        if (!e.target.closest('.custom-select')) { closeAllSelect({ nextSibling: null }); }
     });
 
     // ----------------------------------------------------------------------
@@ -291,13 +289,12 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('click', () => { closeAllProficiencyMenus(null); });
     updateAllSkillModifiers();
 
+
     // ----------------------------------------------------------------------
     // --- DADOS DA LISTA DE ARMAS D&D 2024 ---
     // ----------------------------------------------------------------------
-
-    // Lista de armas agora acessível globalmente
     const weaponData = [
-        // Simples Corpo-a-Corpo
+        // O valor do 'value' no dropdown será o índice do array, então a ordem é importante
         { nome: 'Adaga', dano: '1d4 P', maestria: 'Incissão (Nick)', propriedades: 'Ágil, Leve, Arremesso (6/18)' },
         { nome: 'Azagaia', dano: '1d6 P', maestria: 'Lentidão (Slow)', propriedades: 'Arremesso (9/36)' },
         { nome: 'Cajado (Bordão)', dano: '1d6 E', maestria: 'Derrubar (Topple)', propriedades: 'Versátil (1d8)' },
@@ -308,12 +305,10 @@ document.addEventListener('DOMContentLoaded', () => {
         { nome: 'Machadinha', dano: '1d6 C', maestria: 'Irritar (Vex)', propriedades: 'Leve, Arremesso (6/18)' },
         { nome: 'Martelo Leve', dano: '1d4 E', maestria: 'Incissão (Nick)', propriedades: 'Leve, Arremesso (6/18)' },
         { nome: 'Porrete', dano: '1d4 E', maestria: 'Lentidão (Slow)', propriedades: 'Leve' },
-        // Simples à Distância
         { nome: 'Arco Curto', dano: '1d6 P', maestria: 'Irritar (Vex)', propriedades: 'Munição, Duas Mãos, Alcance (24/96)' },
         { nome: 'Besta Leve', dano: '1d8 P', maestria: 'Lentidão (Slow)', propriedades: 'Munição, Recarga, Duas Mãos, Alcance (24/96)' },
         { nome: 'Dardo', dano: '1d4 P', maestria: 'Irritar (Vex)', propriedades: 'Ágil (Finesse), Arremesso (6/18)' },
         { nome: 'Funda', dano: '1d4 E', maestria: 'Lentidão (Slow)', propriedades: 'Munição, Alcance (9/36)' },
-        // Marciais Corpo-a-Corpo
         { nome: 'Alabarda', dano: '1d10 C', maestria: 'Trespassar (Cleave)', propriedades: 'Pesada, Alcance (Reach), Duas Mãos' },
         { nome: 'Chicote', dano: '1d4 C', maestria: 'Lentidão (Slow)', propriedades: 'Ágil (Finesse), Alcance (Reach)' },
         { nome: 'Cimitarra', dano: '1d6 C', maestria: 'Incissão (Nick)', propriedades: 'Ágil (Finesse), Leve' },
@@ -332,44 +327,78 @@ document.addEventListener('DOMContentLoaded', () => {
         { nome: 'Picareta de Guerra', dano: '1d8 P', maestria: 'Esgotar (Sap)', propriedades: '-' },
         { nome: 'Pique', dano: '1d10 P', maestria: 'Empurrão (Push)', propriedades: 'Pesada, Alcance (Reach), Duas Mãos' },
         { nome: 'Tridente', dano: '1d6 P', maestria: 'Derrubar (Topple)', propriedades: 'Arremesso (6/18), Versátil (1d8)' },
-        // Marciais à Distância
         { nome: 'Arco Longo', dano: '1d8 P', maestria: 'Irritar (Vex)', propriedades: 'Munição, Pesada, Duas Mãos, Alcance (45/180)' },
         { nome: 'Besta de Mão', dano: '1d6 P', maestria: 'Irritar (Vex)', propriedades: 'Munição, Leve, Recarga, Alcance (9/36)' },
         { nome: 'Besta Pesada', dano: '1d10 P', maestria: 'Lentidão (Slow)', propriedades: 'Munição, Pesada, Recarga, Duas Mãos, Alcance (30/120)' },
         { nome: 'Rede', dano: '--', maestria: 'Derrubar (Topple)', propriedades: 'Arremesso (1,5/4,5), Especial' },
         { nome: 'Zarabatana', dano: '1 P', maestria: 'Lentidão (Slow)', propriedades: 'Munição, Recarga, Alcance (7,5/30)' },
-        // Armas de Fogo (Opcional)
         { nome: 'Mosquete', dano: '1d12 P', maestria: 'Lentidão (Slow)', propriedades: 'Carregamento, Duas Mãos, Alcance (12/36)' },
         { nome: 'Pistola', dano: '1d10 P', maestria: 'Irritar (Vex)', propriedades: 'Carregamento, Alcance (9/27)' },
     ];
     
-    // Função para renderizar a mensagem padrão (Placeholder) na aba de armas
-    const renderWeaponPlaceholder = () => {
-        const tabArmas = document.getElementById('tab-armas');
-        if (tabArmas && tabArmas.children.length === 0) {
-            tabArmas.innerHTML = `
-                <p class="placeholder-text">Clique em ADICIONAR para escolher uma arma da lista oficial.</p>
-            `;
+    // Função para criar o HTML do dropdown de armas
+    const createWeaponSelect = () => {
+        let options = '<option value="">--- Escolher Arma ---</option>';
+        weaponData.forEach((weapon, index) => {
+            // O valor da option é o índice do array, que usaremos para buscar os dados
+            options += `<option value="${index}">${weapon.nome}</option>`;
+        });
+        return `<select name="weapon-name">${options}</select>`;
+    };
+    
+    // Função que preenche os campos com os dados da arma selecionada
+    const handleWeaponSelection = (event) => {
+        const select = event.target;
+        const entryContainer = select.closest('.weapon-entry');
+        // O valor é o índice da arma no array weaponData
+        const weaponIndex = parseInt(select.value);
+
+        const inputDano = entryContainer.querySelector('input[name="weapon-dano"]');
+        const inputProps = entryContainer.querySelector('input[name="weapon-props"]');
+        
+        // Se algo foi selecionado (não é o placeholder)
+        if (!isNaN(weaponIndex) && weaponIndex >= 0 && weaponIndex < weaponData.length) {
+            const weapon = weaponData[weaponIndex];
+            const propsText = `${weapon.maestria} / ${weapon.propriedades}`;
+            
+            inputDano.value = weapon.dano;
+            inputProps.value = propsText;
+        } else {
+            // Se o usuário voltar para o placeholder ou selecionar 'Escolher Arma'
+            inputDano.value = '';
+            inputProps.value = '';
         }
-    }
+    };
 
-    // Função para simular a seleção da arma e preencher a nova entrada
-    const createWeaponEntry = (count, weaponIndex) => {
-        const weapon = weaponData[weaponIndex % weaponData.length];
+
+    // Função que cria a linha de entrada de arma vazia (com o seletor)
+    const createWeaponEntry = (count) => {
         const deleteId = `weapon-${count}`;
-
-        // Os valores da arma são preenchidos nos inputs
+        
+        // Os inputs de Dano e Propriedades agora são `readonly`
         return `
             <div class="weapon-entry" data-item-id="${deleteId}">
                 <div class="weapon-details">
-                    <input type="text" value="${weapon.nome}" placeholder="Nome da Arma" title="Nome da Arma">
-                    <input type="text" value="${weapon.dano}" placeholder="Dano" title="Dano (Tipo)">
-                    <input type="text" value="${weapon.maestria} / ${weapon.propriedades}" placeholder="Maestria / Propriedades" title="Maestria e Propriedades">
+                    ${createWeaponSelect()}
+                    <input type="text" name="weapon-dano" value="" placeholder="Dano (Tipo)" readonly title="Preenchido automaticamente ao selecionar a arma.">
+                    <input type="text" name="weapon-props" value="" placeholder="Maestria / Propriedades" readonly title="Preenchido automaticamente ao selecionar a arma.">
                 </div>
                 <button class="delete-btn" data-delete-id="${deleteId}">Excluir</button>
             </div>
         `;
     };
+
+    // Função para renderizar a mensagem padrão (Placeholder) na aba de armas
+    const renderWeaponPlaceholder = () => {
+        const tabArmas = document.getElementById('tab-armas');
+        const listContainer = tabArmas.querySelector('#weapon-list-container');
+        
+        // Garante que o placeholder esteja visível e o cabeçalho invisível se a lista estiver vazia
+        if (listContainer && listContainer.children.length === 0) {
+            tabArmas.querySelector('.placeholder-text').style.display = 'block';
+            tabArmas.querySelector('.weapon-header-row').style.display = 'none';
+        }
+    }
 
     // ----------------------------------------------------------------------
     // --- LÓGICA DO MAIN BLOCK (Troca de Abas e Adição de Itens) ---
@@ -389,12 +418,20 @@ document.addEventListener('DOMContentLoaded', () => {
         if (targetButton) { targetButton.classList.add('active'); }
         if (targetContent) {
             targetContent.classList.add('active');
-            const placeholder = targetContent.querySelector('.placeholder-text');
-            if (placeholder && targetContent.children.length > 1) { placeholder.remove(); }
             
-            // Se for a aba de armas, garante o placeholder (se não houver itens adicionados)
-            if (targetTabId === 'armas' && targetContent.children.length === 0) {
-                renderWeaponPlaceholder();
+            // Lógica específica para a aba de armas
+            if (targetTabId === 'armas') {
+                const listContainer = targetContent.querySelector('#weapon-list-container');
+                if (listContainer.children.length === 0) {
+                    renderWeaponPlaceholder();
+                } else {
+                    targetContent.querySelector('.placeholder-text').style.display = 'none';
+                    targetContent.querySelector('.weapon-header-row').style.display = 'flex';
+                }
+            } else {
+                 // Lógica para placeholders genéricos
+                 const placeholder = targetContent.querySelector('.placeholder-text');
+                 if (placeholder) placeholder.style.display = (targetContent.children.length === 1) ? 'block' : 'none';
             }
         }
     }
@@ -406,12 +443,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Define o template de item para cada aba
     const itemTemplates = {
-        // Armas: Utiliza a função que preenche com base na lista de armas (ex: índice 0 = Adaga)
-        armas: (count) => createWeaponEntry(count, itemCounter), 
-
-        // Outros itens genéricos
+        armas: (count) => createWeaponEntry(count), 
         magias: (count) => createGenericEntry('Magia', count),
         tracos: (count) => createGenericEntry('Traço', count, 'textarea'),
         proficiencias: (count) => createGenericEntry('Proficiência', count),
@@ -420,8 +453,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function createGenericEntry(type, count, inputType = 'text') {
         const inputElement = inputType === 'textarea' ?
-            `<textarea placeholder="Descrição do ${type} ${count}" rows="2"></textarea>` :
-            `<input type="text" value="${type} ${count}" placeholder="Nome do ${type}">`;
+            `<textarea placeholder="Descrição do ${type}..." rows="2"></textarea>` :
+            `<input type="text" value="" placeholder="Nome do ${type}">`;
 
         const deleteId = `${type.toLowerCase().replace(/\s/g, '-')}-${count}`;
         
@@ -445,18 +478,26 @@ document.addEventListener('DOMContentLoaded', () => {
             const parentTab = itemToDelete.closest('.tab-content');
             itemToDelete.remove();
 
-            if (parentTab && parentTab.children.length === 0) {
-                const tabId = parentTab.id.replace('tab-', '');
-                let placeholderText;
-                switch(tabId) {
-                    case 'armas': renderWeaponPlaceholder(); return; // Usa a função de placeholder específica
-                    case 'magias': placeholderText = 'Adicione suas magias.'; break;
-                    case 'tracos': placeholderText = 'Adicione traços de raça ou classe.'; break;
-                    case 'proficiencias': placeholderText = 'Adicione proficiências em ferramentas e idiomas.'; break;
-                    case 'inventario': placeholderText = 'Adicione itens e moedas.'; break;
-                    default: placeholderText = 'Adicione itens aqui.';
+            if (parentTab.id === 'tab-armas') {
+                const listContainer = parentTab.querySelector('#weapon-list-container');
+                if (listContainer.children.length === 0) {
+                    renderWeaponPlaceholder();
                 }
-                parentTab.innerHTML = `<p class="placeholder-text">${placeholderText}</p>`;
+            } else { 
+                const placeholder = parentTab.querySelector('.placeholder-text');
+                if (!placeholder && parentTab.children.length === 0) {
+                    // Se for um item genérico e a aba ficou vazia, re-insere o placeholder
+                    const tabId = parentTab.id.replace('tab-', '');
+                    let placeholderText;
+                    switch(tabId) {
+                        case 'magias': placeholderText = 'Adicione suas magias.'; break;
+                        case 'tracos': placeholderText = 'Adicione traços de raça ou classe.'; break;
+                        case 'proficiencias': placeholderText = 'Adicione proficiências em ferramentas e idiomas.'; break;
+                        case 'inventario': placeholderText = 'Adicione itens e moedas.'; break;
+                        default: placeholderText = 'Adicione itens aqui.';
+                    }
+                    parentTab.insertAdjacentHTML('afterbegin', `<p class="placeholder-text">${placeholderText}</p>`);
+                }
             }
         }
     }
@@ -471,25 +512,46 @@ document.addEventListener('DOMContentLoaded', () => {
         if (templateFunction) {
             itemCounter++;
             const newEntryHTML = templateFunction(itemCounter);
+            
+            const listContainer = activeTab.querySelector('#weapon-list-container') || activeTab;
 
-            // Remove o placeholder antes de adicionar o item
+            // Remove/esconde o placeholder antes de adicionar o item
             const placeholder = activeTab.querySelector('.placeholder-text');
-            if (placeholder) { placeholder.remove(); }
+            if (placeholder) { placeholder.style.display = 'none'; }
+            
+            // Adiciona o cabeçalho fixo na aba armas e garante que o contêiner de itens receba o HTML
+            if (activeTabId === 'armas') {
+                activeTab.querySelector('.weapon-header-row').style.display = 'flex';
+            }
 
-            activeTab.insertAdjacentHTML('beforeend', newEntryHTML);
+            listContainer.insertAdjacentHTML('beforeend', newEntryHTML);
 
-            const newItem = activeTab.lastElementChild;
+            const newItem = listContainer.lastElementChild;
             const deleteButton = newItem.querySelector('.delete-btn');
+            
             if (deleteButton) { deleteButton.addEventListener('click', handleDeleteItem); }
+            
+            // ADICIONA O LISTENER DE MUDANÇA (SELECT) APENAS SE FOR UMA NOVA ENTRADA DE ARMA
+            if (activeTabId === 'armas') {
+                const weaponSelect = newItem.querySelector('select[name="weapon-name"]');
+                if (weaponSelect) {
+                    weaponSelect.addEventListener('change', handleWeaponSelection);
+                }
+            }
 
-            activeTab.scrollTop = activeTab.scrollHeight;
+            listContainer.scrollTop = listContainer.scrollHeight;
         }
     });
 
     // --- INICIALIZAÇÃO FINAL ---
-    renderWeaponPlaceholder(); // 1. Renderiza o placeholder (com a instrução)
+    renderWeaponPlaceholder(); 
     document.querySelectorAll('.delete-btn').forEach(button => {
         button.addEventListener('click', handleDeleteItem);
     });
-    switchTab('armas'); // 2. Garante que a aba de armas esteja visível
+    // Adiciona listener de mudança para selects de armas se eles forem criados no HTML
+    document.querySelectorAll('select[name="weapon-name"]').forEach(select => {
+        select.addEventListener('change', handleWeaponSelection);
+    });
+    
+    switchTab('armas');
 });
