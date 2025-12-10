@@ -1087,17 +1087,24 @@ input[type="number"] {
 
 .weapon-entry {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column; /* Novo: Para permitir quebra de linha com a descrição */
     background: var(--bg-darker);
     border: 1px solid var(--border-color);
     border-radius: 4px;
-    padding: 5px 10px; 
+    padding: 5px 10px;
     margin-bottom: 5px;
     font-size: 0.9em;
 }
 
+.weapon-entry .top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
 .weapon-entry .weapon-details {
+    /* Contêiner de inputs para alinhamento horizontal */
     display: flex;
     gap: 5px;
     flex-grow: 1;
@@ -1105,6 +1112,7 @@ input[type="number"] {
 }
 
 .weapon-entry .weapon-details > * {
+    /* Estilo base dos controles */
     padding: 4px;
     font-size: 0.9em;
     height: 30px;
@@ -1116,33 +1124,74 @@ input[type="number"] {
 /* Configurações específicas de largura para inputs de arma */
 .weapon-entry .weapon-details select[name="weapon-name"] {
     width: 140px; 
+    height: 30px; /* Garante altura uniforme */
 }
 
 .weapon-entry .weapon-details input[name="weapon-dano"] {
-    width: 80px; 
+    width: 60px; /* Dano */
 }
 
-.weapon-entry .weapon-details input[name="weapon-props"] {
-    width: 230px; 
+.weapon-entry .weapon-details input[name="weapon-type"] {
+    width: 40px; /* Tipo de Dano */
+}
+
+.weapon-entry .weapon-details input[name="weapon-skill"] {
+    width: 60px; /* Skill/Maestria */
+    text-align: center;
+}
+
+.weapon-entry .weapon-details input[name="weapon-finesse"] {
+    width: 30px; /* Checkbox Ágil */
+    height: 20px;
+    min-width: 20px;
+    cursor: pointer; /* Mudei para pointer */
+    background-color: transparent;
+    border: none;
+}
+
+/* Estilo visual para o checkbox (simulando um) */
+.weapon-entry .weapon-details input[name="weapon-finesse"] {
+    -moz-appearance: none;
+    appearance: none;
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    background: var(--bg-darker);
+    transition: background 0.2s;
+}
+.weapon-entry .weapon-details input[name="weapon-finesse"]:checked {
+    background: var(--dice-color);
+}
+.weapon-entry .weapon-details input[name="weapon-finesse"]:checked::after {
+    content: '✓';
+    color: var(--bg-dark);
+    font-size: 1.2em;
+    line-height: 1;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* Área de Descrição (Quebra de Linha) */
+.weapon-entry .weapon-description-area {
+    width: 100%;
+    margin-top: 5px;
+}
+
+.weapon-entry .weapon-description-area textarea {
+    min-height: 50px;
+    padding: 5px;
+    font-size: 0.8em;
+    background: var(--bg-dark);
+    border: 1px solid var(--border-color);
 }
 
 .weapon-entry .delete-btn {
     margin-left: 10px;
     min-width: 50px;
     height: 30px;
-    background: #ef4444;
-    color: var(--text-color);
-    border: none;
-    padding: 5px 10px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.85em;
-    font-weight: bold;
 }
 
-.weapon-entry .delete-btn:hover {
-    background: #b91c1c;
-}
 
 /* --- ESTILOS DE ITENS GENÉRICOS --- */
 
@@ -1154,7 +1203,7 @@ input[type="number"] {
     margin-bottom: 10px;
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start; /* Alinhamento vertical para acomodar textarea */
 }
 
 .generic-entry .generic-details {
