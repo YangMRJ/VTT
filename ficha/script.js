@@ -365,12 +365,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const proficiencyCircle = skillItem.querySelector('.proficiency-circle');
         
         // 1. Obter valores
+        // attrMod vem como string ("+N" ou "-N")
         const attrMod = parseInt(attributeModInput.value) || 0; 
         const pb = parseInt(proficiencyBonusInput.value) || 0;
         const proficiencyLevel = proficiencyCircle.getAttribute('data-proficiency');
         const multiplier = getProficiencyMultiplier(proficiencyLevel);
 
-        // 2. Calcular o Modificador Final
+        // 2. Calcular o Modificador Final: Attr Mod + (PB * Multiplier)
         const skillModValue = attrMod + (pb * multiplier);
         
         // 3. Formatar e Atualizar o Input
@@ -429,8 +430,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Atualiza todas as perícias na carga inicial (após a inicialização dos atributos)
     updateAllSkillModifiers();
-    // ----------------------------------------------------------------------
-
+    
     // --- CONTINUAÇÃO DA LÓGICA ORIGINAL DE PROFICIÊNCIA DE PERÍCIAS ---
     // (A lógica de abertura/fechamento do menu de proficiência)
 
