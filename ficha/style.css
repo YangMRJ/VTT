@@ -1153,7 +1153,7 @@ input[type="number"] {
 .weapon-entry .weapon-details input[name="weapon-finesse"] {
     -moz-appearance: none;
     appearance: none;
-    width: 30px;
+    width: 35px;
     border: 1px solid var(--border-color);
     border-radius: 3px;
     background: var(--bg-darker);
