@@ -1,42 +1,30 @@
-// script.js (Código Completo Atualizado com Tabela de Armas D&D 2024 e Abas)
+// script.js (Código Completo Atualizado: Armas se tornam itens adicionáveis)
 
 document.addEventListener('DOMContentLoaded', () => {
-    // --- Seletores da Ficha (Sheet Selectors) ---
+    // --- LÓGICA DE UTILIDADE DA FICHA ---
     const sheet = document.querySelector('.character-sheet');
     const handle = document.querySelector('.sheet-header');
     const minimizeBtn = document.getElementById('minimize-btn');
     const closeBtn = document.getElementById('close-btn');
 
-    // --- Lógica de Arrastar (Drag) ---
+    // --- Lógica de Arrastar ---
     let isDragging = false;
     let offsetX, offsetY;
-
     handle.addEventListener('mousedown', (e) => {
-        // Ignorar cliques nos botões de controle e no dropdown customizado
         if (e.target.closest('.controls') || e.target.closest('.custom-select')) return;
-
         isDragging = true;
         sheet.style.cursor = 'grabbing';
         handle.style.cursor = 'grabbing';
-        
-        // Assegura que o elemento está posicionado para mover
         sheet.style.position = 'absolute';
-        sheet.style.transform = 'none'; // Remove a centralização inicial
-
+        sheet.style.transform = 'none';
         offsetX = e.clientX - sheet.offsetLeft;
         offsetY = e.clientY - sheet.offsetTop;
     });
-
     document.addEventListener('mousemove', (e) => {
         if (!isDragging) return;
-        
-        let newX = e.clientX - offsetX;
-        let newY = e.clientY - offsetY;
-
-        sheet.style.left = newX + 'px';
-        sheet.style.top = newY + 'px';
+        sheet.style.left = e.clientX - offsetX + 'px';
+        sheet.style.top = e.clientY - offsetY + 'px';
     });
-
     document.addEventListener('mouseup', () => {
         if (isDragging) {
             isDragging = false;
@@ -45,77 +33,54 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- Lógica de Minimizar/Maximizar ---
+    // --- Lógica de Minimizar/Fechar ---
     minimizeBtn.addEventListener('click', () => {
-        // Alterna a classe 'minimized' no elemento principal da ficha
         sheet.classList.toggle('minimized');
-        
-        // Muda o texto do botão
         minimizeBtn.textContent = sheet.classList.contains('minimized') ? '☐' : '_';
         minimizeBtn.title = sheet.classList.contains('minimized') ? 'Maximizar Ficha' : 'Minimizar Ficha';
     });
-
-    // --- Lógica de Fechar/Abrir (Display) ---
     closeBtn.addEventListener('click', () => {
-        // Esconde a ficha
         sheet.style.display = 'none';
     });
-    
-    // --- Lógica do Atalho de Teclado (Ctrl + F) ---
     document.addEventListener('keydown', (e) => {
-        // Verifica se Ctrl (ou Command no Mac) e a tecla 'f' foram pressionadas
         if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
-            e.preventDefault(); // Impede a abertura da busca do navegador
-            
-            // Alterna a visibilidade da ficha
+            e.preventDefault();
             const isHidden = sheet.style.display === 'none';
             sheet.style.display = isHidden ? 'block' : 'none';
-            
             if (isHidden) {
-                sheet.classList.remove('minimized'); 
-                minimizeBtn.textContent = '_'; 
+                sheet.classList.remove('minimized');
+                minimizeBtn.textContent = '_';
                 minimizeBtn.title = 'Minimizar Ficha';
             }
         }
     });
-    
+
     // ----------------------------------------------------------------------
     // --- LÓGICA DE HP ---
     // ----------------------------------------------------------------------
+    const hpCurrentInput = document.getElementById('HPCurrentInput');
+    const hpMaxHidden = document.getElementById('HPMax');
+    const hpMaxDisplay = document.getElementById('HPMaxDisplay');
+    const hpTempInput = document.getElementById('HPTemp');
+    const incrementBtn = document.getElementById('increment-hp');
+    const decrementBtn = document.getElementById('decrement-hp');
+    const shortRestBtn = document.getElementById('short-rest-btn');
+    const longRestBtn = document.getElementById('long-rest-btn');
+    let realCurrentHP = parseInt(hpMaxHidden.value) || 10;
 
-    // --- Seletores para Lógica de HP ---
-    const hpCurrentInput = document.getElementById('HPCurrentInput'); // Campo do valor de Cura/Dano
-    const hpMaxHidden = document.getElementById('HPMax');             // Campo oculto do HP Máximo
-    const hpMaxDisplay = document.getElementById('HPMaxDisplay');     // Campo de exibição "Atual/Máximo"
-    const hpTempInput = document.getElementById('HPTemp');           // Campo do HP Temporário
-    const incrementBtn = document.getElementById('increment-hp');    // Botão de Cura
-    const decrementBtn = document.getElementById('decrement-hp');    // Botão de Dano
-    const shortRestBtn = document.getElementById('short-rest-btn');  // Botão de Descanso Curto
-    const longRestBtn = document.getElementById('long-rest-btn');    // Botão de Descanso Longo
-
-    // Variável que armazena o HP Real Atual (sem o temporário)
-    let realCurrentHP = parseInt(hpMaxHidden.value) || 10; 
-
-    // Função que atualiza o display 'Atual/Máximo'
     const updateHPDisplay = () => {
         let max = parseInt(hpMaxHidden.value) || 10;
         let tempHP = parseInt(hpTempInput.value) || 0;
-        
-        // HP Atual exibido é o Real + o Temporário
         let displayedCurrentHP = realCurrentHP + tempHP;
-
         hpMaxDisplay.value = `${displayedCurrentHP}/${max}`;
     };
 
-    // Define o valor do HP real e atualiza a exibição
     const setRealHP = (newHP) => {
         let max = parseInt(hpMaxHidden.value) || 10;
-        
         realCurrentHP = Math.min(Math.max(0, newHP), max);
         updateHPDisplay();
     };
 
-    // Funções para manipular a saúde do personagem
     const healDamage = (amount) => {
         setRealHP(realCurrentHP + amount);
     };
@@ -123,40 +88,33 @@ document.addEventListener('DOMContentLoaded', () => {
     const takeDamage = (amount) => {
         let tempHP = parseInt(hpTempInput.value) || 0;
         let remainingDamage = amount;
-
-        // 1. O dano é absorvido primeiro pelo HP Temporário
         if (tempHP > 0) {
             if (remainingDamage >= tempHP) {
                 remainingDamage -= tempHP;
-                hpTempInput.value = 0; // Zera o HP Temporário
+                hpTempInput.value = 0;
             } else {
                 hpTempInput.value = tempHP - remainingDamage;
-                remainingDamage = 0; // Todo o dano foi absorvido
+                remainingDamage = 0;
             }
         }
-
-        // 2. Se sobrar dano, ele atinge o HP Real
         if (remainingDamage > 0) {
             setRealHP(realCurrentHP - remainingDamage);
         }
-
         updateHPDisplay();
     };
-
-    // --- Funções de Eventos HP ---
 
     incrementBtn.addEventListener('click', (e) => {
         e.preventDefault();
         const amount = parseInt(hpCurrentInput.value) || 0;
         healDamage(amount);
-        hpCurrentInput.value = 0; // Zera após a aplicação
+        hpCurrentInput.value = 0;
     });
 
     decrementBtn.addEventListener('click', (e) => {
         e.preventDefault();
         const amount = parseInt(hpCurrentInput.value) || 0;
         takeDamage(amount);
-        hpCurrentInput.value = 0; // Zera após a aplicação
+        hpCurrentInput.value = 0;
     });
 
     hpTempInput.addEventListener('change', updateHPDisplay);
@@ -168,25 +126,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     shortRestBtn.addEventListener('click', () => {
         let max = parseInt(hpMaxHidden.value) || 10;
-        setRealHP(Math.min(realCurrentHP + Math.ceil(max * 0.5), max)); // Cura 50% do max
+        setRealHP(Math.min(realCurrentHP + Math.ceil(max * 0.5), max));
         hpTempInput.value = 0;
         updateHPDisplay();
     });
 
     longRestBtn.addEventListener('click', () => {
-        setRealHP(parseInt(hpMaxHidden.value) || 10); // HP real volta ao máximo
-        hpTempInput.value = 0;      // HP Temporário zera
+        setRealHP(parseInt(hpMaxHidden.value) || 10);
+        hpTempInput.value = 0;
         updateHPDisplay();
     });
-
-    // Chamada inicial
-    updateHPDisplay();
-
 
     // ----------------------------------------------------------------------
     // --- LÓGICA DO DROPDOWN CUSTOMIZADO (DadoHP) ---
     // ----------------------------------------------------------------------
-
     const customSelect = document.getElementById('DadoHPSelect');
     const selectedDiv = document.getElementById('DadoHPSelected');
     const itemsContainer = customSelect.querySelector('.select-items');
@@ -221,21 +174,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.custom-select')) {
-            closeAllSelect({ nextSibling: null }); // Objeto auxiliar para fechar todos
+            closeAllSelect({ nextSibling: null });
         }
     });
 
     // ----------------------------------------------------------------------
-    // --- LÓGICA DE ATRIBUTOS E MODIFICADORES ---
+    // --- LÓGICA DE ATRIBUTOS E MODIFICADORES & PERÍCIAS ---
     // ----------------------------------------------------------------------
 
     const attributes = [
-        { scoreId: 'for-score', modId: 'for-mod' },
-        { scoreId: 'des-score', modId: 'des-mod' },
-        { scoreId: 'con-score', modId: 'con-mod' },
-        { scoreId: 'int-score', modId: 'int-mod' },
-        { scoreId: 'car-score', modId: 'car-mod' },
-        { scoreId: 'sab-score', modId: 'sab-mod' },
+        { scoreId: 'for-score', modId: 'for-mod' }, { scoreId: 'des-score', modId: 'des-mod' },
+        { scoreId: 'con-score', modId: 'con-mod' }, { scoreId: 'int-score', modId: 'int-mod' },
+        { scoreId: 'car-score', modId: 'car-mod' }, { scoreId: 'sab-score', modId: 'sab-mod' },
     ];
 
     const calculateModifier = (score) => {
@@ -249,14 +199,9 @@ document.addEventListener('DOMContentLoaded', () => {
         modInput.value = calculateModifier(score);
     };
 
-    // ----------------------------------------------------------------------
-    // --- LÓGICA DE PERÍCIAS (SKILL MODIFIERS) ---
-    // ----------------------------------------------------------------------
-
     const proficiencyBonusInput = document.getElementById('proficiency-bonus');
 
     const skillMap = [
-        // Mapeamento de perícias (FOR, DES, INT, SAB, CAR)
         { skillId: 'acrobacia', attrModId: 'des-mod' }, { skillId: 'prestidigitacao', attrModId: 'des-mod' },
         { skillId: 'furtividade', attrModId: 'des-mod' }, { skillId: 'atletismo', attrModId: 'for-mod' },
         { skillId: 'arcano', attrModId: 'int-mod' }, { skillId: 'historia', attrModId: 'int-mod' },
@@ -270,9 +215,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const getProficiencyMultiplier = (proficiencyLevel) => {
         switch (proficiencyLevel) {
-            case 'full': return 2; // Expertise
-            case 'half': return 1; // Proficiente
-            default: return 0; // Sem Treino
+            case 'full': return 2;
+            case 'half': return 1;
+            default: return 0;
         }
     }
 
@@ -299,11 +244,9 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.skill-item').forEach(updateSkillModifier);
     }
 
-    // Configuração dos Listeners para Atributos e PB
     attributes.forEach(attr => {
         const scoreInput = document.getElementById(attr.scoreId);
         const modInput = document.getElementById(attr.modId);
-
         if (scoreInput && modInput) {
             updateAttributeModifier(scoreInput, modInput);
             scoreInput.addEventListener('input', () => {
@@ -322,14 +265,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const newProficiency = e.target.getAttribute('data-value');
             const skillItem = e.target.closest('.skill-block').querySelector('.skill-item');
             const circleContainer = skillItem.querySelector('.proficiency-circle');
-
             circleContainer.setAttribute('data-proficiency', newProficiency);
             e.target.closest('.proficiency-menu').classList.add('select-hide');
             updateSkillModifier(skillItem);
         });
     });
 
-    // Lógica de abertura/fechamento do menu de proficiência
     const proficiencyMenus = document.querySelectorAll('.proficiency-menu');
     const closeAllProficiencyMenus = (exceptMenu) => {
         proficiencyMenus.forEach(menu => {
@@ -345,102 +286,89 @@ document.addEventListener('DOMContentLoaded', () => {
             closeAllProficiencyMenus(menu);
             menu.classList.toggle('select-hide');
         });
-        menu.addEventListener('click', (e) => {
-            e.stopPropagation();
-        });
+        menu.addEventListener('click', (e) => { e.stopPropagation(); });
     });
     document.addEventListener('click', () => { closeAllProficiencyMenus(null); });
-    updateAllSkillModifiers(); // Chamada inicial
+    updateAllSkillModifiers();
 
     // ----------------------------------------------------------------------
-    // --- LÓGICA DE TABELA DE ARMAS D&D 2024 ---
+    // --- DADOS DA LISTA DE ARMAS D&D 2024 ---
     // ----------------------------------------------------------------------
 
+    // Lista de armas agora acessível globalmente
     const weaponData = [
         // Simples Corpo-a-Corpo
-        { nome: 'Adaga', preco: '2 po', dano: '1d4', tipo: 'P', peso: '0,5', maestria: 'Incissão (Nick)', propriedades: 'Ágil (Finesse), Leve, Arremesso (6/18)' },
-        { nome: 'Azagaia', preco: '5 pp', dano: '1d6', tipo: 'P', peso: '1', maestria: 'Lentidão (Slow)', propriedades: 'Arremesso (9/36)' },
-        { nome: 'Cajado (Bordão)', preco: '2 pp', dano: '1d6', tipo: 'E', peso: '2', maestria: 'Derrubar (Topple)', propriedades: 'Versátil (1d8)' },
-        { nome: 'Clava Grande', preco: '2 pp', dano: '1d8', tipo: 'E', peso: '5', maestria: 'Empurrão (Push)', propriedades: 'Duas Mãos' },
-        { nome: 'Foice Curta', preco: '1 po', dano: '1d4', tipo: 'C', peso: '1', maestria: 'Incissão (Nick)', propriedades: 'Leve' },
-        { nome: 'Lança', preco: '1 po', dano: '1d6', tipo: 'P', peso: '1,5', maestria: 'Esgotar (Sap)', propriedades: 'Versátil (1d8), Arremesso (6/18)' },
-        { nome: 'Maça', preco: '5 po', dano: '1d6', tipo: 'E', peso: '2', maestria: 'Esgotar (Sap)', propriedades: '-' },
-        { nome: 'Machadinha', preco: '5 po', dano: '1d6', tipo: 'C', peso: '1', maestria: 'Irritar (Vex)', propriedades: 'Leve, Arremesso (6/18)' },
-        { nome: 'Martelo Leve', preco: '2 po', dano: '1d4', tipo: 'E', peso: '1', maestria: 'Incissão (Nick)', propriedades: 'Leve, Arremesso (6/18)' },
-        { nome: 'Porrete', preco: '1 pp', dano: '1d4', tipo: 'E', peso: '1', maestria: 'Lentidão (Slow)', propriedades: 'Leve' },
+        { nome: 'Adaga', dano: '1d4 P', maestria: 'Incissão (Nick)', propriedades: 'Ágil, Leve, Arremesso (6/18)' },
+        { nome: 'Azagaia', dano: '1d6 P', maestria: 'Lentidão (Slow)', propriedades: 'Arremesso (9/36)' },
+        { nome: 'Cajado (Bordão)', dano: '1d6 E', maestria: 'Derrubar (Topple)', propriedades: 'Versátil (1d8)' },
+        { nome: 'Clava Grande', dano: '1d8 E', maestria: 'Empurrão (Push)', propriedades: 'Duas Mãos' },
+        { nome: 'Foice Curta', dano: '1d4 C', maestria: 'Incissão (Nick)', propriedades: 'Leve' },
+        { nome: 'Lança', dano: '1d6 P', maestria: 'Esgotar (Sap)', propriedades: 'Versátil (1d8), Arremesso (6/18)' },
+        { nome: 'Maça', dano: '1d6 E', maestria: 'Esgotar (Sap)', propriedades: '-' },
+        { nome: 'Machadinha', dano: '1d6 C', maestria: 'Irritar (Vex)', propriedades: 'Leve, Arremesso (6/18)' },
+        { nome: 'Martelo Leve', dano: '1d4 E', maestria: 'Incissão (Nick)', propriedades: 'Leve, Arremesso (6/18)' },
+        { nome: 'Porrete', dano: '1d4 E', maestria: 'Lentidão (Slow)', propriedades: 'Leve' },
         // Simples à Distância
-        { nome: 'Arco Curto', preco: '25 po', dano: '1d6', tipo: 'P', peso: '1', maestria: 'Irritar (Vex)', propriedades: 'Munição, Duas Mãos, Alcance (24/96)' },
-        { nome: 'Besta Leve', preco: '25 po', dano: '1d8', tipo: 'P', peso: '2,5', maestria: 'Lentidão (Slow)', propriedades: 'Munição, Recarga, Duas Mãos, Alcance (24/96)' },
-        { nome: 'Dardo', preco: '5 pc', dano: '1d4', tipo: 'P', peso: '0,125', maestria: 'Irritar (Vex)', propriedades: 'Ágil (Finesse), Arremesso (6/18)' },
-        { nome: 'Funda', preco: '1 pp', dano: '1d4', tipo: 'E', peso: '-', maestria: 'Lentidão (Slow)', propriedades: 'Munição, Alcance (9/36)' },
+        { nome: 'Arco Curto', dano: '1d6 P', maestria: 'Irritar (Vex)', propriedades: 'Munição, Duas Mãos, Alcance (24/96)' },
+        { nome: 'Besta Leve', dano: '1d8 P', maestria: 'Lentidão (Slow)', propriedades: 'Munição, Recarga, Duas Mãos, Alcance (24/96)' },
+        { nome: 'Dardo', dano: '1d4 P', maestria: 'Irritar (Vex)', propriedades: 'Ágil (Finesse), Arremesso (6/18)' },
+        { nome: 'Funda', dano: '1d4 E', maestria: 'Lentidão (Slow)', propriedades: 'Munição, Alcance (9/36)' },
         // Marciais Corpo-a-Corpo
-        { nome: 'Alabarda', preco: '20 po', dano: '1d10', tipo: 'C', peso: '3', maestria: 'Trespassar (Cleave)', propriedades: 'Pesada, Alcance (Reach), Duas Mãos' },
-        { nome: 'Chicote', preco: '2 po', dano: '1d4', tipo: 'C', peso: '1,5', maestria: 'Lentidão (Slow)', propriedades: 'Ágil (Finesse), Alcance (Reach)' },
-        { nome: 'Cimitarra', preco: '25 po', dano: '1d6', tipo: 'C', peso: '1,5', maestria: 'Incissão (Nick)', propriedades: 'Ágil (Finesse), Leve' },
-        { nome: 'Espada Curta', preco: '10 po', dano: '1d6', tipo: 'P', peso: '1', maestria: 'Irritar (Vex)', propriedades: 'Ágil (Finesse), Leve' },
-        { nome: 'Espada Duas Mãos (Montante)', preco: '50 po', dano: '2d6', tipo: 'C', peso: '3', maestria: 'Trespassar (Cleave)', propriedades: 'Pesada, Duas Mãos' },
-        { nome: 'Espada Longa', preco: '15 po', dano: '1d8', tipo: 'C', peso: '1,5', maestria: 'Esgotar (Sap)', propriedades: 'Versátil (1d10)' },
-        { nome: 'Florete', preco: '25 po', dano: '1d8', tipo: 'P', peso: '1', maestria: 'Irritar (Vex)', propriedades: 'Ágil (Finesse)' },
-        { nome: 'Glaive', preco: '20 po', dano: '1d10', tipo: 'C', peso: '3', maestria: 'Relance (Graze)', propriedades: 'Pesada, Alcance (Reach), Duas Mãos' },
-        { nome: 'Lança de Montaria', preco: '10 po', dano: '1d12', tipo: 'P', peso: '3', maestria: 'Derrubar (Topple)', propriedades: 'Alcance (Reach), Duas Mãos (exceto se montado)' },
-        { nome: 'Maça Estrela', preco: '15 po', dano: '1d8', tipo: 'P', peso: '2', maestria: 'Esgotar (Sap)', propriedades: '-' },
-        { nome: 'Machado de Batalha', preco: '10 po', dano: '1d8', tipo: 'C', peso: '2', maestria: 'Derrubar (Topple)', propriedades: 'Versátil (1d10)' },
-        { nome: 'Machado Grande', preco: '30 po', dano: '1d12', tipo: 'C', peso: '3,5', maestria: 'Trespassar (Cleave)', propriedades: 'Pesada, Duas Mãos' },
-        { nome: 'Mangual', preco: '10 po', dano: '1d8', tipo: 'E', peso: '1', maestria: 'Esgotar (Sap)', propriedades: '-' },
-        { nome: 'Marreta (Malho)', preco: '10 po', dano: '2d6', tipo: 'E', peso: '5', maestria: 'Derrubar (Topple)', propriedades: 'Pesada, Duas Mãos' },
-        { nome: 'Martelo de Guerra', preco: '15 po', dano: '1d8', tipo: 'E', peso: '1', maestria: 'Empurrão (Push)', propriedades: 'Versátil (1d10)' },
-        { nome: 'Picareta de Guerra', preco: '5 po', dano: '1d8', tipo: 'P', peso: '1', maestria: 'Esgotar (Sap)', propriedades: '-' },
-        { nome: 'Pique', preco: '5 po', dano: '1d10', tipo: 'P', peso: '9', maestria: 'Empurrão (Push)', propriedades: 'Pesada, Alcance (Reach), Duas Mãos' },
-        { nome: 'Tridente', preco: '5 po', dano: '1d6', tipo: 'P', peso: '2', maestria: 'Derrubar (Topple)', propriedades: 'Arremesso (6/18), Versátil (1d8)' },
+        { nome: 'Alabarda', dano: '1d10 C', maestria: 'Trespassar (Cleave)', propriedades: 'Pesada, Alcance (Reach), Duas Mãos' },
+        { nome: 'Chicote', dano: '1d4 C', maestria: 'Lentidão (Slow)', propriedades: 'Ágil (Finesse), Alcance (Reach)' },
+        { nome: 'Cimitarra', dano: '1d6 C', maestria: 'Incissão (Nick)', propriedades: 'Ágil (Finesse), Leve' },
+        { nome: 'Espada Curta', dano: '1d6 P', maestria: 'Irritar (Vex)', propriedades: 'Ágil (Finesse), Leve' },
+        { nome: 'Espada Duas Mãos (Montante)', dano: '2d6 C', maestria: 'Trespassar (Cleave)', propriedades: 'Pesada, Duas Mãos' },
+        { nome: 'Espada Longa', dano: '1d8 C', maestria: 'Esgotar (Sap)', propriedades: 'Versátil (1d10)' },
+        { nome: 'Florete', dano: '1d8 P', maestria: 'Irritar (Vex)', propriedades: 'Ágil (Finesse)' },
+        { nome: 'Glaive', dano: '1d10 C', maestria: 'Relance (Graze)', propriedades: 'Pesada, Alcance (Reach), Duas Mãos' },
+        { nome: 'Lança de Montaria', dano: '1d12 P', maestria: 'Derrubar (Topple)', propriedades: 'Alcance (Reach), Duas Mãos (exceto se montado)' },
+        { nome: 'Maça Estrela', dano: '1d8 P', maestria: 'Esgotar (Sap)', propriedades: '-' },
+        { nome: 'Machado de Batalha', dano: '1d8 C', maestria: 'Derrubar (Topple)', propriedades: 'Versátil (1d10)' },
+        { nome: 'Machado Grande', dano: '1d12 C', maestria: 'Trespassar (Cleave)', propriedades: 'Pesada, Duas Mãos' },
+        { nome: 'Mangual', dano: '1d8 E', maestria: 'Esgotar (Sap)', propriedades: '-' },
+        { nome: 'Marreta (Malho)', dano: '2d6 E', maestria: 'Derrubar (Topple)', propriedades: 'Pesada, Duas Mãos' },
+        { nome: 'Martelo de Guerra', dano: '1d8 E', maestria: 'Empurrão (Push)', propriedades: 'Versátil (1d10)' },
+        { nome: 'Picareta de Guerra', dano: '1d8 P', maestria: 'Esgotar (Sap)', propriedades: '-' },
+        { nome: 'Pique', dano: '1d10 P', maestria: 'Empurrão (Push)', propriedades: 'Pesada, Alcance (Reach), Duas Mãos' },
+        { nome: 'Tridente', dano: '1d6 P', maestria: 'Derrubar (Topple)', propriedades: 'Arremesso (6/18), Versátil (1d8)' },
         // Marciais à Distância
-        { nome: 'Arco Longo', preco: '50 po', dano: '1d8', tipo: 'P', peso: '1', maestria: 'Irritar (Vex)', propriedades: 'Munição, Pesada, Duas Mãos, Alcance (45/180)' },
-        { nome: 'Besta de Mão', preco: '75 po', dano: '1d6', tipo: 'P', peso: '1,5', maestria: 'Irritar (Vex)', propriedades: 'Munição, Leve, Recarga, Alcance (9/36)' },
-        { nome: 'Besta Pesada', preco: '50 po', dano: '1d10', tipo: 'P', peso: '9', maestria: 'Lentidão (Slow)', propriedades: 'Munição, Pesada, Recarga, Duas Mãos, Alcance (30/120)' },
-        { nome: 'Rede', preco: '1 po', dano: '--', tipo: '-', peso: '1,5', maestria: 'Derrubar (Topple)', propriedades: 'Arremesso (1,5/4,5), Especial' },
-        { nome: 'Zarabatana', preco: '10 po', dano: '1', tipo: 'P', peso: '0,5', maestria: 'Lentidão (Slow)', propriedades: 'Munição, Recarga, Alcance (7,5/30)' },
+        { nome: 'Arco Longo', dano: '1d8 P', maestria: 'Irritar (Vex)', propriedades: 'Munição, Pesada, Duas Mãos, Alcance (45/180)' },
+        { nome: 'Besta de Mão', dano: '1d6 P', maestria: 'Irritar (Vex)', propriedades: 'Munição, Leve, Recarga, Alcance (9/36)' },
+        { nome: 'Besta Pesada', dano: '1d10 P', maestria: 'Lentidão (Slow)', propriedades: 'Munição, Pesada, Recarga, Duas Mãos, Alcance (30/120)' },
+        { nome: 'Rede', dano: '--', maestria: 'Derrubar (Topple)', propriedades: 'Arremesso (1,5/4,5), Especial' },
+        { nome: 'Zarabatana', dano: '1 P', maestria: 'Lentidão (Slow)', propriedades: 'Munição, Recarga, Alcance (7,5/30)' },
         // Armas de Fogo (Opcional)
-        { nome: 'Mosquete', preco: '500 po', dano: '1d12', tipo: 'P', peso: '-', maestria: 'Lentidão (Slow)', propriedades: 'Carregamento, Duas Mãos, Alcance (12/36)' },
-        { nome: 'Pistola', preco: '250 po', dano: '1d10', tipo: 'P', peso: '-', maestria: 'Irritar (Vex)', propriedades: 'Carregamento, Alcance (9/27)' },
+        { nome: 'Mosquete', dano: '1d12 P', maestria: 'Lentidão (Slow)', propriedades: 'Carregamento, Duas Mãos, Alcance (12/36)' },
+        { nome: 'Pistola', dano: '1d10 P', maestria: 'Irritar (Vex)', propriedades: 'Carregamento, Alcance (9/27)' },
     ];
-
-    const renderWeaponTable = () => {
+    
+    // Função para renderizar a mensagem padrão (Placeholder) na aba de armas
+    const renderWeaponPlaceholder = () => {
         const tabArmas = document.getElementById('tab-armas');
-        if (!tabArmas) return;
-
-        let tableHTML = `
-            <div style="padding-bottom: 10px; color: var(--primary-color);">*P=Perfurante, E=Esmagamento, C=Corte.</div>
-            <table class="weapon-table">
-                <thead>
-                    <tr>
-                        <th>Nome</th>
-                        <th>Dano</th>
-                        <th>Tipo</th>
-                        <th>Peso (k)</th>
-                        <th>Maestria</th>
-                        <th>Propriedades</th>
-                    </tr>
-                </thead>
-                <tbody>
-        `;
-
-        weaponData.forEach(weapon => {
-            tableHTML += `
-                <tr>
-                    <td>${weapon.nome}</td>
-                    <td class="dano">${weapon.dano}</td>
-                    <td>${weapon.tipo}</td>
-                    <td>${weapon.peso}</td>
-                    <td class="maestria">${weapon.maestria}</td>
-                    <td class="propriedades">${weapon.propriedades}</td>
-                </tr>
+        if (tabArmas && tabArmas.children.length === 0) {
+            tabArmas.innerHTML = `
+                <p class="placeholder-text">Clique em ADICIONAR para escolher uma arma da lista oficial.</p>
             `;
-        });
+        }
+    }
 
-        tableHTML += `
-                </tbody>
-            </table>
+    // Função para simular a seleção da arma e preencher a nova entrada
+    const createWeaponEntry = (count, weaponIndex) => {
+        const weapon = weaponData[weaponIndex % weaponData.length];
+        const deleteId = `weapon-${count}`;
+
+        // Os valores da arma são preenchidos nos inputs
+        return `
+            <div class="weapon-entry" data-item-id="${deleteId}">
+                <div class="weapon-details">
+                    <input type="text" value="${weapon.nome}" placeholder="Nome da Arma" title="Nome da Arma">
+                    <input type="text" value="${weapon.dano}" placeholder="Dano" title="Dano (Tipo)">
+                    <input type="text" value="${weapon.maestria} / ${weapon.propriedades}" placeholder="Maestria / Propriedades" title="Maestria e Propriedades">
+                </div>
+                <button class="delete-btn" data-delete-id="${deleteId}">Excluir</button>
+            </div>
         `;
-        tabArmas.innerHTML = tableHTML;
     };
 
     // ----------------------------------------------------------------------
@@ -463,6 +391,11 @@ document.addEventListener('DOMContentLoaded', () => {
             targetContent.classList.add('active');
             const placeholder = targetContent.querySelector('.placeholder-text');
             if (placeholder && targetContent.children.length > 1) { placeholder.remove(); }
+            
+            // Se for a aba de armas, garante o placeholder (se não houver itens adicionados)
+            if (targetTabId === 'armas' && targetContent.children.length === 0) {
+                renderWeaponPlaceholder();
+            }
         }
     }
 
@@ -475,17 +408,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Define o template de item para cada aba
     const itemTemplates = {
-        // Armas (para itens personalizados adicionados)
-        armas: (count) => `
-            <div class="weapon-entry" data-item-id="custom-weapon-${count}">
-                <div class="weapon-details">
-                    <input type="text" value="Arma Customizada ${count}" placeholder="Nome da Arma">
-                    <input type="text" value="" placeholder="Dano (ex: 1d6)">
-                    <input type="text" value="" placeholder="Tipo/Maestria">
-                </div>
-                <button class="delete-btn" data-delete-id="custom-weapon-${count}">Excluir</button>
-            </div>
-        `,
+        // Armas: Utiliza a função que preenche com base na lista de armas (ex: índice 0 = Adaga)
+        armas: (count) => createWeaponEntry(count, itemCounter), 
+
         // Outros itens genéricos
         magias: (count) => createGenericEntry('Magia', count),
         tracos: (count) => createGenericEntry('Traço', count, 'textarea'),
@@ -498,12 +423,14 @@ document.addEventListener('DOMContentLoaded', () => {
             `<textarea placeholder="Descrição do ${type} ${count}" rows="2"></textarea>` :
             `<input type="text" value="${type} ${count}" placeholder="Nome do ${type}">`;
 
+        const deleteId = `${type.toLowerCase().replace(/\s/g, '-')}-${count}`;
+        
         return `
-            <div class="generic-entry" data-item-id="${type.toLowerCase().replace(/\s/g, '-')}-${count}">
+            <div class="generic-entry" data-item-id="${deleteId}">
                 <div class="generic-details">
                     ${inputElement}
                 </div>
-                <button class="delete-btn" data-delete-id="${type.toLowerCase().replace(/\s/g, '-')}-${count}">Excluir</button>
+                <button class="delete-btn" data-delete-id="${deleteId}">Excluir</button>
             </div>
         `;
     }
@@ -520,13 +447,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (parentTab && parentTab.children.length === 0) {
                 const tabId = parentTab.id.replace('tab-', '');
-                let placeholderText = 'Adicione itens aqui.';
+                let placeholderText;
                 switch(tabId) {
-                    case 'armas': renderWeaponTable(); return; // Re-renderiza a tabela fixa de armas
+                    case 'armas': renderWeaponPlaceholder(); return; // Usa a função de placeholder específica
                     case 'magias': placeholderText = 'Adicione suas magias.'; break;
                     case 'tracos': placeholderText = 'Adicione traços de raça ou classe.'; break;
                     case 'proficiencias': placeholderText = 'Adicione proficiências em ferramentas e idiomas.'; break;
                     case 'inventario': placeholderText = 'Adicione itens e moedas.'; break;
+                    default: placeholderText = 'Adicione itens aqui.';
                 }
                 parentTab.innerHTML = `<p class="placeholder-text">${placeholderText}</p>`;
             }
@@ -544,8 +472,8 @@ document.addEventListener('DOMContentLoaded', () => {
             itemCounter++;
             const newEntryHTML = templateFunction(itemCounter);
 
-            // Remove a tabela fixa de armas OU o placeholder
-            const placeholder = activeTab.querySelector('.placeholder-text, .weapon-table');
+            // Remove o placeholder antes de adicionar o item
+            const placeholder = activeTab.querySelector('.placeholder-text');
             if (placeholder) { placeholder.remove(); }
 
             activeTab.insertAdjacentHTML('beforeend', newEntryHTML);
@@ -559,7 +487,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- INICIALIZAÇÃO FINAL ---
-    renderWeaponTable(); // 1. Renderiza a tabela de armas na aba inicial
+    renderWeaponPlaceholder(); // 1. Renderiza o placeholder (com a instrução)
     document.querySelectorAll('.delete-btn').forEach(button => {
         button.addEventListener('click', handleDeleteItem);
     });
