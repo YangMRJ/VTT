@@ -1196,7 +1196,7 @@ input[type="number"] {
 }
 
 .weapon-entry .delete-btn i{
-    color: var(--text-color);
+    color: gainsboro;
 }
 
 
