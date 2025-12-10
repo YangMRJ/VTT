@@ -1132,7 +1132,7 @@ input[type="number"] {
 }
 
 .weapon-entry .weapon-details input[name="weapon-type"] {
-    width: 40px; /* Tipo de Dano */
+    width: 60px; /* Tipo de Dano */
 }
 
 .weapon-entry .weapon-details input[name="weapon-skill"] {
