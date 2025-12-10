@@ -1,4 +1,4 @@
-// script.js (Código Completo Atualizado com Lógica de Atributos e Perícias)
+// script.js (Código Completo Atualizado com Lógica de Atributos, Perícias e Abas)
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- Seletores da Ficha (Sheet Selectors) ---
@@ -466,5 +466,169 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('click', () => {
         closeAllProficiencyMenus(null);
     });
+
+    // ----------------------------------------------------------------------
+    // --- LÓGICA DO MAIN BLOCK (Troca de Abas e Adição de Itens) ---
+    // ----------------------------------------------------------------------
+
+    const mainButtons = document.querySelectorAll('.main-header-button');
+    const tabContents = document.querySelectorAll('.tab-content');
+    const addItemBtn = document.getElementById('add-item-btn');
+    const mainContentArea = document.querySelector('.main-content-area');
+
+    // --- 1. Lógica de Troca de Abas ---
+
+    const switchTab = (targetTabId) => {
+        // 1. Desativar todos os botões e conteúdos
+        mainButtons.forEach(btn => btn.classList.remove('active'));
+        tabContents.forEach(content => content.classList.remove('active'));
+        
+        // 2. Ativar o botão e o conteúdo alvo
+        const targetButton = document.querySelector(`[data-tab="${targetTabId}"]`);
+        const targetContent = document.getElementById(`tab-${targetTabId}`);
+        
+        if (targetButton) {
+            targetButton.classList.add('active');
+        }
+        if (targetContent) {
+            targetContent.classList.add('active');
+            // Remove placeholder se houver itens
+            const placeholder = targetContent.querySelector('.placeholder-text');
+            if (placeholder && targetContent.children.length > 1) {
+                 placeholder.remove();
+            }
+        }
+    }
+
+    // Configurar Listeners para os botões de cabeçalho
+    mainButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const targetTab = button.getAttribute('data-tab');
+            switchTab(targetTab);
+        });
+    });
+
+
+    // --- 2. Lógica de Adição de Itens Dinâmicos ---
+
+    // Define o template de item para cada aba
+    const itemTemplates = {
+        // Exemplo: Armas
+        armas: (count) => `
+            <div class="weapon-entry" data-item-id="weapon-${count}">
+                <div class="weapon-details">
+                    <input type="text" value="Arma ${count}" placeholder="Nome da Arma">
+                    <input type="text" value="" placeholder="Dano (ex: 1d6)">
+                    <input type="text" value="" placeholder="Tipo">
+                </div>
+                <button class="delete-btn" data-delete-id="weapon-${count}">Excluir</button>
+            </div>
+        `,
+        // Outros itens genéricos
+        magias: (count) => createGenericEntry('Magia', count),
+        tracos: (count) => createGenericEntry('Traço', count, 'textarea'),
+        proficiencias: (count) => createGenericEntry('Proficiência', count),
+        inventario: (count) => createGenericEntry('Item de Inventário', count),
+    };
+
+    // Função auxiliar para criar templates de itens simples/genéricos
+    function createGenericEntry(type, count, inputType = 'text') {
+        const inputElement = inputType === 'textarea' ? 
+            `<textarea placeholder="Descrição do ${type} ${count}" rows="2"></textarea>` : 
+            `<input type="text" value="${type} ${count}" placeholder="Nome do ${type}">`;
+
+        return `
+            <div class="generic-entry" data-item-id="${type.toLowerCase().replace(/\s/g, '-')}-${count}">
+                <div class="generic-details">
+                    ${inputElement}
+                </div>
+                <button class="delete-btn" data-delete-id="${type.toLowerCase().replace(/\s/g, '-')}-${count}">Excluir</button>
+            </div>
+        `;
+    }
+
+    // Contador global para dar IDs únicos aos itens
+    let itemCounter = 0; 
+
+    addItemBtn.addEventListener('click', () => {
+        const activeTab = document.querySelector('.tab-content.active');
+        
+        if (!activeTab) return; 
+
+        const activeTabId = activeTab.id.replace('tab-', '');
+        const templateFunction = itemTemplates[activeTabId];
+
+        if (templateFunction) {
+            itemCounter++;
+            
+            // 1. Cria o novo elemento HTML
+            const newEntryHTML = templateFunction(itemCounter);
+            
+            // 2. Remove o placeholder se existir
+            const placeholder = activeTab.querySelector('.placeholder-text');
+            if (placeholder) {
+                placeholder.remove();
+            }
+
+            // 3. Adiciona ao DOM
+            activeTab.insertAdjacentHTML('beforeend', newEntryHTML);
+
+            // 4. Configura o listener para o novo botão Excluir
+            const newItem = activeTab.lastElementChild;
+            const deleteButton = newItem.querySelector('.delete-btn');
+            if (deleteButton) {
+                deleteButton.addEventListener('click', handleDeleteItem);
+            }
+            
+            // 5. Rola para o final
+            activeTab.scrollTop = activeTab.scrollHeight;
+
+        } else {
+            console.warn(`Template não encontrado para a aba: ${activeTabId}`);
+        }
+    });
+
+
+    // --- 3. Lógica de Exclusão de Itens ---
+
+    const handleDeleteItem = (e) => {
+        const deleteId = e.target.getAttribute('data-delete-id');
+        const itemToDelete = document.querySelector(`[data-item-id="${deleteId}"]`);
+        
+        if (itemToDelete) {
+            const parentTab = itemToDelete.closest('.tab-content');
+            itemToDelete.remove();
+            
+            // Se a aba ficar vazia, adiciona o placeholder de volta
+            if (parentTab && parentTab.children.length === 0) {
+                const tabId = parentTab.id.replace('tab-', '');
+                
+                // Mapeamento para texto do placeholder
+                let placeholderText;
+                switch(tabId) {
+                    case 'armas': placeholderText = 'Adicione suas armas ou ataques.'; break;
+                    case 'magias': placeholderText = 'Adicione suas magias.'; break;
+                    case 'tracos': placeholderText = 'Adicione traços de raça ou classe.'; break;
+                    case 'proficiencias': placeholderText = 'Adicione proficiências em ferramentas e idiomas.'; break;
+                    case 'inventario': placeholderText = 'Adicione itens e moedas.'; break;
+                    default: placeholderText = 'Adicione itens aqui.';
+                }
+
+                parentTab.innerHTML = `<p class="placeholder-text">${placeholderText}</p>`;
+            }
+        }
+    }
+
+    // Adiciona listener de exclusão a itens existentes na carga inicial (não é necessário pois não há itens fixos)
+    /*
+    document.querySelectorAll('.delete-btn').forEach(button => {
+        button.addEventListener('click', handleDeleteItem);
+    });
+    */
+
+
+    // 4. Inicializa o estado (garante que a aba 'Armas' esteja ativa no carregamento)
+    // Usamos um DOMContentLoaded listener no topo, então faremos a chamada aqui
+    switchTab('armas');
 
 });
