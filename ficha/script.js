@@ -392,7 +392,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <input type="text" name="weapon-skill" value="" placeholder="Skill" readonly title="Maestria/Skill (ex: Derrubar)">
                         <input type="checkbox" name="weapon-finesse" title="Ágil (Finesse)">
                     </div>
-                    <button class="delete-btn" data-delete-id="${deleteId}"><i class="fa-solid fa-trash"></i></button>
+                    <button class="delete-btn" data-delete-id="${deleteId}"></button>
                 </div>
                 <div class="weapon-description-area">
                     <textarea name="weapon-desc" placeholder="Descrição da Arma e Efeitos de Maestria..." rows="3"></textarea>
