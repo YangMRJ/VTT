@@ -1190,7 +1190,7 @@ input[type="number"] {
 
 .weapon-entry .delete-btn {
     margin-left: 10px;
-    min-width: 50px;
+    min-width: 40px;
     height: 30px;
     background-color: #ef4444;
 }
