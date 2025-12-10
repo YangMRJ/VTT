@@ -375,3 +375,193 @@ document.addEventListener('DOMContentLoaded', () => {
         { nome: 'Funda', preco: '1 pp', dano: '1d4', tipo: 'E', peso: '-', maestria: 'Lentidão (Slow)', propriedades: 'Munição, Alcance (9/36)' },
         // Marciais Corpo-a-Corpo
         { nome: 'Alabarda', preco: '20 po', dano: '1d10', tipo: 'C', peso: '3', maestria: 'Trespassar (Cleave)', propriedades: 'Pesada, Alcance (Reach), Duas Mãos' },
+        { nome: 'Chicote', preco: '2 po', dano: '1d4', tipo: 'C', peso: '1,5', maestria: 'Lentidão (Slow)', propriedades: 'Ágil (Finesse), Alcance (Reach)' },
+        { nome: 'Cimitarra', preco: '25 po', dano: '1d6', tipo: 'C', peso: '1,5', maestria: 'Incissão (Nick)', propriedades: 'Ágil (Finesse), Leve' },
+        { nome: 'Espada Curta', preco: '10 po', dano: '1d6', tipo: 'P', peso: '1', maestria: 'Irritar (Vex)', propriedades: 'Ágil (Finesse), Leve' },
+        { nome: 'Espada Duas Mãos (Montante)', preco: '50 po', dano: '2d6', tipo: 'C', peso: '3', maestria: 'Trespassar (Cleave)', propriedades: 'Pesada, Duas Mãos' },
+        { nome: 'Espada Longa', preco: '15 po', dano: '1d8', tipo: 'C', peso: '1,5', maestria: 'Esgotar (Sap)', propriedades: 'Versátil (1d10)' },
+        { nome: 'Florete', preco: '25 po', dano: '1d8', tipo: 'P', peso: '1', maestria: 'Irritar (Vex)', propriedades: 'Ágil (Finesse)' },
+        { nome: 'Glaive', preco: '20 po', dano: '1d10', tipo: 'C', peso: '3', maestria: 'Relance (Graze)', propriedades: 'Pesada, Alcance (Reach), Duas Mãos' },
+        { nome: 'Lança de Montaria', preco: '10 po', dano: '1d12', tipo: 'P', peso: '3', maestria: 'Derrubar (Topple)', propriedades: 'Alcance (Reach), Duas Mãos (exceto se montado)' },
+        { nome: 'Maça Estrela', preco: '15 po', dano: '1d8', tipo: 'P', peso: '2', maestria: 'Esgotar (Sap)', propriedades: '-' },
+        { nome: 'Machado de Batalha', preco: '10 po', dano: '1d8', tipo: 'C', peso: '2', maestria: 'Derrubar (Topple)', propriedades: 'Versátil (1d10)' },
+        { nome: 'Machado Grande', preco: '30 po', dano: '1d12', tipo: 'C', peso: '3,5', maestria: 'Trespassar (Cleave)', propriedades: 'Pesada, Duas Mãos' },
+        { nome: 'Mangual', preco: '10 po', dano: '1d8', tipo: 'E', peso: '1', maestria: 'Esgotar (Sap)', propriedades: '-' },
+        { nome: 'Marreta (Malho)', preco: '10 po', dano: '2d6', tipo: 'E', peso: '5', maestria: 'Derrubar (Topple)', propriedades: 'Pesada, Duas Mãos' },
+        { nome: 'Martelo de Guerra', preco: '15 po', dano: '1d8', tipo: 'E', peso: '1', maestria: 'Empurrão (Push)', propriedades: 'Versátil (1d10)' },
+        { nome: 'Picareta de Guerra', preco: '5 po', dano: '1d8', tipo: 'P', peso: '1', maestria: 'Esgotar (Sap)', propriedades: '-' },
+        { nome: 'Pique', preco: '5 po', dano: '1d10', tipo: 'P', peso: '9', maestria: 'Empurrão (Push)', propriedades: 'Pesada, Alcance (Reach), Duas Mãos' },
+        { nome: 'Tridente', preco: '5 po', dano: '1d6', tipo: 'P', peso: '2', maestria: 'Derrubar (Topple)', propriedades: 'Arremesso (6/18), Versátil (1d8)' },
+        // Marciais à Distância
+        { nome: 'Arco Longo', preco: '50 po', dano: '1d8', tipo: 'P', peso: '1', maestria: 'Irritar (Vex)', propriedades: 'Munição, Pesada, Duas Mãos, Alcance (45/180)' },
+        { nome: 'Besta de Mão', preco: '75 po', dano: '1d6', tipo: 'P', peso: '1,5', maestria: 'Irritar (Vex)', propriedades: 'Munição, Leve, Recarga, Alcance (9/36)' },
+        { nome: 'Besta Pesada', preco: '50 po', dano: '1d10', tipo: 'P', peso: '9', maestria: 'Lentidão (Slow)', propriedades: 'Munição, Pesada, Recarga, Duas Mãos, Alcance (30/120)' },
+        { nome: 'Rede', preco: '1 po', dano: '--', tipo: '-', peso: '1,5', maestria: 'Derrubar (Topple)', propriedades: 'Arremesso (1,5/4,5), Especial' },
+        { nome: 'Zarabatana', preco: '10 po', dano: '1', tipo: 'P', peso: '0,5', maestria: 'Lentidão (Slow)', propriedades: 'Munição, Recarga, Alcance (7,5/30)' },
+        // Armas de Fogo (Opcional)
+        { nome: 'Mosquete', preco: '500 po', dano: '1d12', tipo: 'P', peso: '-', maestria: 'Lentidão (Slow)', propriedades: 'Carregamento, Duas Mãos, Alcance (12/36)' },
+        { nome: 'Pistola', preco: '250 po', dano: '1d10', tipo: 'P', peso: '-', maestria: 'Irritar (Vex)', propriedades: 'Carregamento, Alcance (9/27)' },
+    ];
+
+    const renderWeaponTable = () => {
+        const tabArmas = document.getElementById('tab-armas');
+        if (!tabArmas) return;
+
+        let tableHTML = `
+            <div style="padding-bottom: 10px; color: var(--primary-color);">*P=Perfurante, E=Esmagamento, C=Corte.</div>
+            <table class="weapon-table">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Dano</th>
+                        <th>Tipo</th>
+                        <th>Peso (k)</th>
+                        <th>Maestria</th>
+                        <th>Propriedades</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        weaponData.forEach(weapon => {
+            tableHTML += `
+                <tr>
+                    <td>${weapon.nome}</td>
+                    <td class="dano">${weapon.dano}</td>
+                    <td>${weapon.tipo}</td>
+                    <td>${weapon.peso}</td>
+                    <td class="maestria">${weapon.maestria}</td>
+                    <td class="propriedades">${weapon.propriedades}</td>
+                </tr>
+            `;
+        });
+
+        tableHTML += `
+                </tbody>
+            </table>
+        `;
+        tabArmas.innerHTML = tableHTML;
+    };
+
+    // ----------------------------------------------------------------------
+    // --- LÓGICA DO MAIN BLOCK (Troca de Abas e Adição de Itens) ---
+    // ----------------------------------------------------------------------
+
+    const mainButtons = document.querySelectorAll('.main-header-button');
+    const tabContents = document.querySelectorAll('.tab-content');
+    const addItemBtn = document.getElementById('add-item-btn');
+
+    const switchTab = (targetTabId) => {
+        mainButtons.forEach(btn => btn.classList.remove('active'));
+        tabContents.forEach(content => content.classList.remove('active'));
+
+        const targetButton = document.querySelector(`[data-tab="${targetTabId}"]`);
+        const targetContent = document.getElementById(`tab-${targetTabId}`);
+
+        if (targetButton) { targetButton.classList.add('active'); }
+        if (targetContent) {
+            targetContent.classList.add('active');
+            const placeholder = targetContent.querySelector('.placeholder-text');
+            if (placeholder && targetContent.children.length > 1) { placeholder.remove(); }
+        }
+    }
+
+    mainButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const targetTab = button.getAttribute('data-tab');
+            switchTab(targetTab);
+        });
+    });
+
+    // Define o template de item para cada aba
+    const itemTemplates = {
+        // Armas (para itens personalizados adicionados)
+        armas: (count) => `
+            <div class="weapon-entry" data-item-id="custom-weapon-${count}">
+                <div class="weapon-details">
+                    <input type="text" value="Arma Customizada ${count}" placeholder="Nome da Arma">
+                    <input type="text" value="" placeholder="Dano (ex: 1d6)">
+                    <input type="text" value="" placeholder="Tipo/Maestria">
+                </div>
+                <button class="delete-btn" data-delete-id="custom-weapon-${count}">Excluir</button>
+            </div>
+        `,
+        // Outros itens genéricos
+        magias: (count) => createGenericEntry('Magia', count),
+        tracos: (count) => createGenericEntry('Traço', count, 'textarea'),
+        proficiencias: (count) => createGenericEntry('Proficiência', count),
+        inventario: (count) => createGenericEntry('Item de Inventário', count),
+    };
+
+    function createGenericEntry(type, count, inputType = 'text') {
+        const inputElement = inputType === 'textarea' ?
+            `<textarea placeholder="Descrição do ${type} ${count}" rows="2"></textarea>` :
+            `<input type="text" value="${type} ${count}" placeholder="Nome do ${type}">`;
+
+        return `
+            <div class="generic-entry" data-item-id="${type.toLowerCase().replace(/\s/g, '-')}-${count}">
+                <div class="generic-details">
+                    ${inputElement}
+                </div>
+                <button class="delete-btn" data-delete-id="${type.toLowerCase().replace(/\s/g, '-')}-${count}">Excluir</button>
+            </div>
+        `;
+    }
+
+    let itemCounter = 0;
+
+    const handleDeleteItem = (e) => {
+        const deleteId = e.target.getAttribute('data-delete-id');
+        const itemToDelete = document.querySelector(`[data-item-id="${deleteId}"]`);
+
+        if (itemToDelete) {
+            const parentTab = itemToDelete.closest('.tab-content');
+            itemToDelete.remove();
+
+            if (parentTab && parentTab.children.length === 0) {
+                const tabId = parentTab.id.replace('tab-', '');
+                let placeholderText = 'Adicione itens aqui.';
+                switch(tabId) {
+                    case 'armas': renderWeaponTable(); return; // Re-renderiza a tabela fixa de armas
+                    case 'magias': placeholderText = 'Adicione suas magias.'; break;
+                    case 'tracos': placeholderText = 'Adicione traços de raça ou classe.'; break;
+                    case 'proficiencias': placeholderText = 'Adicione proficiências em ferramentas e idiomas.'; break;
+                    case 'inventario': placeholderText = 'Adicione itens e moedas.'; break;
+                }
+                parentTab.innerHTML = `<p class="placeholder-text">${placeholderText}</p>`;
+            }
+        }
+    }
+
+    addItemBtn.addEventListener('click', () => {
+        const activeTab = document.querySelector('.tab-content.active');
+        if (!activeTab) return;
+
+        const activeTabId = activeTab.id.replace('tab-', '');
+        const templateFunction = itemTemplates[activeTabId];
+
+        if (templateFunction) {
+            itemCounter++;
+            const newEntryHTML = templateFunction(itemCounter);
+
+            // Remove a tabela fixa de armas OU o placeholder
+            const placeholder = activeTab.querySelector('.placeholder-text, .weapon-table');
+            if (placeholder) { placeholder.remove(); }
+
+            activeTab.insertAdjacentHTML('beforeend', newEntryHTML);
+
+            const newItem = activeTab.lastElementChild;
+            const deleteButton = newItem.querySelector('.delete-btn');
+            if (deleteButton) { deleteButton.addEventListener('click', handleDeleteItem); }
+
+            activeTab.scrollTop = activeTab.scrollHeight;
+        }
+    });
+
+    // --- INICIALIZAÇÃO FINAL ---
+    renderWeaponTable(); // 1. Renderiza a tabela de armas na aba inicial
+    document.querySelectorAll('.delete-btn').forEach(button => {
+        button.addEventListener('click', handleDeleteItem);
+    });
+    switchTab('armas'); // 2. Garante que a aba de armas esteja visível
+});
