@@ -340,4 +340,49 @@ document.addEventListener('DOMContentLoaded', () => {
         closeAllProficiencyMenus(null);
     });
 
+    // ----------------------------------------------------------------------
+    // --- LÓGICA DOS ATRIBUTOS E MODIFICADORES (DnD 5e 2024) ---
+    // ----------------------------------------------------------------------
+
+    // 1. Função de Cálculo do Modificador (Math.floor((score - 10) / 2))
+    const calculateModifier = (score) => {
+        // Garante que o score seja um número, com fallback para 10
+        const value = parseInt(score) || 10; 
+        const modifier = Math.floor((value - 10) / 2);
+        
+        // Formata o modificador como "+N" ou "-N"
+        return modifier >= 0 ? `+${modifier}` : `${modifier}`;
+    };
+
+    // 2. Mapeamento e Configuração de Event Listeners
+    const attributes = [
+        { scoreId: 'for-score', modId: 'for-mod' },
+        { scoreId: 'des-score', modId: 'des-mod' },
+        { scoreId: 'con-score', modId: 'con-mod' },
+        { scoreId: 'int-score', modId: 'int-mod' },
+        { scoreId: 'car-score', modId: 'car-mod' },
+        { scoreId: 'sab-score', modId: 'sab-mod' },
+    ];
+
+    const updateAttributeModifier = (scoreInput, modInput) => {
+        const score = scoreInput.value;
+        modInput.value = calculateModifier(score);
+    };
+
+    attributes.forEach(attr => {
+        const scoreInput = document.getElementById(attr.scoreId);
+        const modInput = document.getElementById(attr.modId);
+
+        if (scoreInput && modInput) {
+            // Inicializa o modificador ao carregar
+            updateAttributeModifier(scoreInput, modInput);
+
+            // Adiciona listener para recalcular o modificador em tempo real
+            // 'input' é melhor para números pois dispara a cada tecla/seta
+            scoreInput.addEventListener('input', () => {
+                updateAttributeModifier(scoreInput, modInput);
+            });
+        }
+    });
+
 });
