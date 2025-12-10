@@ -1195,6 +1195,10 @@ input[type="number"] {
     background-color: #ef4444;
 }
 
+.weapon-entry .delete-btn i{
+    color: white;
+}
+
 
 /* --- ESTILOS DE ITENS GENÉRICOS --- */
 
