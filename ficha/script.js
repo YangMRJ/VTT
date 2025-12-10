@@ -1,4 +1,4 @@
-// script.js (Código Completo Atualizado)
+// script.js (Código Completo Atualizado com Lógica de Atributos e Perícias)
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- Seletores da Ficha (Sheet Selectors) ---
@@ -202,9 +202,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Lógica para Descanso Curto (Cura 50% do HP Máximo Real e zera o HP Temp)
     shortRestBtn.addEventListener('click', () => {
         let max = parseInt(hpMaxHidden.value) || 10;
-        let healAmount = Math.ceil(max * 0.5); // Cura 50% do max
         
-        healDamage(healAmount);
+        setRealHP(Math.min(realCurrentHP + Math.ceil(max * 0.5), max)); // Cura 50% do max
         
         // Zera o HP Temporário após descanso (regra comum)
         hpTempInput.value = 0;
@@ -285,10 +284,156 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('click', closeAllSelect);
 
     // ----------------------------------------------------------------------
-    // --- LÓGICA DE PROFICIÊNCIA DE PERÍCIAS (SKILL PROFICIENCY) ---
+    // --- LÓGICA DE ATRIBUTOS E MODIFICADORES (DnD 5e 2024) ---
     // ----------------------------------------------------------------------
 
-    const proficiencyItems = document.querySelectorAll('.skill-item');
+    // Mapeamento de atributos (compartilhado com a lógica de perícia)
+    const attributes = [
+        { scoreId: 'for-score', modId: 'for-mod' },
+        { scoreId: 'des-score', modId: 'des-mod' },
+        { scoreId: 'con-score', modId: 'con-mod' },
+        { scoreId: 'int-score', modId: 'int-mod' },
+        { scoreId: 'car-score', modId: 'car-mod' },
+        { scoreId: 'sab-score', modId: 'sab-mod' },
+    ];
+
+    // Função de Cálculo do Modificador (Math.floor((score - 10) / 2))
+    const calculateModifier = (score) => {
+        const value = parseInt(score) || 10; 
+        const modifier = Math.floor((value - 10) / 2);
+        return modifier >= 0 ? `+${modifier}` : `${modifier}`;
+    };
+
+    // Função para atualizar um modificador de atributo
+    const updateAttributeModifier = (scoreInput, modInput) => {
+        const score = scoreInput.value;
+        modInput.value = calculateModifier(score);
+    };
+
+    // ----------------------------------------------------------------------
+    // --- LÓGICA DE PERÍCIAS (SKILL MODIFIERS) ---
+    // ----------------------------------------------------------------------
+
+    const proficiencyBonusInput = document.getElementById('proficiency-bonus');
+
+    // Mapeamento das 18 perícias para seus atributos
+    const skillMap = [
+        // DES
+        { skillId: 'acrobacia', attrModId: 'des-mod', attribute: 'DES' },
+        { skillId: 'prestidigitacao', attrModId: 'des-mod', attribute: 'DES' },
+        { skillId: 'furtividade', attrModId: 'des-mod', attribute: 'DES' },
+        // FOR
+        { skillId: 'atletismo', attrModId: 'for-mod', attribute: 'FOR' },
+        // INT
+        { skillId: 'arcano', attrModId: 'int-mod', attribute: 'INT' },
+        { skillId: 'historia', attrModId: 'int-mod', attribute: 'INT' },
+        { skillId: 'investigacao', attrModId: 'int-mod', attribute: 'INT' },
+        { skillId: 'natureza', attrModId: 'int-mod', attribute: 'INT' },
+        { skillId: 'religiao', attrModId: 'int-mod', attribute: 'INT' },
+        // SAB
+        { skillId: 'adestrar', attrModId: 'sab-mod', attribute: 'SAB' },
+        { skillId: 'intuicao', attrModId: 'sab-mod', attribute: 'SAB' },
+        { skillId: 'medicina', attrModId: 'sab-mod', attribute: 'SAB' },
+        { skillId: 'percepcao', attrModId: 'sab-mod', attribute: 'SAB' },
+        { skillId: 'sobrevivencia', attrModId: 'sab-mod', attribute: 'SAB' },
+        // CAR
+        { skillId: 'enganacao', attrModId: 'car-mod', attribute: 'CAR' },
+        { skillId: 'intimidacao', attrModId: 'car-mod', attribute: 'CAR' },
+        { skillId: 'atuacao', attrModId: 'car-mod', attribute: 'CAR' },
+        { skillId: 'persuasao', attrModId: 'car-mod', attribute: 'CAR' },
+    ];
+
+    // Função de utilidade para obter o multiplicador de proficiência
+    const getProficiencyMultiplier = (proficiencyLevel) => {
+        switch (proficiencyLevel) {
+            case 'full': return 2; // Expertise
+            case 'half': return 1; // Proficiente
+            case 'none':
+            default: return 0; // Sem Treino
+        }
+    }
+
+    // Função principal para calcular e atualizar uma perícia específica
+    const updateSkillModifier = (skillItem) => {
+        const skillId = skillItem.getAttribute('data-skill-id');
+        const skillData = skillMap.find(s => s.skillId === skillId);
+        
+        if (!skillData) return;
+
+        const attributeModInput = document.getElementById(skillData.attrModId);
+        const skillModInput = skillItem.querySelector('.modifier input');
+        const proficiencyCircle = skillItem.querySelector('.proficiency-circle');
+        
+        // 1. Obter valores
+        const attrMod = parseInt(attributeModInput.value) || 0; 
+        const pb = parseInt(proficiencyBonusInput.value) || 0;
+        const proficiencyLevel = proficiencyCircle.getAttribute('data-proficiency');
+        const multiplier = getProficiencyMultiplier(proficiencyLevel);
+
+        // 2. Calcular o Modificador Final
+        const skillModValue = attrMod + (pb * multiplier);
+        
+        // 3. Formatar e Atualizar o Input
+        const formattedSkillMod = skillModValue >= 0 ? `+${skillModValue}` : `${skillModValue}`;
+        skillModInput.value = formattedSkillMod;
+    };
+
+    // Função para atualizar TODAS as perícias
+    const updateAllSkillModifiers = () => {
+        document.querySelectorAll('.skill-item').forEach(updateSkillModifier);
+    }
+    
+    // ----------------------------------------------------------------------
+    // --- CONFIGURAÇÃO DOS LISTENERS DE EVENTOS ---
+    // ----------------------------------------------------------------------
+
+    // 1. Ouvir mudanças nos ATRIBUTOS
+    attributes.forEach(attr => {
+        const scoreInput = document.getElementById(attr.scoreId);
+        const modInput = document.getElementById(attr.modId);
+
+        if (scoreInput && modInput) {
+            // Inicializa o modificador ao carregar
+            updateAttributeModifier(scoreInput, modInput);
+
+            // Listener para recalcular o modificador de atributo e TODAS as perícias
+            scoreInput.addEventListener('input', () => {
+                updateAttributeModifier(scoreInput, modInput);
+                updateAllSkillModifiers(); 
+            });
+        }
+    });
+
+    // 2. Ouvir mudanças no BÔNUS DE PROFICIÊNCIA (PB)
+    if (proficiencyBonusInput) {
+        proficiencyBonusInput.addEventListener('input', updateAllSkillModifiers);
+    }
+
+    // 3. Ouvir mudanças no CÍRCULO DE PROFICIÊNCIA das perícias (Half, Full, None)
+    document.querySelectorAll('.proficiency-menu div').forEach(option => {
+        option.addEventListener('click', (e) => {
+            const newProficiency = e.target.getAttribute('data-value');
+            const skillItem = e.target.closest('.skill-block').querySelector('.skill-item');
+            const circleContainer = skillItem.querySelector('.proficiency-circle');
+            
+            // 1. Atualiza o atributo de dado do círculo
+            circleContainer.setAttribute('data-proficiency', newProficiency);
+            
+            // 2. Fecha o menu
+            e.target.closest('.proficiency-menu').classList.add('select-hide');
+
+            // 3. Recalcula apenas a perícia modificada
+            updateSkillModifier(skillItem); 
+        });
+    });
+
+    // Atualiza todas as perícias na carga inicial (após a inicialização dos atributos)
+    updateAllSkillModifiers();
+    // ----------------------------------------------------------------------
+
+    // --- CONTINUAÇÃO DA LÓGICA ORIGINAL DE PROFICIÊNCIA DE PERÍCIAS ---
+    // (A lógica de abertura/fechamento do menu de proficiência)
+
     const proficiencyMenus = document.querySelectorAll('.proficiency-menu');
 
     // Função para fechar todos os menus de proficiência abertos
@@ -300,33 +445,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    proficiencyItems.forEach(item => {
-        const circleContainer = item.querySelector('.proficiency-circle');
+    document.querySelectorAll('.skill-item').forEach(item => {
         const proficiencyBtn = item.querySelector('.proficiency-btn');
-        const menu = item.nextElementSibling; // Assume que o menu está logo após o skill-item
+        const menu = item.closest('.skill-block').querySelector('.proficiency-menu'); 
 
         // Lógica para abrir/fechar o menu ao clicar no botão/círculo
         proficiencyBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            
-            // Fecha outros menus antes de abrir este
             closeAllProficiencyMenus(menu);
-
-            // Alterna a visibilidade do menu
             menu.classList.toggle('select-hide');
-        });
-
-        // Lógica para selecionar uma opção do menu
-        menu.querySelectorAll('div').forEach(option => {
-            option.addEventListener('click', (e) => {
-                const newProficiency = e.target.getAttribute('data-value');
-                
-                // 1. Atualiza o atributo de dado do círculo
-                circleContainer.setAttribute('data-proficiency', newProficiency);
-                
-                // 2. Fecha o menu
-                menu.classList.add('select-hide');
-            });
         });
         
         // Impede que o clique no menu feche-o (pelo handler de 'document')
@@ -338,51 +465,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Fecha o menu de proficiência se o usuário clicar em qualquer outro lugar
     document.addEventListener('click', () => {
         closeAllProficiencyMenus(null);
-    });
-
-    // ----------------------------------------------------------------------
-    // --- LÓGICA DOS ATRIBUTOS E MODIFICADORES (DnD 5e 2024) ---
-    // ----------------------------------------------------------------------
-
-    // 1. Função de Cálculo do Modificador (Math.floor((score - 10) / 2))
-    const calculateModifier = (score) => {
-        // Garante que o score seja um número, com fallback para 10
-        const value = parseInt(score) || 10; 
-        const modifier = Math.floor((value - 10) / 2);
-        
-        // Formata o modificador como "+N" ou "-N"
-        return modifier >= 0 ? `+${modifier}` : `${modifier}`;
-    };
-
-    // 2. Mapeamento e Configuração de Event Listeners
-    const attributes = [
-        { scoreId: 'for-score', modId: 'for-mod' },
-        { scoreId: 'des-score', modId: 'des-mod' },
-        { scoreId: 'con-score', modId: 'con-mod' },
-        { scoreId: 'int-score', modId: 'int-mod' },
-        { scoreId: 'car-score', modId: 'car-mod' },
-        { scoreId: 'sab-score', modId: 'sab-mod' },
-    ];
-
-    const updateAttributeModifier = (scoreInput, modInput) => {
-        const score = scoreInput.value;
-        modInput.value = calculateModifier(score);
-    };
-
-    attributes.forEach(attr => {
-        const scoreInput = document.getElementById(attr.scoreId);
-        const modInput = document.getElementById(attr.modId);
-
-        if (scoreInput && modInput) {
-            // Inicializa o modificador ao carregar
-            updateAttributeModifier(scoreInput, modInput);
-
-            // Adiciona listener para recalcular o modificador em tempo real
-            // 'input' é melhor para números pois dispara a cada tecla/seta
-            scoreInput.addEventListener('input', () => {
-                updateAttributeModifier(scoreInput, modInput);
-            });
-        }
     });
 
 });
