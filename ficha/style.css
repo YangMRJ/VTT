@@ -1123,3 +1123,50 @@ input[type="number"] {
 .delete-btn:hover {
     background: #b91c1c;
 }
+
+/* --- ESTILOS DE TABELA DE ARMAS (Nova seção) --- */
+
+#tab-armas {
+    /* Permite rolagem horizontal se a tabela for muito larga */
+    overflow-x: auto; 
+}
+
+.weapon-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9em;
+    min-width: 500px; /* Garante que a tabela tenha uma largura mínima */
+}
+
+.weapon-table th, .weapon-table td {
+    padding: 8px 10px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.weapon-table th {
+    background-color: var(--bg-light);
+    color: var(--primary-color);
+    font-weight: 600;
+    text-transform: uppercase;
+    position: sticky;
+    top: 0; /* Fixa o cabeçalho na rolagem interna da aba */
+}
+
+.weapon-table tr:hover td {
+    background-color: var(--bg-darker);
+}
+
+.weapon-table .maestria {
+    color: var(--dice-color);
+    font-weight: bold;
+}
+
+.weapon-table .dano {
+    font-weight: 600;
+}
+
+.weapon-table .propriedades {
+    font-size: 0.8em;
+    color: var(--primary-color);
+}
