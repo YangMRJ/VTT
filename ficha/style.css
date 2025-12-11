@@ -189,7 +189,7 @@ select:focus {
     display: flex;
     justify-content: center;
     gap: 1rem;
-    margin-right: 10px;
+    margin-right: 8px;
 }
 
 .main-info-box{
