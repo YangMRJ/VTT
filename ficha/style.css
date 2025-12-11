@@ -188,7 +188,8 @@ select:focus {
 .top-group{
     display: flex;
     justify-content: center;
-    gap: 1.25rem;
+    gap: 1rem;
+    margin-right: 10px;
 }
 
 .main-info-box{
