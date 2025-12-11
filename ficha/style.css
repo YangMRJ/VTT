@@ -199,6 +199,7 @@ select:focus {
     border-radius: 8px; 
     height: 200px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.2); 
+    margin-right: 100px;
 }
 
 .info-inputs{
