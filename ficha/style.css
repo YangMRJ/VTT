@@ -43,7 +43,7 @@ hr {
     transition: max-height 0.4s ease-out, box-shadow 0.4s ease-out;
     max-height: 1000px; /* Definir uma altura máxima suficiente para o estado normal */
 
-    width: 911px; /* Largura padrão */
+    width: 1px; /* Largura padrão */
     max-width: 100%;
     background: var(--bg-dark);
     border: 1px solid var(--border-color);
