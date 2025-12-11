@@ -967,7 +967,7 @@ input[type="number"] {
     grid-template-columns: 1fr 2fr;
     /* Duas linhas: ambas com altura automática */
     grid-template-rows: auto auto;
-    gap: 1rem;
+    gap: 1.25rem;
 }
 
 .main-block {
