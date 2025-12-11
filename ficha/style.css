@@ -981,7 +981,7 @@ input[type="number"] {
     grid-column: 1;
     grid-row: 2;
     gap: 0px;    
-    margin-right: -10px;
+    margin-right: -5px;
     /* MODIFICAÇÃO PARA ABAS */
     display: flex;
     flex-direction: column;
