@@ -410,7 +410,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (listContainer && listContainer.children.length === 0) {
             tabArmas.querySelector('.placeholder-text').style.display = 'block';
-            tabArmas.querySelector('.weapon-header-row').style.display = 'none';
+            // Linha removida: tabArmas.querySelector('.weapon-header-row').style.display = 'none';
         }
     }
 
@@ -439,7 +439,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     renderWeaponPlaceholder();
                 } else {
                     targetContent.querySelector('.placeholder-text').style.display = 'none';
-                    targetContent.querySelector('.weapon-header-row').style.display = 'flex';
+                    // Linha removida: targetContent.querySelector('.weapon-header-row').style.display = 'flex';
                 }
             } else {
                  const placeholder = targetContent.querySelector('.placeholder-text');
@@ -530,7 +530,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (placeholder) { placeholder.style.display = 'none'; }
             
             if (activeTabId === 'armas') {
-                activeTab.querySelector('.weapon-header-row').style.display = 'flex';
+                // Linha removida: activeTab.querySelector('.weapon-header-row').style.display = 'flex';
             }
 
             listContainer.insertAdjacentHTML('beforeend', newEntryHTML);
