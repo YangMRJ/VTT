@@ -1,4 +1,4 @@
-// script.js (Código Completo Atualizado: Estrutura Detalhada de Armas com Seleção)
+// script.js (Código Completo Atualizado com Dropdown de Acuidade)
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- LÓGICA DE UTILIDADE DA FICHA ---
@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const minimizeBtn = document.getElementById('minimize-btn');
     const closeBtn = document.getElementById('close-btn');
 
-    // --- Lógica de Arrastar ---
+    // --- Lógica de Arrastar (Mantida) ---
     let isDragging = false;
     let offsetX, offsetY;
     handle.addEventListener('mousedown', (e) => {
@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- Lógica de Minimizar/Fechar ---
+    // --- Lógica de Minimizar/Fechar (Mantida) ---
     minimizeBtn.addEventListener('click', () => {
         sheet.classList.toggle('minimized');
         minimizeBtn.textContent = sheet.classList.contains('minimized') ? '☐' : '_';
@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ----------------------------------------------------------------------
-    // --- LÓGICA DE HP ---
+    // --- LÓGICA DE HP (Mantida) ---
     // ----------------------------------------------------------------------
     const hpCurrentInput = document.getElementById('HPCurrentInput');
     const hpMaxHidden = document.getElementById('HPMax');
@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ----------------------------------------------------------------------
-    // --- LÓGICA DE DROPDOWN e ATRIBUTOS/PERÍCIAS (Omitido para foco) ---
+    // --- LÓGICA DE DROPDOWN e ATRIBUTOS/PERÍCIAS (Mantida) ---
     // ----------------------------------------------------------------------
 
     const customSelect = document.getElementById('DadoHPSelect');
@@ -330,7 +330,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { nome: 'Pistola', dano: '1d10', tipo: 'P', maestria: 'Irritar', propriedades: 'Carregamento, Alcance (9/27)' },
     ];
     
-    // Função para criar o HTML do dropdown de armas
+    // Função para criar o HTML do dropdown de armas (Mantida)
     const createWeaponSelect = () => {
         let options = '<option value="">--- Escolher Arma ---</option>';
         weaponData.forEach((weapon, index) => {
@@ -339,7 +339,44 @@ document.addEventListener('DOMContentLoaded', () => {
         return `<select name="weapon-name">${options}</select>`;
     };
     
-    // Função que preenche os campos com os dados da arma selecionada
+    // Função para criar o dropdown de Acuidade (Finesse) - NOVO
+    const createFinesseSelect = (id) => {
+        return `
+            <div class="custom-select weapon-finesse-select" id="FinesseSelect-${id}">
+                <div class="select-selected" id="FinesseSelected-${id}" data-value=""> </div>
+                <div class="select-items select-hide">
+                    <div data-value=""> </div>
+                    <div data-value="acuidade">Acuidade</div>
+                </div>
+            </div>
+        `;
+    };
+
+    // Função para inicializar o dropdown customizado (DadoHPSelect) - ADAPTADA
+    const initializeCustomSelect = (selectId) => {
+        const customSelect = document.getElementById(selectId);
+        const selectedDiv = customSelect.querySelector('.select-selected');
+        const itemsContainer = customSelect.querySelector('.select-items');
+        const allItems = itemsContainer.querySelectorAll('div');
+        
+        selectedDiv.addEventListener('click', function(e) {
+            e.stopPropagation();
+            closeAllSelect(this);
+            itemsContainer.classList.toggle('select-hide');
+            this.classList.toggle('select-arrow-active');
+        });
+
+        allItems.forEach(item => {
+            item.addEventListener('click', function(e) {
+                const newValue = this.getAttribute('data-value');
+                selectedDiv.textContent = this.textContent.trim() === "" ? " " : this.textContent;
+                selectedDiv.setAttribute('data-value', newValue);
+                closeAllSelect(selectedDiv);
+            });
+        });
+    }
+
+    // Função que preenche os campos com os dados da arma selecionada - ALTERADA
     const handleWeaponSelection = (event) => {
         const select = event.target;
         const entryContainer = select.closest('.weapon-entry');
@@ -348,7 +385,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const inputDano = entryContainer.querySelector('input[name="weapon-dano"]');
         const inputType = entryContainer.querySelector('input[name="weapon-type"]');
         const inputSkill = entryContainer.querySelector('input[name="weapon-skill"]');
-        const inputFinesse = entryContainer.querySelector('input[name="weapon-finesse"]');
+        const finesseSelectedDiv = entryContainer.querySelector('.weapon-finesse-select .select-selected');
         const textareaDesc = entryContainer.querySelector('textarea[name="weapon-desc"]');
         
         if (!isNaN(weaponIndex) && weaponIndex >= 0 && weaponIndex < weaponData.length) {
@@ -359,7 +396,11 @@ document.addEventListener('DOMContentLoaded', () => {
             inputDano.value = weapon.dano;
             inputType.value = weapon.tipo;
             inputSkill.value = weapon.maestria;
-            inputFinesse.checked = isFinesse;
+
+            // Configura o dropdown de Acuidade
+            const finesseValue = isFinesse ? 'acuidade' : '';
+            finesseSelectedDiv.setAttribute('data-value', finesseValue);
+            finesseSelectedDiv.textContent = finesseValue.toUpperCase() || ' '; // Exibe 'ACUIDADE' ou ' '
 
             // Preenche a Descrição
             const description = 
@@ -372,13 +413,14 @@ document.addEventListener('DOMContentLoaded', () => {
             inputDano.value = '';
             inputType.value = '';
             inputSkill.value = '';
-            inputFinesse.checked = false;
+            finesseSelectedDiv.setAttribute('data-value', '');
+            finesseSelectedDiv.textContent = ' ';
             textareaDesc.value = '';
         }
     };
 
 
-    // Função que cria a linha de entrada de arma vazia (com o seletor)
+    // Função que cria a linha de entrada de arma vazia (com o seletor) - ALTERADA
     const createWeaponEntry = (count) => {
         const deleteId = `weapon-${count}`;
         
@@ -390,8 +432,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <input type="text" name="weapon-dano" value="" placeholder="Dano" readonly title="Dano (ex: 1d8)">
                         <input type="text" name="weapon-type" value="" placeholder="Tipo" readonly title="Tipo de Dano (P, E, C)">
                         <input type="text" name="weapon-skill" value="" placeholder="Skill" readonly title="Maestria/Skill (ex: Derrubar)">
-                        <input type="checkbox" name="weapon-finesse" title="Ágil (Finesse)">
-                    </div>
+                        ${createFinesseSelect(count)} </div>
                     <button class="delete-btn" data-delete-id="${deleteId}">
                         <i class="fa-solid fa-trash"></i>
                     </button>
@@ -403,19 +444,18 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
     };
 
-    // Função para renderizar a mensagem padrão (Placeholder) na aba de armas
+    // Função para renderizar a mensagem padrão (Placeholder) na aba de armas (Mantida)
     const renderWeaponPlaceholder = () => {
         const tabArmas = document.getElementById('tab-armas');
         const listContainer = tabArmas.querySelector('#weapon-list-container');
         
         if (listContainer && listContainer.children.length === 0) {
             tabArmas.querySelector('.placeholder-text').style.display = 'block';
-            // Linha removida: tabArmas.querySelector('.weapon-header-row').style.display = 'none';
         }
     }
 
     // ----------------------------------------------------------------------
-    // --- LÓGICA DO MAIN BLOCK (Troca de Abas e Adição de Itens) ---
+    // --- LÓGICA DO MAIN BLOCK (Troca de Abas e Adição de Itens) (Mantida) ---
     // ----------------------------------------------------------------------
 
     const mainButtons = document.querySelectorAll('.main-header-button');
@@ -439,7 +479,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     renderWeaponPlaceholder();
                 } else {
                     targetContent.querySelector('.placeholder-text').style.display = 'none';
-                    // Linha removida: targetContent.querySelector('.weapon-header-row').style.display = 'flex';
                 }
             } else {
                  const placeholder = targetContent.querySelector('.placeholder-text');
@@ -483,7 +522,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let itemCounter = 0;
 
     const handleDeleteItem = (e) => {
-        const deleteId = e.target.getAttribute('data-delete-id');
+        const deleteId = e.target.closest('.delete-btn').getAttribute('data-delete-id');
         const itemToDelete = document.querySelector(`[data-item-id="${deleteId}"]`);
 
         if (itemToDelete) {
@@ -496,18 +535,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     renderWeaponPlaceholder();
                 }
             } else { 
-                const placeholder = parentTab.querySelector('.placeholder-text');
-                if (!placeholder && parentTab.children.length === 0) {
-                    const tabId = parentTab.id.replace('tab-', '');
-                    let placeholderText;
-                    switch(tabId) {
-                        case 'magias': placeholderText = 'Adicione suas magias.'; break;
-                        case 'tracos': placeholderText = 'Adicione traços de raça ou classe.'; break;
-                        case 'proficiencias': placeholderText = 'Adicione proficiências em ferramentas e idiomas.'; break;
-                        case 'inventario': placeholderText = 'Adicione itens e moedas.'; break;
-                        default: placeholderText = 'Adicione itens aqui.';
-                    }
-                    parentTab.insertAdjacentHTML('afterbegin', `<p class="placeholder-text">${placeholderText}</p>`);
+                // Lógica de Placeholder para outras abas (Simplificada)
+                const listContainer = parentTab.querySelector('#weapon-list-container') || parentTab;
+                if (listContainer.children.length === 1 && listContainer.firstElementChild.classList.contains('placeholder-text')) {
+                     listContainer.firstElementChild.style.display = 'block';
                 }
             }
         }
@@ -529,10 +560,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const placeholder = activeTab.querySelector('.placeholder-text');
             if (placeholder) { placeholder.style.display = 'none'; }
             
-            if (activeTabId === 'armas') {
-                // Linha removida: activeTab.querySelector('.weapon-header-row').style.display = 'flex';
-            }
-
             listContainer.insertAdjacentHTML('beforeend', newEntryHTML);
 
             const newItem = listContainer.lastElementChild;
@@ -545,6 +572,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (weaponSelect) {
                     weaponSelect.addEventListener('change', handleWeaponSelection);
                 }
+                // Inicializa o novo dropdown de Acuidade
+                const finesseSelectId = `FinesseSelect-${itemCounter}`;
+                initializeCustomSelect(finesseSelectId);
             }
 
             listContainer.scrollTop = listContainer.scrollHeight;
@@ -561,4 +591,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     switchTab('armas');
+    
+    // Inicializa o dropdown de HP, pois ele está no HTML fixo
+    initializeCustomSelect('DadoHPSelect');
 });
