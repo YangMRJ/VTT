@@ -499,7 +499,7 @@ input[type="number"] {
     width: 70px;
     left: 0;
     right: 0;
-    z-index: 99; /* Garante que fique acima de outros elementos */
+    z-index: 70; /* Garante que fique acima de outros elementos */
     border-radius: 0 0 4px 4px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
     
