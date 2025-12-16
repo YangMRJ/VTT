@@ -493,7 +493,7 @@ input[type="number"] {
     border: 1px solid var(--border-color);
     border-top: none;
     top: 110%; /* Posiciona logo abaixo da caixa selecionada */
-    height: 100px;
+    height: 95px;
     left: 0;
     right: 0;
     z-index: 99; /* Garante que fique acima de outros elementos */
