@@ -453,8 +453,8 @@ input[type="number"] {
 /* Estilo para o item selecionado (a caixa de exibição) */
 .select-selected {
     background-color: var(--bg-darker);
-    height: 42px;
-    padding: 8px 10px;
+    height: 20px;
+    padding: 0px 0px;
     border: 1px solid var(--border-color);
     border-radius: 4px;
     cursor: pointer;
@@ -472,10 +472,10 @@ input[type="number"] {
     position: absolute;
     content: "<>";
     rotate: 90deg;
-    top: 25%;
+    top: 26%;
     right: 15px;
     transform: translateY(-95%);
-    font-size: 1em;
+    font-size: 0.8em;
     font-weight: bolder;
     color: var(--primary-color);
     transition: transform 0.2s;
