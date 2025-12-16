@@ -492,7 +492,7 @@ input[type="number"] {
     background-color: var(--bg-darker); /* Fundo escuro */
     border: 1px solid var(--border-color);
     border-top: none;
-    top: 150%; /* Posiciona logo abaixo da caixa selecionada */
+    top: 110%; /* Posiciona logo abaixo da caixa selecionada */
     left: 0;
     right: 0;
     z-index: 99; /* Garante que fique acima de outros elementos */
