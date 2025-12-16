@@ -465,6 +465,7 @@ input[type="number"] {
     justify-content: center;
     color: var(--dice-color); /* Destaca o valor do dado */
     font-weight: bold;
+    z-index: 100;
 }
 
 /* Seta para baixo no campo selecionado */
@@ -498,7 +499,7 @@ input[type="number"] {
     width: 70px;
     left: 0;
     right: 0;
-    z-index: 50; /* Garante que fique acima de outros elementos */
+    z-index: 99; /* Garante que fique acima de outros elementos */
     border-radius: 0 0 4px 4px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
     
