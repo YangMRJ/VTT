@@ -499,11 +499,6 @@ input[type="number"] {
     z-index: 99; /* Garante que fique acima de outros elementos */
     border-radius: 0 0 4px 4px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-    
-    /* MODIFICAÇÃO PARA SCROLLBAR */
-    max-height: 120px; /* Altura máxima para ativar a scrollbar */
-    overflow-y: auto; /* Adiciona a scrollbar vertical se o conteúdo exceder a altura máxima */
-    overflow-x: hidden;
 }
 
 /* --- Estilização da Scrollbar para WebKit (Chrome, Safari, Edge) --- */
