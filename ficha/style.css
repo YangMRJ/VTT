@@ -496,7 +496,7 @@ input[type="number"] {
     top: 80%; /* Posiciona logo abaixo da caixa selecionada */
     margin-left: 4%;
     height: 71px;
-    width: 100px;
+    width: 101px;
     left: 0;
     right: 0;
     z-index: 70; /* Garante que fique acima de outros elementos */
