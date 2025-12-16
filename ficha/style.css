@@ -489,7 +489,7 @@ input[type="number"] {
 /* Container dos itens do dropdown (o menu flutuante) */
 .select-items {
     position: absolute;
-    background-color: var(--bg-dark); /* Fundo escuro */
+    background-color: var(--bg-darker); /* Fundo escuro */
     border: 1px solid var(--border-color);
     border-top: none;
     top: 100%; /* Posiciona logo abaixo da caixa selecionada */
