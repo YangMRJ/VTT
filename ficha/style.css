@@ -465,7 +465,7 @@ input[type="number"] {
     justify-content: center;
     color: var(--dice-color); /* Destaca o valor do dado */
     font-weight: bold;
-    z-index: 100;
+    z-index: 71;
 }
 
 /* Seta para baixo no campo selecionado */
