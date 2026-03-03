@@ -1,157 +1,43 @@
-# 📜 Documentação Técnica: VTT RPG (Atualizada)
+# 🐉 Pygame D&D Menu & Character Manager
 
-Este projeto é um *Virtual Tabletop (VTT)* básico e funcional, construído com tecnologias web puras (HTML, CSS e JavaScript), com foco inicial na interface e funcionalidades locais.
+Este é um projeto desenvolvido em Python utilizando a biblioteca **Pygame**. Ele funciona como a base de um jogo de RPG (estilo D&D), contando com um Menu Principal interativo, um sistema avançado de Configurações (Áudio e Gráficos) e um Gerenciador/Criador de Fichas de Personagem completo.
 
----
-
-## ⚙️ Funcionalidades Principais
-
-| Categoria | Funcionalidade | Implementação (Sim/Não) |
-| :--- | :--- | :--- |
-| **Acesso** | Login Personalizado (Nome, Cor, Emoji) | ✅ Sim |
-| **Acesso** | Acesso de Mestre (Código `9678` com emoji `👑`) | ✅ Sim |
-| **Mapa** | Grid, Pan (Mover) e Zoom | ✅ Sim |
-| **Mapa** | Tokens de Jogadores (Renderização) | ✅ Sim |
-| **UI** | Ficha de Personagem Arrastável (`#characterSheet`) | ✅ Sim |
-| **UI** | Bandeja de Dados Arrastável (`#diceTray`) | ✅ Sim |
-| **UI** | Chat Arrastável (`#chatContainer`) | ✅ Sim |
-| **UI** | Bandeja de Dados (Seleção e Rolagem) | ✅ Sim |
-| **UI** | Chat (Agrupamento de Mensagens) | ✅ Sim |
-| **Ficha** | Gerenciamento de Armas (Adicionar/Remover) | ✅ Sim |
-| **Ficha** | Gerenciamento de Perícias (Nível de Proficiência) | ✅ Sim |
-| **Ficha** | Atributos Editáveis com Cálculo Automático de Modificadores | ✅ Sim |
-| **Ferramentas** | Seleção de Ferramenta (Mover, Régua, etc.) | ✅ Sim |
+Toda a progressão e configuração são salvas automaticamente de forma persistente.
 
 ---
 
-## 🐛 Bugs Conhecidos e Issues
+## ✨ Funcionalidades
 
-### 🔴 CRÍTICOS
-- **Nenhum bug crítico identificado**
+### 1. Sistema de Menus
+* **Menu Principal**: Navegação fluida com suporte a teclado (WASD/Setas) e Mouse (Hover e Clique).
+* **Feedback Audiovisual**: Efeitos sonoros ao navegar e confirmar seleções, com marcadores visuais `><` em amarelo.
 
-### 🟡 PROBLEMAS DE USABILIDADE
-1. **Arrastar vs Clicar em Botões** - Corrigido ✅
-   - *Problema:* Ao arrastar as janelas, os botões internos eram acionados
-   - *Solução:* Implementada verificação no `makeMovable()` para ignorar arrasto quando o alvo é um botão
+### 2. Configurações (Options)
+* **Áudio**: Sliders customizados estilo "pixel art" para controlar o volume da Música de Fundo e dos Efeitos Sonoros (SFX) independentemente.
+* **Gráficos**: 
+  * Alteração de Resolução (de 1024x768 até 1920x1080).
+  * Modos de Exibição: `JANELA`, `FULLSCREEN` e `BORDERLESS` (Sem bordas, ocupando o monitor atual).
 
-2. **Minimizar Janelas** - Corrigido ✅  
-   - *Problema:* Botões de minimizar (-) não funcionavam
-   - *Solução:* Corrigida inconsistência entre nomes das funções no HTML e JavaScript
+### 3. Criador e Ficha de Personagem (D&D 5e)
+* **Criação**: Defina o Nome, Raça, Classe e Antecedente do herói. Essas opções ficam travadas após a criação para manter a integridade do RPG.
+* **Ficha de Personagem (Dashboard)**: Layout em blocos inspirado em fichas de D&D de mesa.
+  * **Info Básica**: Leitura dos dados definidos na criação + Nível.
+  * **Atributos**: Ajuste dinâmico de Força, Destreza, Constituição, Inteligência, Sabedoria e Carisma.
+  * **Combate**: HP Máximo, Classe de Armadura (CA), Iniciativa e Deslocamento.
+  * **Perícias**: Atletismo, Furtividade, Percepção e Persuasão.
+* **Exclusão Segura**: Sistema de "Zona de Perigo" que exige a digitação da palavra `delete` para evitar exclusões acidentais.
 
-### 🟢 MELHORIAS IDENTIFICADAS
-- **Ficha de Personagem** - Campos de texto/número ainda não são persistentes
-- **Sistema de Armas** - Formulário de adição precisa ser implementado completamente
-- **Perícias** - Cálculos automáticos funcionam, mas interface pode ser melhorada
-
----
-
-## 📁 Estrutura de Arquivos
-
-| Arquivo | Descrição |
-| :--- | :--- |
-| `index.html` | Define a estrutura da interface, incluindo as telas de login e jogo, e todos os componentes flutuantes (Chat, Ficha, Bandeja). |
-| `styles.css` | Define o tema escuro, layout, e o comportamento visual, como a retração da Lista de Jogadores e o submenu da Régua. |
-| `script.js` | Contém toda a lógica de inicialização, interação do usuário, renderização do canvas, rolagem de dados e atalhos de teclado. |
+### 4. Persistência de Dados (Save/Load)
+* Todos os personagens, volumes, resoluções e modos de tela são salvos automaticamente em um arquivo `settings.json` local. O jogo sempre abre exatamente como você o deixou.
 
 ---
 
-## 🕹️ Atalhos de Teclado (Implementados em `script.js`)
+## 🛠️ Requisitos e Instalação
 
-Os atalhos funcionam na `gameScreen` e permitem acesso rápido a ferramentas e janelas de interface.
+**1. Instale o Python:**
+Certifique-se de ter o Python 3.x instalado na sua máquina.
 
-| Ação | Tecla |
-| :--- | :--- |
-| **Mover** (Ferramenta) | `V` |
-| **Régua** (Ferramenta) | `R` |
-| **Parede** (Mestre) | `P` |
-| **Inimigos** (Mestre) | `I` |
-| **Chat** (Alternar/Abrir/Fechar) | `Ctrl + C` |
-| **Ficha de Personagem** (Alternar/Abrir/Fechar) | `Ctrl + F` |
-| **Bandeja de Dados** (Alternar/Abrir/Fechar) | `Ctrl + D` |
-
----
-
-## 📝 Detalhes da Implementação
-
-### 1. Canvas e Tokens
-
-* **Pan:** Gerenciado por `onCanvasMouseDown` e `onCanvasMouseMove`, que ajustam `offsetX` e `offsetY` quando a ferramenta `move` está ativa.
-* **Zoom:** A função `onCanvasWheel` ajusta a variável `scale` (limitada entre 0.5 e 3) e recalcula os offsets para manter o zoom centrado no ponteiro do mouse.
-* **Token:** A função `drawTokens()` renderiza os tokens dos jogadores, calculando a posição na tela com base nas coordenadas do grid (`x`, `y`), `gridSize`, `scale` e os `offsets` de pan.
-
-### 2. Sistema de Janelas Arrastáveis
-
-* **Arrastar:** O método `makeMovable` permite que **todas as janelas** (Ficha, Chat, Bandeja) sejam arrastadas pelos seus headers.
-* **Correção de Bug:** Implementada verificação para prevenir que botões internos sejam acionados durante o arrasto.
-* **Minimizar/Fechar:** Funções `minimizeChat()`, `minimizeCharacterSheet()`, `minimizeDiceTray()` e respectivas funções `close...()`.
-
-### 3. Ficha de Personagem
-
-* **Armas:** A função `renderWeapons()` exibe dinamicamente a lista de armas do array `characterWeapons` e permite adicionar novos itens através de um formulário *inline* e removê-los.
-* **Perícias:** A função `renderSkills()` renderiza a lista de perícias de D&D 5e e permite ao jogador definir o nível de proficiência (0: Sem, 2: Proficiência, 3: Expertise) através de um menu flutuante.
-* **Atributos:** A função `renderAttributes()` exibe os 6 atributos principais com inputs editáveis e calcula automaticamente os modificadores.
-* **Sistema de Cálculo:** Modificadores são calculados em tempo real com `getModifier()` e afetam automaticamente as perícias.
-
----
-
-## 🎯 PRÓXIMOS PASSOS (PRIORIDADES)
-
-### 🥇 ALTA PRIORIDADE - FICHA DE PERSONAGEM
-1. **Implementar Persistência de Dados**
-   - Salvar valores dos campos de texto/número (Nome, Classe, Nível, CA, etc.)
-   - Implementar localStorage para manter dados entre sessões
-
-2. **Completar Sistema de Armas**
-   - Finalizar formulário de adição de armas (`openAddWeaponForm`)
-   - Implementar edição de armas existentes
-   - Conectar sistema de rolagem de ataques com modificadores reais
-
-3. **Implementar Abas Magias/História**
-   - Adicionar lógica CRUD para Magias e Habilidades
-   - Implementar campos editáveis para Background e Aparência
-
-### 🥈 MÉDIA PRIORIDADE - MAPA E MOVIMENTAÇÃO
-1. **Movimentação de Tokens**
-   - Converter coordenadas do mouse para grid
-   - Implementar algoritmo de pathfinding (A*)
-   - Sistema de colisão com obstáculos
-
-### 🥉 BAIXA PRIORIDADE - MULTIPLAYER
-1. **Sincronização em Tempo Real**
-   - Implementar WebSockets para chat multiplayer
-   - Sincronizar posições de tokens entre jogadores
-   - Sistema de lista de jogadores em tempo real
-
----
-
-## 🔧 Funcionalidades Completas ✅
-
-- [x] Sistema de login com personalização
-- [x] Canvas com grid, pan e zoom
-- [x] Renderização de tokens
-- [x] Janelas arrastáveis (Ficha, Chat, Bandeja)
-- [x] Sistema de perícias com proficiência
-- [x] Atributos editáveis com cálculos automáticos
-- [x] Sistema de armas básico
-- [x] Bandeja de dados funcional
-- [x] Chat com mensagens formatadas
-- [x] Atalhos de teclado
-- [x] Ferramentas básicas (Mover, Régua)
-
----
-
-## 🚀 Como Usar
-
-1. **Acesso:** Abra `index.html` em um navegador moderno
-2. **Login:** Digite seu nome, escolha cor e emoji
-3. **Mestre:** Use código `9678` e emoji `👑` para acesso de mestre
-4. **Navegação:**
-   - `V` para mover o mapa
-   - `R` para régua de medição
-   - `Ctrl+C/F/D` para alternar Chat/Ficha/Bandeja
-5. **Ficha:** Edite atributos, perícias e armas diretamente na interface
-
----
-
-**📅 Última Atualização:** Correção de bugs de arrasto e minimizar janelas
-**🎯 Próximo Foco:** Continuar a estilização da ficha, focar em "comabt-block" e "backpack-block"
+**2. Instale o Pygame:**
+Abra o terminal ou prompt de comando e digite:
+```bash
+pip install pygame
