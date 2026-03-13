@@ -10,58 +10,128 @@ tela = pygame.display.set_mode((LARGURA, ALTURA), pygame.RESIZABLE)
 pygame.display.set_caption("VTT Project")
 relogio = pygame.time.Clock()
 
-# TELA VIRTUAL (Onde o UI será desenhado antes de ser escalado)
 BASE_W, BASE_H = 1280, 720
 tela_virtual = pygame.Surface((BASE_W, BASE_H))
 
 PRETO, BRANCO, AMARELO = (0, 0, 0), (255, 255, 255), (255, 255, 0)
 CINZA_ESCURO, CINZA_CLARO = (40, 40, 40), (80, 80, 80)
 
-try:
-    fonte_dropdown = pygame.font.Font("Minecraft.ttf", 20)
-    fonte_p = pygame.font.Font("Minecraft.ttf", 25)
-    fonte = pygame.font.Font("Minecraft.ttf", 40)
-    fonte_titulo = pygame.font.Font("Minecraft.ttf", 80)
-except:
-    fonte_dropdown = pygame.font.SysFont("Arial", 20, bold=True)
-    fonte_p = pygame.font.SysFont("Arial", 25, bold=True)
-    fonte = pygame.font.SysFont("Arial", 40, bold=True)
-    fonte_titulo = pygame.font.SysFont("Arial", 80, bold=True)
+# Gerenciador de Fontes Dinâmico
+escala_fonte_atual = -1
+fonte_dropdown = fonte_p = fonte = fonte_titulo = None
 
-# Sons
-vol_musica, vol_sfx = 0.5, 0.7
+def carregar_fontes(escala):
+    global fonte_dropdown, fonte_p, fonte, fonte_titulo, escala_fonte_atual
+    if escala == escala_fonte_atual: return # Evita recarregar sem necessidade
+    escala_fonte_atual = escala
+    
+    try:
+        fonte_dropdown = pygame.font.Font("Minecraft.ttf", max(10, int(20 * escala)))
+        fonte_p = pygame.font.Font("Minecraft.ttf", max(12, int(25 * escala)))
+        fonte = pygame.font.Font("Minecraft.ttf", max(16, int(40 * escala)))
+        fonte_titulo = pygame.font.Font("Minecraft.ttf", max(30, int(80 * escala)))
+    except:
+        fonte_dropdown = pygame.font.SysFont("Arial", max(10, int(20 * escala)), bold=True)
+        fonte_p = pygame.font.SysFont("Arial", max(12, int(25 * escala)), bold=True)
+        fonte = pygame.font.SysFont("Arial", max(16, int(40 * escala)), bold=True)
+        fonte_titulo = pygame.font.SysFont("Arial", max(30, int(80 * escala)), bold=True)
+
+# Carrega a fonte inicial (Escala 1.0)
+carregar_fontes(1.0)
+
 try:
     som_nav = pygame.mixer.Sound("nav.mp3")
     som_select = pygame.mixer.Sound("select.mp3")
-    som_nav.set_volume(vol_sfx)
-    som_select.set_volume(vol_sfx)
     pygame.mixer.music.load("menu_theme.mp3")
-    pygame.mixer.music.set_volume(vol_musica)
+    pygame.mixer.music.set_volume(0.5)
     pygame.mixer.music.play(-1)
 except:
     som_nav = som_select = None
-    print("Aviso: Sons não encontrados.")
-
 
 # --- 2. CLASSES DE UI ---
 
 class Slider:
-    def __init__(self, largura, valor_inicial):
-        self.rect = pygame.Rect(0, 0, largura, 10)
+    def __init__(self, largura, min_val, max_val, valor_inicial, tipo="int"):
+        self.largura = largura
+        self.min_val = min_val
+        self.max_val = max_val
         self.valor = valor_inicial
-    
+        self.tipo = tipo # "int" (0-100) ou "float" (0.5-2.0)
+        
+        self.rect = pygame.Rect(0, 0, largura, 10)
+        self.rect_texto = pygame.Rect(0, 0, 70, 35) # Caixa de input
+        self.editando = False
+        self.texto_input = ""
+
+    def obter_pos_x(self):
+        proporcao = (self.valor - self.min_val) / (self.max_val - self.min_val)
+        return self.rect.x + (self.largura * proporcao)
+
     def desenhar(self, surface, x, y):
         self.rect.topleft = (x, y)
-        circulo_x = self.rect.x + (self.rect.width * self.valor)
+        self.rect_texto.midleft = (self.rect.right + 20, self.rect.centery)
+        
+        # Desenha a trilha
         pygame.draw.rect(surface, CINZA_CLARO, self.rect)
-        pygame.draw.circle(surface, AMARELO, (int(circulo_x), self.rect.centery), 12)
-    
+        
+        # Desenha o Thumb Pixelado (Cruz/Octógono em vez de círculo perfeito)
+        cx, cy = int(self.obter_pos_x()), self.rect.centery
+        r = 10
+        pygame.draw.rect(surface, AMARELO, (cx - r, cy - r + 4, r*2, r*2 - 8))
+        pygame.draw.rect(surface, AMARELO, (cx - r + 4, cy - r, r*2 - 8, r*2))
+        
+        # Desenha a caixa de texto
+        cor_caixa = AMARELO if self.editando else BRANCO
+        pygame.draw.rect(surface, PRETO, self.rect_texto)
+        pygame.draw.rect(surface, cor_caixa, self.rect_texto, 2)
+        
+        txt_exibir = self.texto_input if self.editando else (f"{int(self.valor)}" if self.tipo == "int" else f"{self.valor:.1f}")
+        surf_txt = fonte_dropdown.render(txt_exibir, True, cor_caixa)
+        surface.blit(surf_txt, surf_txt.get_rect(center=self.rect_texto.center))
+
     def atualizar(self, mouse_pos, clique):
-        if clique and self.rect.inflate(0, 20).collidepoint(mouse_pos):
+        # Arrastar o slider (só funciona se não estiver digitando)
+        if clique and self.rect.inflate(0, 30).collidepoint(mouse_pos) and not self.editando:
             novo_x = max(self.rect.left, min(mouse_pos[0], self.rect.right))
-            self.valor = (novo_x - self.rect.left) / self.rect.width
+            proporcao = (novo_x - self.rect.left) / self.largura
+            self.valor = self.min_val + proporcao * (self.max_val - self.min_val)
+            if self.tipo == "int": self.valor = round(self.valor)
             return True
         return False
+
+    def tratar_clique(self, mouse_pos):
+        # Clicar na caixinha para digitar
+        if self.rect_texto.collidepoint(mouse_pos):
+            self.editando = True
+            self.texto_input = ""
+            return True
+        else:
+            if self.editando: self.confirmar_texto()
+            self.editando = False
+        return False
+
+    def tratar_teclado(self, evento):
+        if not self.editando: return False
+        
+        if evento.key == pygame.K_RETURN:
+            self.confirmar_texto()
+            self.editando = False
+        elif evento.key == pygame.K_BACKSPACE:
+            self.texto_input = self.texto_input[:-1]
+        else:
+            char = evento.unicode
+            # Aceita apenas números e ponto
+            if char.isdigit() or (char == '.' and self.tipo == "float"):
+                self.texto_input += char
+        return True # Interceptou o teclado
+
+    def confirmar_texto(self):
+        try:
+            if self.texto_input.strip() != "":
+                novo_val = float(self.texto_input)
+                self.valor = max(self.min_val, min(self.max_val, novo_val))
+                if self.tipo == "int": self.valor = round(self.valor)
+        except: pass
 
 class Dropdown:
     def __init__(self, largura, altura, opcoes, indice_inicial=0, max_visiveis=2):
@@ -75,7 +145,6 @@ class Dropdown:
 
     def desenhar(self, surface, x, y, mouse_pos):
         self.rect.topleft = (x, y)
-        
         pygame.draw.rect(surface, CINZA_CLARO, self.rect)
         pygame.draw.rect(surface, BRANCO, self.rect, 2)
         texto = fonte_dropdown.render(self.opcoes[self.indice_selecionado], True, BRANCO)
@@ -89,7 +158,6 @@ class Dropdown:
             self.rects_opcoes = []
             visiveis = min(self.max_visiveis, len(self.opcoes))
             lista_rect = pygame.Rect(self.rect.x, self.rect.bottom, self.rect.width, self.rect.height * visiveis)
-            
             pygame.draw.rect(surface, CINZA_CLARO, lista_rect)
             pygame.draw.rect(surface, BRANCO, lista_rect, 2)
 
@@ -101,7 +169,6 @@ class Dropdown:
                 
                 cor_fundo = AMARELO if rect_op.collidepoint(mouse_pos) else CINZA_ESCURO
                 cor_texto = PRETO if cor_fundo == AMARELO else BRANCO
-                
                 pygame.draw.rect(surface, cor_fundo, rect_op)
                 pygame.draw.rect(surface, BRANCO, rect_op, 1)
                 texto_op = fonte_dropdown.render(op, True, cor_texto)
@@ -112,7 +179,6 @@ class Dropdown:
                 scroll_rect = pygame.Rect(self.rect.right - largura_scroll, self.rect.bottom, largura_scroll, lista_rect.height)
                 pygame.draw.rect(surface, CINZA_ESCURO, scroll_rect)
                 pygame.draw.rect(surface, BRANCO, scroll_rect, 1)
-                
                 proporcao_thumb = self.max_visiveis / len(self.opcoes)
                 altura_thumb = max(20, scroll_rect.height * proporcao_thumb)
                 max_scroll = len(self.opcoes) - self.max_visiveis
@@ -135,8 +201,7 @@ class Dropdown:
                     return True
             visiveis = min(self.max_visiveis, len(self.opcoes))
             area_total = pygame.Rect(self.rect.x, self.rect.y, self.rect.width, self.rect.height * (visiveis + 1))
-            if not area_total.collidepoint(mouse_pos):
-                self.aberto = False
+            if not area_total.collidepoint(mouse_pos): self.aberto = False
             return False
         else:
             if self.rect.collidepoint(mouse_pos):
@@ -146,16 +211,17 @@ class Dropdown:
 # --- 3. ESTADOS E COMPONENTES ---
 estado_atual = "menu"
 opcoes_main = ["Host", "Jogar", "Compendio", "Personagens", "Opções", "Sair"]
-indice_menu = 0
-indice_hover = -1 # Controle do hover do mouse
+indice_menu, indice_hover = 0, -1
 abas = ["Geral", "Gráficos", "Áudio"]
 aba_selecionada = 0
-
 mostrar_fps = False
 gui_scale = 1.0
 
-slider_musica = Slider(300, vol_musica)
-slider_sfx = Slider(300, vol_sfx)
+# Sliders (Largura, Mínimo, Máximo, Inicial, Tipo)
+slider_musica = Slider(250, 0, 100, 50, "int")
+slider_sfx = Slider(250, 0, 100, 70, "int")
+slider_fonte = Slider(250, 0.5, 2.0, 1.0, "float")
+todos_os_sliders = [slider_musica, slider_sfx, slider_fonte]
 
 dropdown_gui = Dropdown(180, 35, ["0.5x", "1.0x", "1.5x", "2.0x"], indice_inicial=1, max_visiveis=4)
 dropdown_res = Dropdown(180, 35, ["800x600", "1280x720", "1366x768", "1600x900", "1920x1080"], indice_inicial=1, max_visiveis=3)
@@ -167,19 +233,13 @@ def aplicar_display():
     LARGURA, ALTURA = map(int, res_str.split('x'))
     modo_str = dropdown_modo.opcoes[dropdown_modo.indice_selecionado]
     
-    flags = 0
-    if modo_str == "Borderless": flags = pygame.NOFRAME
-    elif modo_str == "Full Screen": flags = pygame.FULLSCREEN
-    else: flags = pygame.RESIZABLE
-        
+    flags = pygame.NOFRAME if modo_str == "Borderless" else pygame.FULLSCREEN if modo_str == "Full Screen" else pygame.RESIZABLE
     tela = pygame.display.set_mode((LARGURA, ALTURA), flags)
 
 
-# --- 4. FUNÇÕES DE DESENHO (Usando tela_virtual) ---
+# --- 4. FUNÇÕES DE DESENHO DA TELA VIRTUAL ---
 def desenhar_opcoes(mouse_pos):
     tela_virtual.fill(PRETO)
-    
-    # A box das opções tem tamanho fixo na tela virtual
     largura_box, altura_box = 1000, 550
     box_rect = pygame.Rect((BASE_W//2 - largura_box//2, BASE_H//2 - altura_box//2 + 30), (largura_box, altura_box))
     
@@ -202,45 +262,55 @@ def desenhar_opcoes(mouse_pos):
 
     interativos = []
     if aba_selecionada == 0:
-        tela_virtual.blit(fonte.render("Mostrar FPS:", True, BRANCO), (box_rect.left + 100, box_rect.top + 150))
-        check_rect = pygame.Rect(box_rect.left + 400, box_rect.top + 155, 30, 30)
+        # FPS
+        tela_virtual.blit(fonte_p.render("Mostrar FPS:", True, BRANCO), (box_rect.left + 100, box_rect.top + 120))
+        check_rect = pygame.Rect(box_rect.left + 350, box_rect.top + 120, 30, 30)
         pygame.draw.rect(tela_virtual, BRANCO, check_rect, 2)
         if mostrar_fps: pygame.draw.rect(tela_virtual, AMARELO, check_rect.inflate(-10, -10))
         interativos.append(("fps", check_rect))
         
-        tela_virtual.blit(fonte.render("GUI Scale:", True, BRANCO), (box_rect.left + 100, box_rect.top + 300))
-        dropdown_gui.desenhar(tela_virtual, box_rect.left + 400, box_rect.top + 300, mouse_pos)
+        # GUI
+        tela_virtual.blit(fonte_p.render("GUI Scale:", True, BRANCO), (box_rect.left + 100, box_rect.top + 220))
+        dropdown_gui.desenhar(tela_virtual, box_rect.left + 350, box_rect.top + 215, mouse_pos)
         
+        # FONTE
+        tela_virtual.blit(fonte_p.render("Tamanho Fonte:", True, BRANCO), (box_rect.left + 100, box_rect.top + 320))
+        slider_fonte.desenhar(tela_virtual, box_rect.left + 350, box_rect.top + 330)
+
     elif aba_selecionada == 2:
-        tela_virtual.blit(fonte.render("Música", True, BRANCO), (box_rect.left + 100, box_rect.top + 150))
-        slider_musica.desenhar(tela_virtual, box_rect.left + 350, box_rect.top + 170)
-        tela_virtual.blit(fonte.render("SFX", True, BRANCO), (box_rect.left + 100, box_rect.top + 300))
-        slider_sfx.desenhar(tela_virtual, box_rect.left + 350, box_rect.top + 320)
+        tela_virtual.blit(fonte_p.render("Música", True, BRANCO), (box_rect.left + 100, box_rect.top + 150))
+        slider_musica.desenhar(tela_virtual, box_rect.left + 350, box_rect.top + 160)
+        
+        tela_virtual.blit(fonte_p.render("SFX", True, BRANCO), (box_rect.left + 100, box_rect.top + 250))
+        slider_sfx.desenhar(tela_virtual, box_rect.left + 350, box_rect.top + 260)
 
     elif aba_selecionada == 1:
-        tela_virtual.blit(fonte.render("Resolução:", True, BRANCO), (box_rect.left + 100, box_rect.top + 150))
-        tela_virtual.blit(fonte.render("Modo de Tela:", True, BRANCO), (box_rect.left + 100, box_rect.top + 300))
-        dropdown_modo.desenhar(tela_virtual, box_rect.left + 400, box_rect.top + 300, mouse_pos)
-        dropdown_res.desenhar(tela_virtual, box_rect.left + 400, box_rect.top + 150, mouse_pos)
+        tela_virtual.blit(fonte_p.render("Resolução:", True, BRANCO), (box_rect.left + 100, box_rect.top + 150))
+        dropdown_res.desenhar(tela_virtual, box_rect.left + 350, box_rect.top + 145, mouse_pos)
+        
+        tela_virtual.blit(fonte_p.render("Modo de Tela:", True, BRANCO), (box_rect.left + 100, box_rect.top + 250))
+        dropdown_modo.desenhar(tela_virtual, box_rect.left + 350, box_rect.top + 245, mouse_pos)
 
     return rect_voltar, areas_abas, interativos
 
 
 # --- 5. LOOP PRINCIPAL ---
 while True:
-    # 5.1 CÁLCULO DO MOUSE VIRTUAL (Baseado no GUI Scale)
     real_mouse_pos = pygame.mouse.get_pos()
+    mouse_clicado = pygame.mouse.get_pressed()[0]
+    
     scaled_w, scaled_h = int(BASE_W * gui_scale), int(BASE_H * gui_scale)
     offset_x, offset_y = LARGURA//2 - scaled_w//2, ALTURA//2 - scaled_h//2
     
-    # Mapeia a posição real do mouse para a posição na tela virtual de 1280x720
+    # Mapeia o mouse da tela real para a virtual
     v_mouse_x = (real_mouse_pos[0] - offset_x) / gui_scale
     v_mouse_y = (real_mouse_pos[1] - offset_y) / gui_scale
     mouse_pos = (v_mouse_x, v_mouse_y) 
     
-    mouse_clicado = pygame.mouse.get_pressed()[0]
-    
-    # 5.2 RENDERIZAÇÃO NA TELA VIRTUAL
+    # 5.1 Atualiza Fontes se o slider mudar
+    carregar_fontes(slider_fonte.valor)
+
+    # 5.2 RENDERIZAÇÃO DA INTERFACE VIRTUAL
     if estado_atual == "menu":
         tela_virtual.fill(PRETO)
         surf_titulo = fonte_titulo.render("VTT PROJECT", True, BRANCO)
@@ -249,14 +319,12 @@ while True:
         novo_hover = -1
         for i, texto in enumerate(opcoes_main):
             rect_teste = fonte.render(texto, True, BRANCO).get_rect(center=(BASE_W // 2, 220 + i * 70)).inflate(100, 20)
-            if rect_teste.collidepoint(mouse_pos):
-                novo_hover = i
+            if rect_teste.collidepoint(mouse_pos): novo_hover = i
             
             cor = AMARELO if i == indice_menu else BRANCO
             txt = f"> {texto} <" if i == indice_menu else texto
             tela_virtual.blit(fonte.render(txt, True, cor), fonte.render(txt, True, cor).get_rect(center=(BASE_W // 2, 220 + i * 70)))
         
-        # Som de Hover (Navegação pelo mouse)
         if novo_hover != -1 and novo_hover != indice_hover and novo_hover != indice_menu:
             indice_menu = novo_hover
             if som_nav: som_nav.play()
@@ -265,35 +333,78 @@ while True:
     elif estado_atual == "opcoes":
         rect_voltar, areas_abas, interativos = desenhar_opcoes(mouse_pos)
         
+        # Atualiza Sliders (Arrastar)
         if aba_selecionada == 2:
-            if slider_musica.atualizar(mouse_pos, mouse_clicado):
-                pygame.mixer.music.set_volume(slider_musica.valor)
+            if slider_musica.atualizar(mouse_pos, mouse_clicado): pygame.mixer.music.set_volume(slider_musica.valor / 100)
             if slider_sfx.atualizar(mouse_pos, mouse_clicado):
-                vol_sfx = slider_sfx.valor
-                if som_nav: som_nav.set_volume(vol_sfx)
-                if som_select: som_select.set_volume(vol_sfx)
-
-    if mostrar_fps:
-        tela_virtual.blit(fonte_p.render(f"FPS: {int(relogio.get_fps())}", True, (0, 255, 0)), (10, 10))
+                if som_nav: som_nav.set_volume(slider_sfx.valor / 100)
+                if som_select: som_select.set_volume(slider_sfx.valor / 100)
+        elif aba_selecionada == 0:
+            slider_fonte.atualizar(mouse_pos, mouse_clicado)
 
     # 5.3 ESCALA E DESENHO NA TELA REAL
-    tela.fill(PRETO) # Preenche o fundo real
+    tela.fill(PRETO)
     surf_scaled = pygame.transform.scale(tela_virtual, (scaled_w, scaled_h))
     tela.blit(surf_scaled, (offset_x, offset_y))
+
+    # O FPS AGORA É DESENHADO DIRETAMENTE NA TELA REAL (Nunca escala e fica travado no canto)
+    if mostrar_fps:
+        fps_txt = fonte_p.render(f"FPS: {int(relogio.get_fps())}", True, (0, 255, 0))
+        tela.blit(fps_txt, (10, 10))
 
     # --- PROCESSAMENTO DE EVENTOS ---
     for evento in pygame.event.get():
         if evento.type == pygame.QUIT:
             pygame.quit(); sys.exit()
             
-        if evento.type == pygame.MOUSEWHEEL:
-            if estado_atual == "opcoes":
-                if aba_selecionada == 0: dropdown_gui.rolar(evento.y)
-                elif aba_selecionada == 1:
-                    dropdown_res.rolar(evento.y)
-                    dropdown_modo.rolar(evento.y)
+        if evento.type == pygame.MOUSEWHEEL and estado_atual == "opcoes":
+            if aba_selecionada == 0: dropdown_gui.rolar(evento.y)
+            elif aba_selecionada == 1:
+                dropdown_res.rolar(evento.y)
+                dropdown_modo.rolar(evento.y)
+
+        if evento.type == pygame.KEYDOWN:
+            # Tenta mandar a tecla para os sliders de texto primeiro
+            tecla_interceptada = False
+            for s in todos_os_sliders:
+                if s.tratar_teclado(evento):
+                    tecla_interceptada = True
+                    # Se confirmou no áudio, já atualiza o sistema
+                    if not s.editando: 
+                        if s == slider_musica: pygame.mixer.music.set_volume(s.valor / 100)
+                        elif s == slider_sfx and som_select: som_select.set_volume(s.valor / 100)
+            
+            # Se ninguém estiver digitando, navega no menu normal
+            if not tecla_interceptada and estado_atual == "menu":
+                indice_antigo = indice_menu
+                if evento.key == pygame.K_UP and indice_menu > 0: indice_menu -= 1
+                elif evento.key == pygame.K_DOWN and indice_menu < len(opcoes_main) - 1: indice_menu += 1
+                if indice_menu != indice_antigo and som_nav: som_nav.play()
+
+                if evento.key in [pygame.K_RETURN, pygame.K_SPACE]:
+                    if som_select: som_select.play()
+                    if opcoes_main[indice_menu] == "Opções": estado_atual = "opcoes"
+                    elif opcoes_main[indice_menu] == "Sair": pygame.quit(); sys.exit()
 
         if evento.type == pygame.MOUSEBUTTONDOWN and evento.button == 1:
+            # Trata clique nas caixas de texto dos sliders primeiro
+            clicou_em_texto = False
+            if estado_atual == "opcoes":
+                sliders_aba = []
+                if aba_selecionada == 0: sliders_aba = [slider_fonte]
+                elif aba_selecionada == 2: sliders_aba = [slider_musica, slider_sfx]
+                
+                for s in sliders_aba:
+                    if s.tratar_clique(mouse_pos):
+                        clicou_em_texto = True
+                        if som_select: som_select.play()
+                    # Atualiza áudio se acabou de confirmar clicando fora
+                    if not s.editando:
+                        if s == slider_musica: pygame.mixer.music.set_volume(s.valor / 100)
+                        elif s == slider_sfx and som_select: som_select.set_volume(s.valor / 100)
+            
+            if clicou_em_texto: continue # Se clicou num input de texto, ignora o resto
+
             if estado_atual == "menu":
                 for i, texto in enumerate(opcoes_main):
                     if fonte.render(texto, True, BRANCO).get_rect(center=(BASE_W // 2, 220 + i * 70)).inflate(100, 20).collidepoint(mouse_pos):
@@ -303,19 +414,16 @@ while True:
 
             elif estado_atual == "opcoes":
                 dropdown_aberto_interceptou = False
-                
                 if aba_selecionada == 0:
                     if dropdown_gui.aberto:
                         if dropdown_gui.tratar_clique(mouse_pos):
                             if som_select: som_select.play()
-                            # ATUALIZA O GUI SCALE
                             gui_scale = float(dropdown_gui.opcoes[dropdown_gui.indice_selecionado].replace("x", ""))
                         dropdown_aberto_interceptou = True
                     elif dropdown_gui.rect.collidepoint(mouse_pos):
                         dropdown_gui.tratar_clique(mouse_pos)
                         dropdown_aberto_interceptou = True
                         if som_select: som_select.play()
-
                 elif aba_selecionada == 1:
                     if dropdown_res.aberto:
                         if dropdown_res.tratar_clique(mouse_pos): 
@@ -329,12 +437,10 @@ while True:
                         dropdown_aberto_interceptou = True
                     else:
                         if dropdown_res.rect.collidepoint(mouse_pos):
-                            dropdown_res.tratar_clique(mouse_pos)
-                            dropdown_aberto_interceptou = True
+                            dropdown_res.tratar_clique(mouse_pos); dropdown_aberto_interceptou = True
                             if som_select: som_select.play()
                         elif dropdown_modo.rect.collidepoint(mouse_pos):
-                            dropdown_modo.tratar_clique(mouse_pos)
-                            dropdown_aberto_interceptou = True
+                            dropdown_modo.tratar_clique(mouse_pos); dropdown_aberto_interceptou = True
                             if som_select: som_select.play()
 
                 if not dropdown_aberto_interceptou:
@@ -349,18 +455,6 @@ while True:
                         if rect.collidepoint(mouse_pos) and tipo == "fps":
                             if som_select: som_select.play()
                             mostrar_fps = not mostrar_fps
-
-        if evento.type == pygame.KEYDOWN and estado_atual == "menu":
-            indice_antigo = indice_menu
-            if evento.key == pygame.K_UP and indice_menu > 0: indice_menu -= 1
-            elif evento.key == pygame.K_DOWN and indice_menu < len(opcoes_main) - 1: indice_menu += 1
-            
-            if indice_menu != indice_antigo and som_nav: som_nav.play() # Som no teclado!
-
-            if evento.key in [pygame.K_RETURN, pygame.K_SPACE]:
-                if som_select: som_select.play()
-                if opcoes_main[indice_menu] == "Opções": estado_atual = "opcoes"
-                elif opcoes_main[indice_menu] == "Sair": pygame.quit(); sys.exit()
 
     pygame.display.flip()
     relogio.tick(60)
