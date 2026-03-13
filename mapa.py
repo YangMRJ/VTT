@@ -43,7 +43,6 @@ class Token:
         pygame.draw.rect(tela, (0,0,0, 150), rect.inflate(6, 4), border_radius=4)
         tela.blit(txt, rect)
 
-
 class MapaJogo:
     def __init__(self):
         self.grid_size = 50
@@ -62,6 +61,11 @@ class MapaJogo:
         self.chat_digitando = False
         self.chat_input = ""
         self.chat_historico = []
+        
+        # --- VARIAVEIS DO MENU DE CONTEXTO ---
+        self.menu_contexto = False
+        self.menu_pos = (0, 0)
+        self.menu_grid = (0, 0)
 
     def registrar_jogador(self, id_player, is_mestre, show_coords):
         self.meu_id = id_player
@@ -72,6 +76,7 @@ class MapaJogo:
         self.camera_y = 300
         self.arrastando = False
         self.chat_historico.clear()
+        self.menu_contexto = False
 
     def adicionar_mensagem(self, nome, texto):
         self.chat_historico.append((nome, texto))
@@ -116,12 +121,10 @@ class MapaJogo:
                 mx, my = m_pos
                 clicou_no_ui = False
                 
-                # Coordenadas dinâmicas do botão da Ficha
                 ficha_x = 405 if self.chat_aberto else 120
                 btn_ficha = pygame.Rect(ficha_x, h - 40, 100, 30)
                 
                 if ev.button == 1:
-                    # --- CHECA UI ---
                     if btn_ficha.collidepoint(mx, my):
                         acoes.append({"tipo": "abrir_ficha"})
                         clicou_no_ui = True
@@ -148,12 +151,18 @@ class MapaJogo:
                             self.chat_digitando = True
                             clicou_no_ui = True
                 
-                # --- LÓGICA DO MAPA ---
                 if not clicou_no_ui:
                     gx = (mx - self.camera_x) // self.grid_size
                     gy = (my - self.camera_y) // self.grid_size
                     
-                    if ev.button == 1:
+                    if ev.button == 1: # ESQUERDO
+                        if self.menu_contexto:
+                            rect_menu = pygame.Rect(self.menu_pos[0], self.menu_pos[1], 130, 30)
+                            if rect_menu.collidepoint(mx, my):
+                                acoes.append({"tipo": "abrir_compendio_spawn", "tx": self.menu_grid[0], "ty": self.menu_grid[1]})
+                            self.menu_contexto = False
+                            continue 
+                            
                         clicou_em_token = False
                         for t in self.tokens.values():
                             if t.grid_x == gx and t.grid_y == gy:
@@ -168,15 +177,26 @@ class MapaJogo:
                             self.arrastando = True
                             self.inicio_arrasto = m_pos
 
-                    elif ev.button == 3:
+                    elif ev.button == 3: # DIREITO
+                        if self.menu_contexto:
+                            self.menu_contexto = False
+                            
+                        clicou_em_token = False
                         for t in self.tokens.values():
-                            if t.selecionado and self.pode_selecionar(t):
-                                acoes.append({"tipo": "move_req", "nome": t.id_player, "tx": gx, "ty": gy})
+                            if t.grid_x == gx and t.grid_y == gy:
+                                clicou_em_token = True
+                                if t.selecionado and self.pode_selecionar(t):
+                                    acoes.append({"tipo": "move_req", "nome": t.id_player, "tx": gx, "ty": gy})
+                                break
+                        
+                        if not clicou_em_token and self.is_mestre:
+                            self.menu_contexto = True
+                            self.menu_pos = m_pos
+                            self.menu_grid = (gx, gy)
 
             elif ev.type == pygame.MOUSEBUTTONUP:
                 if ev.button == 1 and self.arrastando:
                     self.arrastando = False
-                    
                     rx = min(self.inicio_arrasto[0], m_pos[0])
                     ry = min(self.inicio_arrasto[1], m_pos[1])
                     rw = abs(self.inicio_arrasto[0] - m_pos[0])
@@ -204,7 +224,6 @@ class MapaJogo:
     def desenhar(self, tela, fontes):
         tela.fill((30, 40, 30)) 
         w, h = tela.get_size()
-        
         offset_x = self.camera_x % self.grid_size
         offset_y = self.camera_y % self.grid_size
 
@@ -232,7 +251,17 @@ class MapaJogo:
             pygame.draw.rect(surface_selecao, (100, 200, 255, 180), surface_selecao.get_rect(), 2) 
             tela.blit(surface_selecao, (rx, ry))
 
-        # --- DESENHO DA UI (Chat + Botão Ficha) ---
+        if self.menu_contexto:
+            rect_menu = pygame.Rect(self.menu_pos[0], self.menu_pos[1], 130, 30)
+            pygame.draw.rect(tela, (40, 40, 45), rect_menu, border_radius=4)
+            pygame.draw.rect(tela, (150, 150, 150), rect_menu, 1, border_radius=4)
+            cor_txt = (255, 255, 255)
+            if rect_menu.collidepoint(self.pos_mouse):
+                pygame.draw.rect(tela, (60, 60, 70), rect_menu, border_radius=4)
+                cor_txt = (255, 255, 0)
+            txt_menu = fontes['p'].render("Spawnar NPC", True, cor_txt)
+            tela.blit(txt_menu, txt_menu.get_rect(center=rect_menu.center))
+
         ficha_x = 405 if self.chat_aberto else 120
         btn_ficha = pygame.Rect(ficha_x, h - 40, 100, 30)
         cor_ficha = (50, 100, 150) if btn_ficha.collidepoint(self.pos_mouse) else (40, 60, 100)
