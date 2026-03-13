@@ -223,9 +223,9 @@ slider_sfx = Slider(250, 0, 100, 70, "int")
 slider_fonte = Slider(250, 0.5, 2.0, 1.0, "float")
 todos_os_sliders = [slider_musica, slider_sfx, slider_fonte]
 
-dropdown_gui = Dropdown(180, 35, ["0.5x", "1.0x", "1.5x", "2.0x"], indice_inicial=1, max_visiveis=4)
-dropdown_res = Dropdown(180, 35, ["800x600", "1280x720", "1366x768", "1600x900", "1920x1080"], indice_inicial=1, max_visiveis=3)
-dropdown_modo = Dropdown(180, 35, ["Window", "Borderless", "Full Screen"], indice_inicial=0, max_visiveis=3)
+dropdown_gui = Dropdown(180, 35, ["0.5x", "1.0x", "1.5x", "2.0x"], indice_inicial=1, max_visiveis=2)
+dropdown_res = Dropdown(180, 35, ["800x600", "1280x720", "1366x768", "1600x900", "1920x1080"], indice_inicial=1, max_visiveis=2)
+dropdown_modo = Dropdown(180, 35, ["Window", "Borderless", "Full Screen"], indice_inicial=0, max_visiveis=2)
 
 def aplicar_display():
     global LARGURA, ALTURA, tela
