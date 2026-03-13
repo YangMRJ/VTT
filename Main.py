@@ -249,72 +249,147 @@ def desenhar_opcoes(mouse_pos):
 
     return rect_voltar, areas_abas, interativos
 
+def desenhar_texto_multilinha(surface, texto, fonte_usada, cor, x, y, largura_maxima):
+    """Função mágica para quebrar o texto se ele for maior que a tela"""
+    palavras = texto.split(' ')
+    linhas = []
+    linha_atual = []
+    
+    for palavra in palavras:
+        # Se for uma quebra de linha manual do JSON (\n)
+        if '\n' in palavra:
+            partes = palavra.split('\n')
+            linha_atual.append(partes[0])
+            linhas.append(' '.join(linha_atual))
+            linha_atual = [partes[1]]
+            continue
+            
+        teste_linha = ' '.join(linha_atual + [palavra])
+        largura_teste, _ = fonte_usada.size(teste_linha)
+        
+        if largura_teste <= largura_maxima:
+            linha_atual.append(palavra)
+        else:
+            linhas.append(' '.join(linha_atual))
+            linha_atual = [palavra]
+            
+    linhas.append(' '.join(linha_atual))
+    
+    altura_y = y
+    for linha in linhas:
+        if linha.strip(): # Só desenha se não for linha vazia
+            surf = fonte_usada.render(linha, True, cor)
+            surface.blit(surf, (x, altura_y))
+        altura_y += fonte_usada.get_linesize()
+        
+    return altura_y # Retorna onde o texto parou no eixo Y
+
+
 def desenhar_compendio(mouse_pos):
     tela_virtual.fill(PRETO)
     box_rect = pygame.Rect((BASE_W//2 - 550, BASE_H//2 - 300), (1100, 600))
     pygame.draw.rect(tela_virtual, CINZA_ESCURO, box_rect, border_radius=10)
     pygame.draw.rect(tela_virtual, BRANCO, box_rect, 3, border_radius=10)
     
-    # Seta Voltar
     rect_voltar = fonte.render("<", True, AMARELO).get_rect(topleft=(box_rect.left + 25, box_rect.top + 25))
     tela_virtual.blit(fonte.render("<", True, AMARELO), rect_voltar)
 
-    # Título do Compêndio
     surf_titulo = fonte.render("COMPÊNDIO D&D 2024", True, BRANCO)
     tela_virtual.blit(surf_titulo, surf_titulo.get_rect(center=(box_rect.centerx, box_rect.top + 45)))
     pygame.draw.line(tela_virtual, BRANCO, (box_rect.left, box_rect.top + 80), (box_rect.right, box_rect.top + 80), 2)
 
-    # Divisória Sidebar | Conteúdo
     largura_sidebar = 250
     pygame.draw.line(tela_virtual, BRANCO, (box_rect.left + largura_sidebar, box_rect.top + 80), (box_rect.left + largura_sidebar, box_rect.bottom), 2)
 
-    # --- DESENHAR SIDEBAR (Categorias) ---
+    # --- SIDEBAR ---
     rects_categorias = []
     y_cat = box_rect.top + 100
     for i, cat in enumerate(categorias_compendio):
         cor_txt = AMARELO if i == cat_compendio_idx else BRANCO
         surf_cat = fonte_p.render(cat, True, cor_txt)
         rect_cat = surf_cat.get_rect(topleft=(box_rect.left + 30, y_cat))
-        
-        # Efeito de Hover na sidebar
         if rect_cat.inflate(20, 10).collidepoint(mouse_pos) and i != cat_compendio_idx:
             surf_cat = fonte_p.render(cat, True, CINZA_CLARO)
-            
         tela_virtual.blit(surf_cat, rect_cat)
-        rects_categorias.append((rect_cat.inflate(20, 10), i)) # Inflate para facilitar o clique
+        rects_categorias.append((rect_cat.inflate(20, 10), i))
         y_cat += 50
 
-    # --- DESENHAR CONTEÚDO (Lado Direito) ---
+    # --- CONTEÚDO (Lado Direito) ---
     area_conteudo_x = box_rect.left + largura_sidebar + 30
     area_conteudo_y = box_rect.top + 100
+    largura_max_texto = box_rect.width - largura_sidebar - 60
 
     categoria_atual = categorias_compendio[cat_compendio_idx]
     lista_itens = dados_compendio.get(categoria_atual, [])
-
-    tela_virtual.blit(fonte_p.render(f"{categoria_atual} Disponíveis:", True, AMARELO), (area_conteudo_x, area_conteudo_y))
     
-    if len(lista_itens) > 0:
-        # Desenha a lista em 2 colunas
-        coluna_1_x = area_conteudo_x
-        coluna_2_x = area_conteudo_x + 350
-        y_item = area_conteudo_y + 60
-        
-        for i, nome_item in enumerate(lista_itens):
-            x_atual = coluna_1_x if i % 2 == 0 else coluna_2_x
-            if i > 0 and i % 2 == 0: 
-                y_item += 40
-            
-            # Desenha o cardzinho
-            pygame.draw.rect(tela_virtual, CINZA_CLARO, (x_atual, y_item, 300, 35), border_radius=5)
-            tela_virtual.blit(fonte_dropdown.render(nome_item, True, BRANCO), (x_atual + 10, y_item + 5))
-            
-            # TODO: No futuro, checaremos colisão de mouse aqui para poder clicar no card e abrir detalhes!
-    else:
-        # Se a lista estiver vazia no JSON
-        texto = f"Banco de dados de {categoria_atual} vazio."
-        tela_virtual.blit(fonte_p.render(texto, True, CINZA_CLARO), (area_conteudo_x, area_conteudo_y + 60))
+    rects_itens = [] # Para clicar nos cards
 
-    return rect_voltar, rects_categorias
+    # SE ESTIVERMOS VENDO OS DETALHES DE UM ITEM
+    if item_selecionado is not None:
+        # Botão interno de voltar para a lista
+        rect_voltar_lista = fonte_p.render("< Voltar para Lista", True, AMARELO).get_rect(topleft=(area_conteudo_x, area_conteudo_y))
+        tela_virtual.blit(fonte_p.render("< Voltar para Lista", True, AMARELO), rect_voltar_lista)
+        
+        y_detalhe = area_conteudo_y + 40
+        
+        # Título (Ex: Guerreiro)
+        tela_virtual.blit(fonte.render(item_selecionado.get("nome", "Desconhecido"), True, AMARELO), (area_conteudo_x, y_detalhe))
+        y_detalhe += 45
+        
+        # Subtítulo / Atributos básicos
+        tela_virtual.blit(fonte_dropdown.render(item_selecionado.get("subtitulo", ""), True, CINZA_CLARO), (area_conteudo_x, y_detalhe))
+        y_detalhe += 30
+        
+        # Descrição com Word Wrap!
+        y_detalhe = desenhar_texto_multilinha(tela_virtual, item_selecionado.get("descricao", ""), fonte_p, BRANCO, area_conteudo_x, y_detalhe, largura_max_texto)
+        y_detalhe += 20
+        
+        # Linha de separação
+        pygame.draw.line(tela_virtual, CINZA_ESCURO, (area_conteudo_x, y_detalhe), (box_rect.right - 30, y_detalhe), 2)
+        y_detalhe += 20
+        
+        # Atributos e Traços
+        tela_virtual.blit(fonte_p.render("Características Principais:", True, AMARELO), (area_conteudo_x, y_detalhe))
+        y_detalhe += 35
+        y_detalhe = desenhar_texto_multilinha(tela_virtual, item_selecionado.get("atributos", ""), fonte_dropdown, CINZA_CLARO, area_conteudo_x, y_detalhe, largura_max_texto)
+        y_detalhe += 20
+        y_detalhe = desenhar_texto_multilinha(tela_virtual, item_selecionado.get("tracos", ""), fonte_dropdown, BRANCO, area_conteudo_x, y_detalhe, largura_max_texto)
+
+        return rect_voltar, rects_categorias, rects_itens, rect_voltar_lista
+
+    # SE ESTIVERMOS VENDO A LISTA (Cards)
+    else:
+        tela_virtual.blit(fonte_p.render(f"{categoria_atual} Disponíveis:", True, AMARELO), (area_conteudo_x, area_conteudo_y))
+        
+        if len(lista_itens) > 0:
+            coluna_1_x = area_conteudo_x
+            coluna_2_x = area_conteudo_x + 350
+            y_item = area_conteudo_y + 60
+            
+            for i, dados_item in enumerate(lista_itens):
+                x_atual = coluna_1_x if i % 2 == 0 else coluna_2_x
+                if i > 0 and i % 2 == 0: y_item += 50
+                
+                # Pegar o nome do JSON (Se for dict pega a chave 'nome', se for string pega a própria string pra evitar erro)
+                nome_exibir = dados_item.get("nome", "Sem Nome") if isinstance(dados_item, dict) else dados_item
+                
+                rect_card = pygame.Rect(x_atual, y_item, 300, 40)
+                
+                # Efeito Hover no Card
+                cor_card = AMARELO if rect_card.collidepoint(mouse_pos) else CINZA_CLARO
+                cor_txt_card = PRETO if cor_card == AMARELO else BRANCO
+                
+                pygame.draw.rect(tela_virtual, cor_card, rect_card, border_radius=5)
+                tela_virtual.blit(fonte_p.render(nome_exibir, True, cor_txt_card), (x_atual + 10, y_item + 8))
+                
+                # Guarda o rect e os DADOS COMPLETOS desse item para o clique
+                rects_itens.append((rect_card, dados_item))
+                
+        else:
+            texto = f"Banco de dados de {categoria_atual} vazio."
+            tela_virtual.blit(fonte_p.render(texto, True, CINZA_CLARO), (area_conteudo_x, area_conteudo_y + 60))
+
+        return rect_voltar, rects_categorias, rects_itens, None
 
 # --- 5. LOOP PRINCIPAL ---
 while True:
