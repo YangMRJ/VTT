@@ -27,7 +27,7 @@ try:
     som_nav = pygame.mixer.Sound("nav.mp3")
     som_select = pygame.mixer.Sound("select.mp3")
     pygame.mixer.music.load("menu_theme.mp3")
-    pygame.mixer.music.play(-1) # Tocar em loop
+    pygame.mixer.music.play(-1)
 except:
     print("Erro ao carregar arquivos de áudio.")
     som_nav = som_select = None
@@ -36,26 +36,20 @@ except:
 opcoes = ["Host", "Jogar", "Compendio", "Personagens", "Opções", "Sair"]
 indice_selecionado = 0
 
-# Carregar e Pintar a Seta de Branco
-try:
-    seta_img = pygame.image.load("arrow_select.png").convert_alpha()
-    seta_img = pygame.transform.scale(seta_img, (30, 30))
-    # Truque para mudar a cor da imagem para Branco
-    seta_img.fill(BRANCO, special_flags=pygame.BLEND_RGBA_MULT)
-except:
-    seta_img = None
-
 def desenhar_menu():
     tela.fill(PRETO)
     
     for i, texto in enumerate(opcoes):
-        cor = AMARELO if i == indice_selecionado else BRANCO
-        surface_texto = fonte.render(texto, True, cor)
+        if i == indice_selecionado:
+            cor = AMARELO
+            # Adiciona as setas de texto ao redor da opção
+            texto_exibido = f"> {texto} <"
+        else:
+            cor = BRANCO
+            texto_exibido = texto
+            
+        surface_texto = fonte.render(texto_exibido, True, cor)
         rect_texto = surface_texto.get_rect(center=(LARGURA // 2, 200 + i * 70))
-        
-        if i == indice_selecionado and seta_img:
-            rect_seta = seta_img.get_rect(midright=(rect_texto.left - 20, rect_texto.centery))
-            tela.blit(seta_img, rect_seta)
         
         tela.blit(surface_texto, rect_texto)
 
@@ -76,37 +70,38 @@ while True:
             if evento.key == pygame.K_UP:
                 if indice_selecionado > 0:
                     indice_selecionado -= 1
-                    
             elif evento.key == pygame.K_DOWN:
                 if indice_selecionado < len(opcoes) - 1:
                     indice_selecionado += 1
 
-            # Tocar som de navegação se o índice mudou
             if indice_selecionado != indice_anterior and som_nav:
                 som_nav.play()
 
             elif evento.key in [pygame.K_RETURN, pygame.K_SPACE]:
                 if som_select: som_select.play()
-                print(f"Executando: {opcoes[indice_selecionado]}")
                 if opcoes[indice_selecionado] == "Sair":
-                    pygame.time.wait(300) # Espera o som tocar um pouco
+                    pygame.time.wait(300)
                     pygame.quit()
                     sys.exit()
 
         # Seleção por MOUSE
         if evento.type == pygame.MOUSEMOTION:
             for i, texto in enumerate(opcoes):
-                # Criamos um rect para a área de colisão do texto
+                # Usamos o texto original para o cálculo da área de colisão (evita que o rect mude de tamanho com as setas)
                 rect_teste = fonte.render(texto, True, BRANCO).get_rect(center=(LARGURA // 2, 200 + i * 70))
+                # Expandimos um pouco a área de colisão lateral para facilitar o uso do mouse
+                rect_teste.width += 100
+                rect_teste.x -= 50
+                
                 if rect_teste.collidepoint(mouse_pos):
-                    if indice_selecionado != i: # Só toca o som se mudar de opção
+                    if indice_selecionado != i:
                         indice_selecionado = i
                         if som_nav: som_nav.play()
 
         if evento.type == pygame.MOUSEBUTTONDOWN:
             if evento.button == 1:
-                # Verifica se o mouse está sobre a opção selecionada no clique
-                rect_clique = fonte.render(opcoes[indice_selecionado], True, AMARELO).get_rect(center=(LARGURA // 2, 200 + indice_selecionado * 70))
+                # Verifica se o clique foi na opção selecionada
+                rect_clique = fonte.render(f"> {opcoes[indice_selecionado]} <", True, AMARELO).get_rect(center=(LARGURA // 2, 200 + indice_selecionado * 70))
                 if rect_clique.collidepoint(mouse_pos):
                     if som_select: som_select.play()
                     if opcoes[indice_selecionado] == "Sair":
