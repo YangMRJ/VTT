@@ -29,7 +29,8 @@ def carregar_config():
         "personagens": [], "char_selecionado": -1, 
         "campanhas": [], "campanha_selecionada": 0, 
         "campanhas_jogador": [], "show_fps": False,
-        "show_grid_coords": False # <-- NOVO
+        "show_grid_coords": False,
+        "compendio": {"npcs": [], "inimigos": []} # <-- NOVO
     }
     if os.path.exists(ARQUIVO_CONFIG):
         try:
@@ -41,6 +42,7 @@ def carregar_config():
                 if "campanhas_jogador" not in dados: dados["campanhas_jogador"] = []
                 if "show_grid_coords" not in dados: dados["show_grid_coords"] = False
                 if "char_selecionado" not in dados: dados["char_selecionado"] = -1
+                if "compendio" not in dados: dados["compendio"] = {"npcs": [], "inimigos": []}
 
                 if "personagens" in dados:
                     for i, p in enumerate(dados["personagens"]):
