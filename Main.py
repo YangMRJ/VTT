@@ -1,12 +1,47 @@
 import pygame
 import sys
+import json
+import os
 
 # --- 1. CONFIGURAÇÕES E INICIALIZAÇÃO ---
 pygame.init()
 pygame.mixer.init()
 
-LARGURA, ALTURA = 1280, 720
-tela = pygame.display.set_mode((LARGURA, ALTURA), pygame.RESIZABLE)
+# --- SISTEMA DE SAVE / LOAD ---
+ARQUIVO_CONFIG = "config.json"
+
+def carregar_configs():
+    if os.path.exists(ARQUIVO_CONFIG):
+        try:
+            with open(ARQUIVO_CONFIG, "r") as f:
+                return json.load(f)
+        except:
+            print("Erro ao ler config.json. Usando padrões.")
+    # Valores padrão se não houver save
+    return {
+        "mostrar_fps": False,
+        "gui_scale_idx": 1,
+        "font_scale": 1.0,
+        "vol_musica": 50,
+        "vol_sfx": 70,
+        "res_idx": 1,
+        "modo_idx": 0
+    }
+
+# Carrega do arquivo
+cfg = carregar_configs()
+
+# Aplica as configurações iniciais nas variáveis globais
+mostrar_fps = cfg["mostrar_fps"]
+gui_scale = float(["0.5x", "1.0x", "1.5x", "2.0x"][cfg["gui_scale_idx"]].replace("x", ""))
+escala_fonte_atual = -1
+
+# Preparação da Tela baseada no Save
+LARGURA, ALTURA = map(int, ["800x600", "1280x720", "1366x768", "1600x900", "1920x1080"][cfg["res_idx"]].split('x'))
+modo_str = ["Window", "Borderless", "Full Screen"][cfg["modo_idx"]]
+flags = pygame.NOFRAME if modo_str == "Borderless" else pygame.FULLSCREEN if modo_str == "Full Screen" else pygame.RESIZABLE
+
+tela = pygame.display.set_mode((LARGURA, ALTURA), flags)
 pygame.display.set_caption("VTT Project")
 relogio = pygame.time.Clock()
 
@@ -16,15 +51,13 @@ tela_virtual = pygame.Surface((BASE_W, BASE_H))
 PRETO, BRANCO, AMARELO = (0, 0, 0), (255, 255, 255), (255, 255, 0)
 CINZA_ESCURO, CINZA_CLARO = (40, 40, 40), (80, 80, 80)
 
-# Gerenciador de Fontes Dinâmico
-escala_fonte_atual = -1
+# Gerenciador de Fontes
 fonte_dropdown = fonte_p = fonte = fonte_titulo = None
 
 def carregar_fontes(escala):
     global fonte_dropdown, fonte_p, fonte, fonte_titulo, escala_fonte_atual
-    if escala == escala_fonte_atual: return # Evita recarregar sem necessidade
+    if escala == escala_fonte_atual: return
     escala_fonte_atual = escala
-    
     try:
         fonte_dropdown = pygame.font.Font("Minecraft.ttf", max(10, int(20 * escala)))
         fonte_p = pygame.font.Font("Minecraft.ttf", max(12, int(25 * escala)))
@@ -36,14 +69,16 @@ def carregar_fontes(escala):
         fonte = pygame.font.SysFont("Arial", max(16, int(40 * escala)), bold=True)
         fonte_titulo = pygame.font.SysFont("Arial", max(30, int(80 * escala)), bold=True)
 
-# Carrega a fonte inicial (Escala 1.0)
-carregar_fontes(1.0)
+carregar_fontes(cfg["font_scale"])
 
+# Sons baseados no Save
 try:
     som_nav = pygame.mixer.Sound("nav.mp3")
     som_select = pygame.mixer.Sound("select.mp3")
+    som_nav.set_volume(cfg["vol_sfx"] / 100)
+    som_select.set_volume(cfg["vol_sfx"] / 100)
     pygame.mixer.music.load("menu_theme.mp3")
-    pygame.mixer.music.set_volume(0.5)
+    pygame.mixer.music.set_volume(cfg["vol_musica"] / 100)
     pygame.mixer.music.play(-1)
 except:
     som_nav = som_select = None
@@ -56,10 +91,9 @@ class Slider:
         self.min_val = min_val
         self.max_val = max_val
         self.valor = valor_inicial
-        self.tipo = tipo # "int" (0-100) ou "float" (0.5-2.0)
-        
+        self.tipo = tipo
         self.rect = pygame.Rect(0, 0, largura, 10)
-        self.rect_texto = pygame.Rect(0, 0, 70, 35) # Caixa de input
+        self.rect_texto = pygame.Rect(0, 0, 70, 35)
         self.editando = False
         self.texto_input = ""
 
@@ -71,16 +105,12 @@ class Slider:
         self.rect.topleft = (x, y)
         self.rect_texto.midleft = (self.rect.right + 20, self.rect.centery)
         
-        # Desenha a trilha
         pygame.draw.rect(surface, CINZA_CLARO, self.rect)
-        
-        # Desenha o Thumb Pixelado (Cruz/Octógono em vez de círculo perfeito)
         cx, cy = int(self.obter_pos_x()), self.rect.centery
         r = 10
         pygame.draw.rect(surface, AMARELO, (cx - r, cy - r + 4, r*2, r*2 - 8))
         pygame.draw.rect(surface, AMARELO, (cx - r + 4, cy - r, r*2 - 8, r*2))
         
-        # Desenha a caixa de texto
         cor_caixa = AMARELO if self.editando else BRANCO
         pygame.draw.rect(surface, PRETO, self.rect_texto)
         pygame.draw.rect(surface, cor_caixa, self.rect_texto, 2)
@@ -90,7 +120,6 @@ class Slider:
         surface.blit(surf_txt, surf_txt.get_rect(center=self.rect_texto.center))
 
     def atualizar(self, mouse_pos, clique):
-        # Arrastar o slider (só funciona se não estiver digitando)
         if clique and self.rect.inflate(0, 30).collidepoint(mouse_pos) and not self.editando:
             novo_x = max(self.rect.left, min(mouse_pos[0], self.rect.right))
             proporcao = (novo_x - self.rect.left) / self.largura
@@ -100,7 +129,6 @@ class Slider:
         return False
 
     def tratar_clique(self, mouse_pos):
-        # Clicar na caixinha para digitar
         if self.rect_texto.collidepoint(mouse_pos):
             self.editando = True
             self.texto_input = ""
@@ -112,7 +140,6 @@ class Slider:
 
     def tratar_teclado(self, evento):
         if not self.editando: return False
-        
         if evento.key == pygame.K_RETURN:
             self.confirmar_texto()
             self.editando = False
@@ -120,10 +147,9 @@ class Slider:
             self.texto_input = self.texto_input[:-1]
         else:
             char = evento.unicode
-            # Aceita apenas números e ponto
             if char.isdigit() or (char == '.' and self.tipo == "float"):
                 self.texto_input += char
-        return True # Interceptou o teclado
+        return True
 
     def confirmar_texto(self):
         try:
@@ -134,6 +160,7 @@ class Slider:
         except: pass
 
 class Dropdown:
+    # MAX_VISIVEIS ALTERADO PARA 2 AQUI!
     def __init__(self, largura, altura, opcoes, indice_inicial=0, max_visiveis=2):
         self.rect = pygame.Rect(0, 0, largura, altura)
         self.opcoes = opcoes
@@ -208,31 +235,42 @@ class Dropdown:
                 self.aberto = True
                 return False
 
-# --- 3. ESTADOS E COMPONENTES ---
+# --- 3. ESTADOS E COMPONENTES INICIAIS ---
 estado_atual = "menu"
 opcoes_main = ["Host", "Jogar", "Compendio", "Personagens", "Opções", "Sair"]
 indice_menu, indice_hover = 0, -1
 abas = ["Geral", "Gráficos", "Áudio"]
 aba_selecionada = 0
-mostrar_fps = False
-gui_scale = 1.0
 
-# Sliders (Largura, Mínimo, Máximo, Inicial, Tipo)
-slider_musica = Slider(250, 0, 100, 50, "int")
-slider_sfx = Slider(250, 0, 100, 70, "int")
-slider_fonte = Slider(250, 0.5, 2.0, 1.0, "float")
+slider_musica = Slider(250, 0, 100, cfg["vol_musica"], "int")
+slider_sfx = Slider(250, 0, 100, cfg["vol_sfx"], "int")
+slider_fonte = Slider(250, 0.5, 2.0, cfg["font_scale"], "float")
 todos_os_sliders = [slider_musica, slider_sfx, slider_fonte]
 
-dropdown_gui = Dropdown(180, 35, ["0.5x", "1.0x", "1.5x", "2.0x"], indice_inicial=1, max_visiveis=2)
-dropdown_res = Dropdown(180, 35, ["800x600", "1280x720", "1366x768", "1600x900", "1920x1080"], indice_inicial=1, max_visiveis=2)
-dropdown_modo = Dropdown(180, 35, ["Window", "Borderless", "Full Screen"], indice_inicial=0, max_visiveis=2)
+dropdown_gui = Dropdown(180, 35, ["0.5x", "1.0x", "1.5x", "2.0x"], indice_inicial=cfg["gui_scale_idx"], max_visiveis=2)
+dropdown_res = Dropdown(180, 35, ["800x600", "1280x720", "1366x768", "1600x900", "1920x1080"], indice_inicial=cfg["res_idx"], max_visiveis=2)
+dropdown_modo = Dropdown(180, 35, ["Window", "Borderless", "Full Screen"], indice_inicial=cfg["modo_idx"], max_visiveis=2)
+
+# Função para Salvar Configurações
+def salvar_configs():
+    novas_configs = {
+        "mostrar_fps": mostrar_fps,
+        "gui_scale_idx": dropdown_gui.indice_selecionado,
+        "font_scale": slider_fonte.valor,
+        "vol_musica": slider_musica.valor,
+        "vol_sfx": slider_sfx.valor,
+        "res_idx": dropdown_res.indice_selecionado,
+        "modo_idx": dropdown_modo.indice_selecionado
+    }
+    with open(ARQUIVO_CONFIG, "w") as f:
+        json.dump(novas_configs, f, indent=4)
+    print("Configurações Salvas!")
 
 def aplicar_display():
     global LARGURA, ALTURA, tela
     res_str = dropdown_res.opcoes[dropdown_res.indice_selecionado]
     LARGURA, ALTURA = map(int, res_str.split('x'))
     modo_str = dropdown_modo.opcoes[dropdown_modo.indice_selecionado]
-    
     flags = pygame.NOFRAME if modo_str == "Borderless" else pygame.FULLSCREEN if modo_str == "Full Screen" else pygame.RESIZABLE
     tela = pygame.display.set_mode((LARGURA, ALTURA), flags)
 
@@ -262,18 +300,15 @@ def desenhar_opcoes(mouse_pos):
 
     interativos = []
     if aba_selecionada == 0:
-        # FPS
         tela_virtual.blit(fonte_p.render("Mostrar FPS:", True, BRANCO), (box_rect.left + 100, box_rect.top + 120))
         check_rect = pygame.Rect(box_rect.left + 350, box_rect.top + 120, 30, 30)
         pygame.draw.rect(tela_virtual, BRANCO, check_rect, 2)
         if mostrar_fps: pygame.draw.rect(tela_virtual, AMARELO, check_rect.inflate(-10, -10))
         interativos.append(("fps", check_rect))
         
-        # GUI
         tela_virtual.blit(fonte_p.render("GUI Scale:", True, BRANCO), (box_rect.left + 100, box_rect.top + 220))
         dropdown_gui.desenhar(tela_virtual, box_rect.left + 350, box_rect.top + 215, mouse_pos)
         
-        # FONTE
         tela_virtual.blit(fonte_p.render("Tamanho Fonte:", True, BRANCO), (box_rect.left + 100, box_rect.top + 320))
         slider_fonte.desenhar(tela_virtual, box_rect.left + 350, box_rect.top + 330)
 
@@ -302,15 +337,12 @@ while True:
     scaled_w, scaled_h = int(BASE_W * gui_scale), int(BASE_H * gui_scale)
     offset_x, offset_y = LARGURA//2 - scaled_w//2, ALTURA//2 - scaled_h//2
     
-    # Mapeia o mouse da tela real para a virtual
     v_mouse_x = (real_mouse_pos[0] - offset_x) / gui_scale
     v_mouse_y = (real_mouse_pos[1] - offset_y) / gui_scale
     mouse_pos = (v_mouse_x, v_mouse_y) 
     
-    # 5.1 Atualiza Fontes se o slider mudar
     carregar_fontes(slider_fonte.valor)
 
-    # 5.2 RENDERIZAÇÃO DA INTERFACE VIRTUAL
     if estado_atual == "menu":
         tela_virtual.fill(PRETO)
         surf_titulo = fonte_titulo.render("VTT PROJECT", True, BRANCO)
@@ -333,7 +365,6 @@ while True:
     elif estado_atual == "opcoes":
         rect_voltar, areas_abas, interativos = desenhar_opcoes(mouse_pos)
         
-        # Atualiza Sliders (Arrastar)
         if aba_selecionada == 2:
             if slider_musica.atualizar(mouse_pos, mouse_clicado): pygame.mixer.music.set_volume(slider_musica.valor / 100)
             if slider_sfx.atualizar(mouse_pos, mouse_clicado):
@@ -342,12 +373,10 @@ while True:
         elif aba_selecionada == 0:
             slider_fonte.atualizar(mouse_pos, mouse_clicado)
 
-    # 5.3 ESCALA E DESENHO NA TELA REAL
     tela.fill(PRETO)
     surf_scaled = pygame.transform.scale(tela_virtual, (scaled_w, scaled_h))
     tela.blit(surf_scaled, (offset_x, offset_y))
 
-    # O FPS AGORA É DESENHADO DIRETAMENTE NA TELA REAL (Nunca escala e fica travado no canto)
     if mostrar_fps:
         fps_txt = fonte_p.render(f"FPS: {int(relogio.get_fps())}", True, (0, 255, 0))
         tela.blit(fps_txt, (10, 10))
@@ -355,26 +384,27 @@ while True:
     # --- PROCESSAMENTO DE EVENTOS ---
     for evento in pygame.event.get():
         if evento.type == pygame.QUIT:
+            salvar_configs() # Salva ao fechar a janela no X
             pygame.quit(); sys.exit()
             
         if evento.type == pygame.MOUSEWHEEL and estado_atual == "opcoes":
             if aba_selecionada == 0: dropdown_gui.rolar(evento.y)
-            elif aba_selecionada == 1:
-                dropdown_res.rolar(evento.y)
-                dropdown_modo.rolar(evento.y)
+            elif aba_selecionada == 1: dropdown_res.rolar(evento.y); dropdown_modo.rolar(evento.y)
+
+        # SALVAR QUANDO SOLTAR O CLIQUE (Ideal para os sliders)
+        if evento.type == pygame.MOUSEBUTTONUP and evento.button == 1:
+            if estado_atual == "opcoes": salvar_configs()
 
         if evento.type == pygame.KEYDOWN:
-            # Tenta mandar a tecla para os sliders de texto primeiro
             tecla_interceptada = False
             for s in todos_os_sliders:
                 if s.tratar_teclado(evento):
                     tecla_interceptada = True
-                    # Se confirmou no áudio, já atualiza o sistema
                     if not s.editando: 
                         if s == slider_musica: pygame.mixer.music.set_volume(s.valor / 100)
                         elif s == slider_sfx and som_select: som_select.set_volume(s.valor / 100)
+                        salvar_configs() # Salva ao confirmar no teclado
             
-            # Se ninguém estiver digitando, navega no menu normal
             if not tecla_interceptada and estado_atual == "menu":
                 indice_antigo = indice_menu
                 if evento.key == pygame.K_UP and indice_menu > 0: indice_menu -= 1
@@ -384,33 +414,33 @@ while True:
                 if evento.key in [pygame.K_RETURN, pygame.K_SPACE]:
                     if som_select: som_select.play()
                     if opcoes_main[indice_menu] == "Opções": estado_atual = "opcoes"
-                    elif opcoes_main[indice_menu] == "Sair": pygame.quit(); sys.exit()
+                    elif opcoes_main[indice_menu] == "Sair":
+                        salvar_configs()
+                        pygame.quit(); sys.exit()
 
         if evento.type == pygame.MOUSEBUTTONDOWN and evento.button == 1:
-            # Trata clique nas caixas de texto dos sliders primeiro
             clicou_em_texto = False
             if estado_atual == "opcoes":
-                sliders_aba = []
-                if aba_selecionada == 0: sliders_aba = [slider_fonte]
-                elif aba_selecionada == 2: sliders_aba = [slider_musica, slider_sfx]
-                
+                sliders_aba = [slider_fonte] if aba_selecionada == 0 else [slider_musica, slider_sfx] if aba_selecionada == 2 else []
                 for s in sliders_aba:
                     if s.tratar_clique(mouse_pos):
                         clicou_em_texto = True
                         if som_select: som_select.play()
-                    # Atualiza áudio se acabou de confirmar clicando fora
                     if not s.editando:
                         if s == slider_musica: pygame.mixer.music.set_volume(s.valor / 100)
                         elif s == slider_sfx and som_select: som_select.set_volume(s.valor / 100)
+                        salvar_configs()
             
-            if clicou_em_texto: continue # Se clicou num input de texto, ignora o resto
+            if clicou_em_texto: continue
 
             if estado_atual == "menu":
                 for i, texto in enumerate(opcoes_main):
                     if fonte.render(texto, True, BRANCO).get_rect(center=(BASE_W // 2, 220 + i * 70)).inflate(100, 20).collidepoint(mouse_pos):
                         if som_select: som_select.play()
                         if texto == "Opções": estado_atual = "opcoes"
-                        elif texto == "Sair": pygame.quit(); sys.exit()
+                        elif texto == "Sair":
+                            salvar_configs()
+                            pygame.quit(); sys.exit()
 
             elif estado_atual == "opcoes":
                 dropdown_aberto_interceptou = False
@@ -419,6 +449,7 @@ while True:
                         if dropdown_gui.tratar_clique(mouse_pos):
                             if som_select: som_select.play()
                             gui_scale = float(dropdown_gui.opcoes[dropdown_gui.indice_selecionado].replace("x", ""))
+                            salvar_configs()
                         dropdown_aberto_interceptou = True
                     elif dropdown_gui.rect.collidepoint(mouse_pos):
                         dropdown_gui.tratar_clique(mouse_pos)
@@ -429,11 +460,13 @@ while True:
                         if dropdown_res.tratar_clique(mouse_pos): 
                             if som_select: som_select.play()
                             aplicar_display()
+                            salvar_configs()
                         dropdown_aberto_interceptou = True
                     elif dropdown_modo.aberto:
                         if dropdown_modo.tratar_clique(mouse_pos): 
                             if som_select: som_select.play()
                             aplicar_display()
+                            salvar_configs()
                         dropdown_aberto_interceptou = True
                     else:
                         if dropdown_res.rect.collidepoint(mouse_pos):
@@ -455,6 +488,7 @@ while True:
                         if rect.collidepoint(mouse_pos) and tipo == "fps":
                             if som_select: som_select.play()
                             mostrar_fps = not mostrar_fps
+                            salvar_configs()
 
     pygame.display.flip()
     relogio.tick(60)
