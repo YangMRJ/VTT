@@ -1,0 +1,12 @@
+{
+    "Raças": [
+        "Anão", "Draconato", "Elfo", "Gnomo", "Golias", "Halfling", "Humano", "Orc", "Tiferino"
+    ],
+    "Classes": [
+        "Bárbaro", "Bardo", "Bruxo", "Clérigo", "Druida", "Feiticeiro", "Guerreiro", "Ladino", "Mago", "Monge", "Paladino", "Patrulheiro"
+    ],
+    "Antecedentes": [],
+    "Magias": [],
+    "Itens": [],
+    "Bestiário": []
+}
