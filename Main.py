@@ -5,16 +5,17 @@ import sys
 pygame.init()
 pygame.mixer.init()
 
+# Variáveis Globais de Tela
 LARGURA, ALTURA = 1280, 720
-tela = pygame.display.set_mode((LARGURA, ALTURA))
+tela = pygame.display.set_mode((LARGURA, ALTURA), pygame.RESIZABLE)
 pygame.display.set_caption("VTT Project")
 relogio = pygame.time.Clock()
 
 # Cores
-PRETO, BRANCO, AMARELO, CINZA = (0, 0, 0), (255, 255, 255), (255, 255, 0), (40, 40, 40)
-CINZA_L = (100, 100, 100)
+PRETO, BRANCO, AMARELO = (0, 0, 0), (255, 255, 255), (255, 255, 0)
+CINZA_ESCURO, CINZA_CLARO = (40, 40, 40), (80, 80, 80)
 
-# Carregamento de Recursos
+# Fontes
 try:
     fonte_p = pygame.font.Font("Minecraft.ttf", 25)
     fonte = pygame.font.Font("Minecraft.ttf", 40)
@@ -24,112 +25,123 @@ except:
     fonte = pygame.font.SysFont("Arial", 40, bold=True)
     fonte_titulo = pygame.font.SysFont("Arial", 80, bold=True)
 
-try:
-    som_nav = pygame.mixer.Sound("nav.mp3")
-    som_select = pygame.mixer.Sound("select.mp3")
-    pygame.mixer.music.load("menu_theme.mp3")
-    pygame.mixer.music.set_volume(0.5)
-    pygame.mixer.music.play(-1)
-except:
-    som_nav = som_select = None
+# --- 2. CLASSES DE UI ---
 
-# --- 2. VARIÁVEIS DE ESTADO ---
-estado_atual = "menu" # Começa no Menu Principal
-
-# Variáveis do Menu Principal
-opcoes_main = ["Host", "Jogar", "Compendio", "Personagens", "Opções", "Sair"]
-indice_selecionado = 0
-tempo_ultima_tecla = 0
-DELAY_REPETICAO = 150 
-
-# Variáveis da Tela de Opções
-abas = ["Geral", "Gráficos", "Áudio"]
-aba_selecionada = 0
-mostrar_fps = False
-resolucoes = ["800x600", "1280x720", "1600x900", "1920x1080"]
-res_index = 1
-modos_tela = ["Window", "Borderless", "Full Screen"]
-modo_index = 0
-vol_musica = 0.5
-vol_sfx = 0.7
-
-# --- 3. CLASSES DE UI ---
 class Slider:
-    def __init__(self, x, y, largura, valor_inicial):
-        self.rect = pygame.Rect(x, y, largura, 10)
+    def __init__(self, largura, valor_inicial):
+        self.rect = pygame.Rect(0, 0, largura, 10) # X e Y serão atualizados no desenho
         self.valor = valor_inicial
-        self.circulo_x = x + (largura * valor_inicial)
     
-    def desenhar(self, tela):
-        pygame.draw.rect(tela, CINZA_L, self.rect)
-        pygame.draw.circle(tela, AMARELO, (int(self.circulo_x), self.rect.centery), 12)
+    def desenhar(self, tela, x, y):
+        self.rect.topleft = (x, y)
+        circulo_x = self.rect.x + (self.rect.width * self.valor)
+        pygame.draw.rect(tela, CINZA_CLARO, self.rect)
+        pygame.draw.circle(tela, AMARELO, (int(circulo_x), self.rect.centery), 12)
     
     def atualizar(self, mouse_pos, clique):
         if clique and self.rect.inflate(0, 20).collidepoint(mouse_pos):
-            self.circulo_x = max(self.rect.left, min(mouse_pos[0], self.rect.right))
-            self.valor = (self.circulo_x - self.rect.left) / self.rect.width
+            novo_x = max(self.rect.left, min(mouse_pos[0], self.rect.right))
+            self.valor = (novo_x - self.rect.left) / self.rect.width
             return True
         return False
 
-# Instanciando os Sliders
-slider_musica = Slider(540, 320, 300, vol_musica)
-slider_sfx = Slider(540, 420, 300, vol_sfx)
+class Dropdown:
+    def __init__(self, largura, altura, opcoes, indice_inicial=0):
+        self.rect = pygame.Rect(0, 0, largura, altura)
+        self.opcoes = opcoes
+        self.indice_selecionado = indice_inicial
+        self.aberto = False
+        self.rects_opcoes = []
 
+    def desenhar(self, tela, x, y):
+        self.rect.topleft = (x, y)
+        # Fundo principal
+        pygame.draw.rect(tela, CINZA_CLARO, self.rect)
+        pygame.draw.rect(tela, BRANCO, self.rect, 2)
+        
+        # Texto Selecionado
+        texto = fonte_p.render(self.opcoes[self.indice_selecionado], True, BRANCO)
+        tela.blit(texto, (self.rect.x + 10, self.rect.centery - texto.get_height()//2))
+        
+        # Setinha
+        seta = "V" if not self.aberto else "^"
+        texto_seta = fonte_p.render(seta, True, BRANCO)
+        tela.blit(texto_seta, (self.rect.right - 30, self.rect.centery - texto_seta.get_height()//2))
 
-# --- 4. FUNÇÕES DE DESENHO ---
+        # Desenha a lista SE estiver aberto
+        if self.aberto:
+            self.rects_opcoes = []
+            for i, op in enumerate(self.opcoes):
+                rect_op = pygame.Rect(self.rect.x, self.rect.bottom + i * self.rect.height, self.rect.width, self.rect.height)
+                self.rects_opcoes.append(rect_op)
+                
+                # Highlight se o mouse passar por cima
+                cor_fundo = AMARELO if rect_op.collidepoint(pygame.mouse.get_pos()) else CINZA_ESCURO
+                cor_texto = PRETO if cor_fundo == AMARELO else BRANCO
+                
+                pygame.draw.rect(tela, cor_fundo, rect_op)
+                pygame.draw.rect(tela, BRANCO, rect_op, 1)
+                texto_op = fonte_p.render(op, True, cor_texto)
+                tela.blit(texto_op, (rect_op.x + 10, rect_op.centery - texto_op.get_height()//2))
 
-def desenhar_menu_principal():
-    tela.fill(PRETO)
-    surf_titulo = fonte_titulo.render("VTT PROJECT", True, BRANCO)
-    rect_titulo = surf_titulo.get_rect(center=(LARGURA // 2, 80))
-    tela.blit(surf_titulo, rect_titulo)
-    
-    for i, texto in enumerate(opcoes_main):
-        if i == indice_selecionado:
-            cor = AMARELO
-            texto_exibido = f"> {texto} <"
+    def tratar_clique(self, mouse_pos):
+        if self.aberto:
+            for i, rect in enumerate(self.rects_opcoes):
+                if rect.collidepoint(mouse_pos):
+                    self.indice_selecionado = i
+                    self.aberto = False
+                    return True # Mudou algo
+            self.aberto = False # Clicou fora, fecha
+            return False
         else:
-            cor = BRANCO
-            texto_exibido = texto
-            
-        surface_texto = fonte.render(texto_exibido, True, cor)
-        rect_texto = surface_texto.get_rect(center=(LARGURA // 2, 220 + i * 70))
-        tela.blit(surface_texto, rect_texto)
+            if self.rect.collidepoint(mouse_pos):
+                self.aberto = True
+                return False
 
-def desenhar_aba_geral(box_rect):
-    txt = fonte.render("Mostrar FPS:", True, BRANCO)
-    tela.blit(txt, (box_rect.left + 100, box_rect.top + 150))
+# --- 3. ESTADOS E COMPONENTES ---
+estado_atual = "menu"
+opcoes_main = ["Host", "Jogar", "Compendio", "Personagens", "Opções", "Sair"]
+indice_menu = 0
+abas = ["Geral", "Gráficos", "Áudio"]
+aba_selecionada = 0
+
+mostrar_fps = False
+vol_musica, vol_sfx = 0.5, 0.7
+
+# Instanciando Componentes
+slider_musica = Slider(300, vol_musica)
+slider_sfx = Slider(300, vol_sfx)
+
+dropdown_res = Dropdown(220, 40, ["1280x720", "1366x768", "1600x900", "1920x1080"], 0)
+dropdown_modo = Dropdown(220, 40, ["Window", "Borderless", "Full Screen"], 0)
+
+# --- 4. FUNÇÃO PARA APLICAR TELA ---
+def aplicar_display():
+    global LARGURA, ALTURA, tela
+    res_str = dropdown_res.opcoes[dropdown_res.indice_selecionado]
+    LARGURA, ALTURA = map(int, res_str.split('x'))
     
-    check_rect = pygame.Rect(box_rect.left + 400, box_rect.top + 155, 30, 30)
-    pygame.draw.rect(tela, BRANCO, check_rect, 2)
-    if mostrar_fps:
-        pygame.draw.rect(tela, AMARELO, check_rect.inflate(-10, -10))
-    return [("fps", check_rect)]
+    modo_str = dropdown_modo.opcoes[dropdown_modo.indice_selecionado]
+    flags = 0
+    if modo_str == "Borderless":
+        flags = pygame.NOFRAME
+    elif modo_str == "Full Screen":
+        flags = pygame.FULLSCREEN
+    else:
+        flags = pygame.RESIZABLE
+        
+    tela = pygame.display.set_mode((LARGURA, ALTURA), flags)
 
-def desenhar_aba_graficos(box_rect):
-    txt_res = fonte.render(f"Resolução: < {resolucoes[res_index]} >", True, BRANCO)
-    res_rect = txt_res.get_rect(topleft=(box_rect.left + 100, box_rect.top + 150))
-    tela.blit(txt_res, res_rect)
-    
-    txt_modo = fonte.render(f"Modo: < {modos_tela[modo_index]} >", True, BRANCO)
-    modo_rect = txt_modo.get_rect(topleft=(box_rect.left + 100, box_rect.top + 250))
-    tela.blit(txt_modo, modo_rect)
-    return [("res", res_rect), ("modo", modo_rect)]
-
-def desenhar_aba_audio(box_rect):
-    tela.blit(fonte.render("Música", True, BRANCO), (box_rect.left + 100, 300))
-    slider_musica.desenhar(tela)
-    tela.blit(fonte.render("SFX", True, BRANCO), (box_rect.left + 100, 400))
-    slider_sfx.desenhar(tela)
-    return []
-
-def desenhar_tela_opcoes():
+# --- 5. FUNÇÕES DE DESENHO ---
+def desenhar_opcoes():
     tela.fill(PRETO)
     
-    # Desenha a Box
-    largura_box, altura_box = 1000, 550
+    # Caixa Responsiva (se adapta à resolução)
+    largura_box = min(1000, LARGURA - 100)
+    altura_box = min(550, ALTURA - 100)
     box_rect = pygame.Rect((LARGURA//2 - largura_box//2, ALTURA//2 - altura_box//2 + 30), (largura_box, altura_box))
-    pygame.draw.rect(tela, CINZA, box_rect, border_radius=10)
+    
+    pygame.draw.rect(tela, CINZA_ESCURO, box_rect, border_radius=10)
     pygame.draw.rect(tela, BRANCO, box_rect, 3, border_radius=10)
     
     # Seta Voltar
@@ -137,145 +149,130 @@ def desenhar_tela_opcoes():
     rect_voltar = surf_voltar.get_rect(topleft=(box_rect.left + 25, box_rect.top + 25))
     tela.blit(surf_voltar, rect_voltar)
 
-    # Abas Centralizadas
-    largura_total_abas = 600
-    inicio_x = box_rect.centerx - (largura_total_abas // 2)
+    # Centralização Matemática Perfeita das 3 Abas
+    centro_x = box_rect.centerx
+    espacamento = 250
+    # Calcula a posição de cada aba (Esquerda, Centro, Direita)
+    posicoes_x = [centro_x - espacamento, centro_x, centro_x + espacamento]
+    
     areas_abas = []
-
     for i, nome in enumerate(abas):
         cor = AMARELO if i == aba_selecionada else BRANCO
         surf_aba = fonte.render(nome, True, cor)
-        rect_aba = surf_aba.get_rect(center=(inicio_x + i * 250, box_rect.top + 45))
+        rect_aba = surf_aba.get_rect(center=(posicoes_x[i], box_rect.top + 45))
+        
         if i == aba_selecionada:
             pygame.draw.line(tela, AMARELO, (rect_aba.left, rect_aba.bottom), (rect_aba.right, rect_aba.bottom), 3)
+            
         tela.blit(surf_aba, rect_aba)
         areas_abas.append(rect_aba)
 
-    # Conteúdo das Abas
+    # Conteúdo Geral
     interativos = []
-    if aba_selecionada == 0: interativos = desenhar_aba_geral(box_rect)
-    elif aba_selecionada == 1: interativos = desenhar_aba_graficos(box_rect)
-    elif aba_selecionada == 2: interativos = desenhar_aba_audio(box_rect)
+    if aba_selecionada == 0:
+        tela.blit(fonte.render("Mostrar FPS:", True, BRANCO), (box_rect.left + 100, box_rect.top + 150))
+        check_rect = pygame.Rect(box_rect.left + 400, box_rect.top + 155, 30, 30)
+        pygame.draw.rect(tela, BRANCO, check_rect, 2)
+        if mostrar_fps:
+            pygame.draw.rect(tela, AMARELO, check_rect.inflate(-10, -10))
+        interativos.append(("fps", check_rect))
+        
+    # Conteúdo Áudio
+    elif aba_selecionada == 2:
+        tela.blit(fonte.render("Música", True, BRANCO), (box_rect.left + 100, box_rect.top + 150))
+        slider_musica.desenhar(tela, box_rect.left + 350, box_rect.top + 170)
+        
+        tela.blit(fonte.render("SFX", True, BRANCO), (box_rect.left + 100, box_rect.top + 250))
+        slider_sfx.desenhar(tela, box_rect.left + 350, box_rect.top + 270)
+
+    # Conteúdo Gráficos (Desenhado por último para o Dropdown ficar por cima de tudo)
+    elif aba_selecionada == 1:
+        tela.blit(fonte.render("Resolução:", True, BRANCO), (box_rect.left + 100, box_rect.top + 150))
+        tela.blit(fonte.render("Modo de Tela:", True, BRANCO), (box_rect.left + 100, box_rect.top + 250))
+        
+        dropdown_res.desenhar(tela, box_rect.left + 400, box_rect.top + 150)
+        dropdown_modo.desenhar(tela, box_rect.left + 400, box_rect.top + 250)
 
     return rect_voltar, areas_abas, interativos
 
 
-# --- 5. LOOP PRINCIPAL ---
+# --- 6. LOOP PRINCIPAL ---
 while True:
-    agora = pygame.time.get_ticks()
     mouse_pos = pygame.mouse.get_pos()
     mouse_clicado = pygame.mouse.get_pressed()[0]
-    teclas = pygame.key.get_pressed()
     
-    # --- LÓGICA DE DESENHO E ATUALIZAÇÃO CONTÍNUA ---
     if estado_atual == "menu":
-        desenhar_menu_principal()
+        tela.fill(PRETO)
+        surf_titulo = fonte_titulo.render("VTT PROJECT", True, BRANCO)
+        tela.blit(surf_titulo, surf_titulo.get_rect(center=(LARGURA // 2, 80)))
         
-        # Navegação de Teclado (Segurando a tecla)
-        if agora - tempo_ultima_tecla > DELAY_REPETICAO:
-            indice_anterior = indice_selecionado
-            if teclas[pygame.K_UP] and indice_selecionado > 0:
-                indice_selecionado -= 1
-                tempo_ultima_tecla = agora
-            elif teclas[pygame.K_DOWN] and indice_selecionado < len(opcoes_main) - 1:
-                indice_selecionado += 1
-                tempo_ultima_tecla = agora
-            
-            if indice_selecionado != indice_anterior and som_nav:
-                som_nav.play()
+        for i, texto in enumerate(opcoes_main):
+            cor = AMARELO if i == indice_menu else BRANCO
+            txt_exibido = f"> {texto} <" if i == indice_menu else texto
+            surf = fonte.render(txt_exibido, True, cor)
+            tela.blit(surf, surf.get_rect(center=(LARGURA // 2, 220 + i * 70)))
 
     elif estado_atual == "opcoes":
-        rect_voltar, areas_abas, interativos = desenhar_tela_opcoes()
+        rect_voltar, areas_abas, interativos = desenhar_opcoes()
         
-        # Atualiza Sliders continuamente se aba_selecionada for 2 (Áudio)
+        # Atualização contínua de sliders
         if aba_selecionada == 2:
             if slider_musica.atualizar(mouse_pos, mouse_clicado):
-                vol_musica = slider_musica.valor
-                pygame.mixer.music.set_volume(vol_musica)
-            if slider_sfx.atualizar(mouse_pos, mouse_clicado):
-                vol_sfx = slider_sfx.valor
+                pygame.mixer.music.set_volume(slider_musica.valor)
+            slider_sfx.atualizar(mouse_pos, mouse_clicado)
 
-    # FPS Global (Desenha por cima de tudo se ativado)
     if mostrar_fps:
-        fps_txt = fonte_p.render(f"FPS: {int(relogio.get_fps())}", True, (0, 255, 0))
-        tela.blit(fps_txt, (10, 10))
+        tela.blit(fonte_p.render(f"FPS: {int(relogio.get_fps())}", True, (0, 255, 0)), (10, 10))
 
-    # --- PROCESSAMENTO DE EVENTOS (Cliques Únicos) ---
+    # --- PROCESSAMENTO DE EVENTOS ---
     for evento in pygame.event.get():
         if evento.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit()
+            pygame.quit(); sys.exit()
 
-        # TECLADO
-        if evento.type == pygame.KEYDOWN:
-            if estado_atual == "menu":
-                if evento.key in [pygame.K_RETURN, pygame.K_SPACE]:
-                    if som_select: som_select.play()
-                    if opcoes_main[indice_selecionado] == "Opções":
-                        estado_atual = "opcoes" # Muda a tela!
-                    elif opcoes_main[indice_selecionado] == "Sair":
-                        pygame.time.wait(300)
-                        pygame.quit()
-                        sys.exit()
-            
-            elif estado_atual == "opcoes":
-                if evento.key == pygame.K_ESCAPE:
-                    if som_select: som_select.play()
-                    estado_atual = "menu" # Volta pro Menu
-                # Trocar de aba com setas
-                if evento.key == pygame.K_RIGHT:
-                    aba_selecionada = (aba_selecionada + 1) % len(abas)
-                    if som_nav: som_nav.play()
-                if evento.key == pygame.K_LEFT:
-                    aba_selecionada = (aba_selecionada - 1) % len(abas)
-                    if som_nav: som_nav.play()
-
-        # MOUSE MOTION (Apenas Menu)
-        if evento.type == pygame.MOUSEMOTION and estado_atual == "menu":
-            for i, texto in enumerate(opcoes_main):
-                rect_teste = fonte.render(texto, True, BRANCO).get_rect(center=(LARGURA // 2, 220 + i * 70))
-                rect_teste.width += 150
-                rect_teste.x -= 75
-                if rect_teste.collidepoint(mouse_pos):
-                    if indice_selecionado != i:
-                        indice_selecionado = i
-                        if som_nav: som_nav.play()
-
-        # MOUSE CLIQUE
         if evento.type == pygame.MOUSEBUTTONDOWN and evento.button == 1:
             if estado_atual == "menu":
-                rect_clique = fonte.render(f"> {opcoes_main[indice_selecionado]} <", True, AMARELO).get_rect(center=(LARGURA // 2, 220 + indice_selecionado * 70))
-                if rect_clique.collidepoint(mouse_pos):
-                    if som_select: som_select.play()
-                    if opcoes_main[indice_selecionado] == "Opções":
-                        estado_atual = "opcoes"
-                    elif opcoes_main[indice_selecionado] == "Sair":
-                        pygame.time.wait(300)
-                        pygame.quit()
-                        sys.exit()
-            
-            elif estado_atual == "opcoes":
-                # Clique na Seta Voltar
-                if rect_voltar.collidepoint(mouse_pos):
-                    if som_select: som_select.play()
-                    estado_atual = "menu"
-                
-                # Clique nas Abas
-                for i, r in enumerate(areas_abas):
-                    if r.collidepoint(mouse_pos):
-                        if aba_selecionada != i and som_nav: som_nav.play()
-                        aba_selecionada = i
-                
-                # Clique nas opções dentro das abas
-                for tipo, rect in interativos:
+                for i, texto in enumerate(opcoes_main):
+                    rect = fonte.render(texto, True, BRANCO).get_rect(center=(LARGURA // 2, 220 + i * 70)).inflate(100, 20)
                     if rect.collidepoint(mouse_pos):
-                        if som_select: som_select.play()
-                        if tipo == "fps": 
+                        indice_menu = i
+                        if texto == "Opções": estado_atual = "opcoes"
+                        elif texto == "Sair": pygame.quit(); sys.exit()
+
+            elif estado_atual == "opcoes":
+                # Lógica de Interceptação de Clique (Se um Dropdown estiver aberto, ignora o resto)
+                dropdown_aberto_interceptou = False
+                
+                if aba_selecionada == 1:
+                    # Verifica Dropdown de Modo PRIMEIRO (ele fica embaixo do de resolução)
+                    mudou_modo = dropdown_modo.tratar_clique(mouse_pos)
+                    if mudou_modo: aplicar_display()
+                    
+                    # Verifica Dropdown de Resolução
+                    mudou_res = dropdown_res.tratar_clique(mouse_pos)
+                    if mudou_res: aplicar_display()
+                    
+                    dropdown_aberto_interceptou = dropdown_res.aberto or dropdown_modo.aberto
+
+                # Só clica nas abas e botões se os dropdowns não estiverem abertos
+                if not dropdown_aberto_interceptou:
+                    if rect_voltar.collidepoint(mouse_pos):
+                        estado_atual = "menu"
+                    
+                    for i, r in enumerate(areas_abas):
+                        if r.collidepoint(mouse_pos):
+                            aba_selecionada = i
+                            
+                    for tipo, rect in interativos:
+                        if rect.collidepoint(mouse_pos) and tipo == "fps":
                             mostrar_fps = not mostrar_fps
-                        elif tipo == "res": 
-                            res_index = (res_index + 1) % len(resolucoes)
-                        elif tipo == "modo": 
-                            modo_index = (modo_index + 1) % len(modos_tela)
+
+        # Teclado Básico para o Menu
+        if evento.type == pygame.KEYDOWN and estado_atual == "menu":
+            if evento.key == pygame.K_UP and indice_menu > 0: indice_menu -= 1
+            elif evento.key == pygame.K_DOWN and indice_menu < len(opcoes_main) - 1: indice_menu += 1
+            elif evento.key in [pygame.K_RETURN, pygame.K_SPACE]:
+                if opcoes_main[indice_menu] == "Opções": estado_atual = "opcoes"
+                elif opcoes_main[indice_menu] == "Sair": pygame.quit(); sys.exit()
 
     pygame.display.flip()
     relogio.tick(60)
