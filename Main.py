@@ -287,26 +287,31 @@ def desenhar_compendio(mouse_pos):
     area_conteudo_x = box_rect.left + largura_sidebar + 30
     area_conteudo_y = box_rect.top + 100
 
-    if categorias_compendio[cat_compendio_idx] == "Classes":
-        tela_virtual.blit(fonte_p.render("Classes Disponíveis (Regras 2024):", True, AMARELO), (area_conteudo_x, area_conteudo_y))
-        
-        # Desenha a lista de classes em 2 colunas para ficar bonito
+    categoria_atual = categorias_compendio[cat_compendio_idx]
+    lista_itens = dados_compendio.get(categoria_atual, [])
+
+    tela_virtual.blit(fonte_p.render(f"{categoria_atual} Disponíveis:", True, AMARELO), (area_conteudo_x, area_conteudo_y))
+    
+    if len(lista_itens) > 0:
+        # Desenha a lista em 2 colunas
         coluna_1_x = area_conteudo_x
         coluna_2_x = area_conteudo_x + 350
-        y_classe = area_conteudo_y + 60
+        y_item = area_conteudo_y + 60
         
-        for i, nome_classe in enumerate(classes_dnd_2024):
+        for i, nome_item in enumerate(lista_itens):
             x_atual = coluna_1_x if i % 2 == 0 else coluna_2_x
-            if i > 0 and i % 2 == 0: y_classe += 40
+            if i > 0 and i % 2 == 0: 
+                y_item += 40
             
-            # Um "card" falso de classe
-            pygame.draw.rect(tela_virtual, CINZA_CLARO, (x_atual, y_classe, 300, 35), border_radius=5)
-            tela_virtual.blit(fonte_dropdown.render(nome_classe, True, BRANCO), (x_atual + 10, y_classe + 5))
+            # Desenha o cardzinho
+            pygame.draw.rect(tela_virtual, CINZA_CLARO, (x_atual, y_item, 300, 35), border_radius=5)
+            tela_virtual.blit(fonte_dropdown.render(nome_item, True, BRANCO), (x_atual + 10, y_item + 5))
             
+            # TODO: No futuro, checaremos colisão de mouse aqui para poder clicar no card e abrir detalhes!
     else:
-        # Placeholder para as outras áreas que ainda não criamos
-        texto = f"Banco de dados de {categorias_compendio[cat_compendio_idx]} vazio."
-        tela_virtual.blit(fonte_p.render(texto, True, CINZA_CLARO), (area_conteudo_x, area_conteudo_y))
+        # Se a lista estiver vazia no JSON
+        texto = f"Banco de dados de {categoria_atual} vazio."
+        tela_virtual.blit(fonte_p.render(texto, True, CINZA_CLARO), (area_conteudo_x, area_conteudo_y + 60))
 
     return rect_voltar, rects_categorias
 
