@@ -1,9 +1,28 @@
 {
     "Raças": [
-        "Anão", "Draconato", "Elfo", "Gnomo", "Golias", "Halfling", "Humano", "Orc", "Tiferino"
+        {
+            "nome": "Humano",
+            "subtitulo": "Versáteis e Ambiciosos",
+            "descricao": "Nativos de muitos mundos, os humanos são adaptáveis, inovadores e corajosos. Em D&D 2024, eles ganham inspiração heroica diariamente.",
+            "atributos": "Tamanho: Médio ou Pequeno | Deslocamento: 30 pés",
+            "tracos": "• Iniciativa Humana: Ganha Inspiração Heroica após um Descanso Longo.\n• Versatilidade: Ganha 1 Talento de Origem extra e 1 Perícia extra."
+        },
+        {
+            "nome": "Orc",
+            "subtitulo": "Fortes e Resilientes",
+            "descricao": "Os Orcs são abençoados com uma resistência sobrenatural e instintos de sobrevivência afiados.",
+            "atributos": "Tamanho: Médio | Deslocamento: 30 pés | Visão no Escuro: 120 pés",
+            "tracos": "• Adrenalina: Pode usar a ação de Disparada como Ação Bônus e ganhar PV temporários.\n• Relentless Endurance: Se cair a 0 PV (sem morte instantânea), cai para 1 PV."
+        }
     ],
     "Classes": [
-        "Bárbaro", "Bardo", "Bruxo", "Clérigo", "Druida", "Feiticeiro", "Guerreiro", "Ladino", "Mago", "Monge", "Paladino", "Patrulheiro"
+        {
+            "nome": "Guerreiro",
+            "subtitulo": "Mestre de Armas e Táticas",
+            "descricao": "Guerreiros são mestres do combate marcial, proficientes com uma vasta variedade de armas e armaduras.",
+            "atributos": "Dado de Vida: d10 | Atributo Primário: Força ou Destreza",
+            "tracos": "• Maestria em Armas (Weapon Mastery)\n• Retomar o Fôlego (Second Wind)\n• Estilo de Luta (Fighting Style)\n• Surto de Ação (Action Surge)"
+        }
     ],
     "Antecedentes": [],
     "Magias": [],
