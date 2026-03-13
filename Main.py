@@ -175,6 +175,7 @@ dropdown_modo = Dropdown(180, 35, ["Window", "Borderless", "Full Screen"], indic
 ARQUIVO_COMPENDIO = "compendio.json"
 categorias_compendio = ["Raças", "Classes", "Antecedentes", "Magias", "Itens", "Bestiário"]
 cat_compendio_idx = 0 
+item_selecionado = None
 
 def carregar_compendio():
     if os.path.exists(ARQUIVO_COMPENDIO):
