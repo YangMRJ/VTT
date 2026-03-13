@@ -17,6 +17,7 @@ config = carregar_config()
 vol_musica, vol_sfx = config["vol_musica"], config["vol_sfx"]
 res_idx, video_modo = config["res_idx"], config["video_modo"]
 personagens = config["personagens"]
+compendio = config.get("compendio", {"npcs": [], "inimigos": []}) # <-- COMPENDIO AQUI
 char_sel = config.get("char_selecionado", -1)
 
 show_grid_coords = config.get("show_grid_coords", False)
@@ -90,6 +91,10 @@ sel_pause = 0
 origem_options = "MENU"
 origem_ficha = "MENU" 
 
+fonte_ficha = "personagens" # Para saber se estamos editando um player ou um NPC
+aba_compendio = "npcs"
+alvo_spawn = None
+
 sub_estado_char = "LISTA" 
 campo_ativo = None 
 input_texto = ""; input_numerico = "" 
@@ -142,10 +147,18 @@ def desenhar_campo_inline(atk_dict, chave, label, x, y, w, is_cycle=False, m_pos
     desenhar_texto(val, fonte_p, (255,255,255) if ativo else (200,200,200), x+5, y+20, False)
     return rect
 
+def get_personagem_atual():
+    if char_sel == -1: return None
+    if fonte_ficha == "personagens" and char_sel < len(personagens): return personagens[char_sel]
+    if fonte_ficha == "compendio_npcs" and char_sel < len(compendio["npcs"]): return compendio["npcs"][char_sel]
+    if fonte_ficha == "compendio_inimigos" and char_sel < len(compendio["inimigos"]): return compendio["inimigos"][char_sel]
+    return None
+
 def salvar_valor_numerico():
-    global campo_ativo, input_numerico, personagens, char_sel
-    if char_sel != -1 and campo_ativo in ["hp_temp", "hp_input"] and input_numerico != "":
-        try: personagens[char_sel][campo_ativo] = int(input_numerico)
+    global campo_ativo, input_numerico
+    p = get_personagem_atual()
+    if p and campo_ativo in ["hp_temp", "hp_input"] and input_numerico != "":
+        try: p[campo_ativo] = int(input_numerico)
         except: pass
 
 def mostrar_alerta(msg):
@@ -156,7 +169,7 @@ def mostrar_alerta(msg):
 def enviar_rolagem_chat(nome_char, texto_msg, alerta_msg):
     mostrar_alerta(alerta_msg)
     tocar_sfx(sfx_sel)
-    if origem_ficha == "GAME_MAP":
+    if origem_ficha == "GAME_MAP" or fonte_ficha.startswith("compendio"):
         rede.enviar_msg({"tipo": "chat", "nome": nome_char, "texto": texto_msg})
 
 def salvar_tudo():
@@ -165,7 +178,7 @@ def salvar_tudo():
         "video_modo": video_modo, "personagens": personagens, "char_selecionado": char_sel, 
         "campanhas": campanhas, "campanha_selecionada": camp_sel, 
         "campanhas_jogador": campanhas_jogador, "show_fps": show_fps,
-        "show_grid_coords": show_grid_coords
+        "show_grid_coords": show_grid_coords, "compendio": compendio
     })
 
 def processar_comando_chat(comando):
@@ -233,7 +246,7 @@ while rodando:
     tela.fill((15, 15, 20))
     eventos_pygame = pygame.event.get()
     
-    if estado in ["GAME_MAP", "PAUSE_MENU"] or (origem_options == "PAUSE_MENU" and estado in ["OPTIONS", "AUDIO_SETTINGS", "GRAPHICS_SETTINGS"]) or (origem_ficha == "GAME_MAP" and estado == "PERSONAGEM"):
+    if estado in ["GAME_MAP", "PAUSE_MENU"] or (origem_options == "PAUSE_MENU" and estado in ["OPTIONS", "AUDIO_SETTINGS", "GRAPHICS_SETTINGS"]) or (origem_ficha == "GAME_MAP" and estado == "PERSONAGEM") or estado == "COMPENDIO":
         mapa_jogo.update()
         if estado == "GAME_MAP":
             acoes = mapa_jogo.processar_eventos(eventos_pygame, m_pos)
@@ -248,16 +261,20 @@ while rodando:
                         else: mapa_jogo.adicionar_mensagem("Sistema", "Uso correto: /r 1d20+5 ou /r d6")
                     else:
                         rede.enviar_msg({"tipo": "chat", "nome": mapa_jogo.meu_id, "texto": texto_chat})
-                
                 elif acao["tipo"] == "abrir_ficha":
                     if char_sel != -1:
+                        fonte_ficha = "personagens"
                         estado = "PERSONAGEM"
                         sub_estado_char = "EDITAR"
                         origem_ficha = "GAME_MAP"
                         scroll_y = 0
                         tocar_sfx(sfx_sel)
                     else:
-                        mostrar_alerta("O Mestre nao possui ficha para abrir!")
+                        mostrar_alerta("Voce nao possui ficha ativa!")
+                elif acao["tipo"] == "abrir_compendio_spawn":
+                    estado = "COMPENDIO"
+                    alvo_spawn = (acao["tx"], acao["ty"])
+                    tocar_sfx(sfx_sel)
     
     for ev in eventos_pygame:
         if ev.type == pygame.QUIT: rodando = False
@@ -272,13 +289,20 @@ while rodando:
             if estado == "GAME_MAP" and ev.key == pygame.K_f and (mods & pygame.KMOD_CTRL):
                 if not mapa_jogo.chat_digitando: 
                     if char_sel != -1:
+                        fonte_ficha = "personagens"
                         estado = "PERSONAGEM"
                         sub_estado_char = "EDITAR"
                         origem_ficha = "GAME_MAP"
                         scroll_y = 0
                         tocar_sfx(sfx_sel)
                     else:
-                        mostrar_alerta("O Mestre nao possui ficha para abrir!")
+                        mostrar_alerta("Voce nao possui ficha!")
+                        
+            if estado == "GAME_MAP" and ev.key == pygame.K_c and (mods & pygame.KMOD_CTRL) and rede.is_host:
+                if not mapa_jogo.chat_digitando:
+                    estado = "COMPENDIO"
+                    alvo_spawn = None
+                    tocar_sfx(sfx_sel)
 
             if estado == "CAMPANHAS" and sub_estado_camp == "CRIAR":
                 if ev.key == pygame.K_BACKSPACE:
@@ -301,6 +325,7 @@ while rodando:
                     elif campo_join == "senha" and len(join_senha) < 15: join_senha += ev.unicode
 
             elif estado == "PERSONAGEM":
+                p = get_personagem_atual()
                 if sub_estado_char == "CRIAR" and campo_criacao == "nome":
                     if ev.key == pygame.K_BACKSPACE: criacao_nome = criacao_nome[:-1]
                     elif ev.key not in [pygame.K_RETURN, pygame.K_ESCAPE] and len(criacao_nome) < 15: criacao_nome += ev.unicode
@@ -308,10 +333,10 @@ while rodando:
                     if ev.key == pygame.K_BACKSPACE: input_texto = input_texto[:-1]
                     elif ev.key not in [pygame.K_RETURN, pygame.K_ESCAPE] and len(input_texto) < 15: input_texto += ev.unicode
                 
-                elif sub_estado_char == "EDITAR" and campo_ativo and campo_ativo.startswith("atkfield_"):
+                elif sub_estado_char == "EDITAR" and campo_ativo and campo_ativo.startswith("atkfield_") and p:
                     real_key = campo_ativo.replace("atkfield_", "")
                     if ataque_em_edicao != -1:
-                        atk = personagens[char_sel]["combate_ataques"][ataque_em_edicao]
+                        atk = p["combate_ataques"][ataque_em_edicao]
                         is_text_field = real_key in ["nome", "distancia", "dmg1_dado", "dmg1_tipo", "dmg2_dado", "dmg2_tipo", "descricao"]
                         
                         if is_text_field:
@@ -334,11 +359,11 @@ while rodando:
                                 if ev.key == pygame.K_LEFT: atk[real_key] = opts[(idx - 1) % len(opts)]; tocar_sfx(sfx_nav)
                                 elif ev.key == pygame.K_RIGHT: atk[real_key] = opts[(idx + 1) % len(opts)]; tocar_sfx(sfx_nav)
 
-                elif sub_estado_char == "EDITAR" and editando_aba_lista:
+                elif sub_estado_char == "EDITAR" and editando_aba_lista and p:
                     if ev.key == pygame.K_BACKSPACE: aba_input_texto = aba_input_texto[:-1]
                     elif ev.key == pygame.K_RETURN:
                         if aba_input_texto.strip() != "":
-                            personagens[char_sel][editando_aba_lista].append({"nome": aba_input_texto.strip()})
+                            p[editando_aba_lista].append({"nome": aba_input_texto.strip()})
                             salvar_tudo()
                         editando_aba_lista = None; aba_input_texto = ""; tocar_sfx(sfx_sel)
                     elif ev.unicode.isprintable() and len(aba_input_texto) < 40: 
@@ -381,8 +406,8 @@ while rodando:
                     elif campo_criacao == "bg": criacao_bg_idx = (criacao_bg_idx + 1) % len(BACKGROUNDS); tocar_sfx(sfx_nav)
 
             elif estado == "PERSONAGEM" and sub_estado_char == "EDITAR" and campo_ativo and not editando_aba_lista and not campo_ativo.startswith("atkfield_"):
-                if char_sel != -1:
-                    p = personagens[char_sel]
+                p = get_personagem_atual()
+                if p:
                     if ev.key == pygame.K_LEFT:
                         salvar_valor_numerico()
                         if campo_ativo == "xp": p["xp"] = max(0, p["xp"] - 100); tocar_sfx(sfx_nav)
@@ -403,9 +428,17 @@ while rodando:
                             p[campo_ativo] += 5; tocar_sfx(sfx_nav)
             
             elif estado == "PERSONAGEM" and sub_estado_char == "DELETAR" and ev.key == pygame.K_RETURN:
-                if input_texto.lower() == "delete" and char_sel != -1:
-                    personagens.pop(char_sel); char_sel = -1; sub_estado_char = "LISTA"; tocar_sfx(sfx_sel)
-                else: sub_estado_char = "EDITAR"; tocar_sfx(sfx_sel)
+                if input_texto.lower() == "delete":
+                    if fonte_ficha == "personagens" and char_sel != -1: personagens.pop(char_sel)
+                    elif fonte_ficha == "compendio_npcs" and char_sel != -1: compendio["npcs"].pop(char_sel)
+                    elif fonte_ficha == "compendio_inimigos" and char_sel != -1: compendio["inimigos"].pop(char_sel)
+                    
+                    char_sel = -1
+                    if fonte_ficha.startswith("compendio"): estado = "COMPENDIO"; sub_estado_char = "LISTA"
+                    else: sub_estado_char = "LISTA"
+                    tocar_sfx(sfx_sel)
+                else: 
+                    sub_estado_char = "EDITAR"; tocar_sfx(sfx_sel)
 
             if ev.key == pygame.K_ESCAPE:
                 salvar_valor_numerico(); tocar_sfx(sfx_sel)
@@ -419,8 +452,10 @@ while rodando:
                 elif estado == "PERSONAGEM" and sub_estado_char == "EDITAR" and origem_ficha == "GAME_MAP":
                     estado = "GAME_MAP"; origem_ficha = "MENU"; campo_ativo = None; scroll_y = 0
                 elif estado == "PERSONAGEM" and sub_estado_char in ["EDITAR", "CRIAR", "DELETAR"]: 
-                    sub_estado_char = "LISTA"; campo_ativo = None; scroll_y = 0
+                    if fonte_ficha.startswith("compendio"): estado = "COMPENDIO"; sub_estado_char = "LISTA"; campo_ativo = None; scroll_y = 0
+                    else: sub_estado_char = "LISTA"; campo_ativo = None; scroll_y = 0
                 elif estado == "CAMPANHAS" and sub_estado_camp == "CRIAR": sub_estado_camp = "LISTA"
+                elif estado == "COMPENDIO": estado = "GAME_MAP"
                 elif estado in ["AUDIO_SETTINGS", "GRAPHICS_SETTINGS"]: estado = "OPTIONS"
                 elif estado == "OPTIONS": estado = origem_options 
                 elif estado == "LOBBY": estado = "MENU"; rede.encerrar_conexao()
@@ -433,14 +468,14 @@ while rodando:
         dd_rect = pygame.Rect(dropdown_pos[0], dropdown_pos[1], 110, 100) 
         if dd_rect.collidepoint(m_pos):
             idx = (m_pos[1] - dropdown_pos[1]) // 25
-            if 0 <= idx < 4 and char_sel != -1:
-                personagens[char_sel][f"save_{dropdown_aberto}"] = idx
-                tocar_sfx(sfx_sel)
+            if 0 <= idx < 4:
+                p = get_personagem_atual()
+                if p: p[f"save_{dropdown_aberto}"] = idx; tocar_sfx(sfx_sel)
         dropdown_aberto = None; m_click = False 
 
     largura_t = tela.get_width()
     
-    if estado in ["GAME_MAP", "PAUSE_MENU"] or (origem_options == "PAUSE_MENU" and estado in ["OPTIONS", "AUDIO_SETTINGS", "GRAPHICS_SETTINGS"]) or (origem_ficha == "GAME_MAP" and estado == "PERSONAGEM"):
+    if estado in ["GAME_MAP", "PAUSE_MENU"] or (origem_options == "PAUSE_MENU" and estado in ["OPTIONS", "AUDIO_SETTINGS", "GRAPHICS_SETTINGS"]) or (origem_ficha == "GAME_MAP" and estado == "PERSONAGEM") or estado == "COMPENDIO":
         mapa_jogo.desenhar(tela, fontes_dict)
         if estado != "GAME_MAP":
             overlay = pygame.Surface((largura_t, tela.get_height()), pygame.SRCALPHA)
@@ -481,13 +516,16 @@ while rodando:
                     rede.lista_conectados.append(f"{nome_host} (MESTRE)")
                     threading.Thread(target=rede.servidor_thread, args=(camp_ativa["id"], camp_ativa["senha"]), daemon=True).start()
             elif escolha_menu == "JOGAR":
-                if char_sel == -1:
+                if char_sel == -1 or fonte_ficha != "personagens":
                     mostrar_alerta("Selecione um personagem na tela de Personagem primeiro!")
                 else:
                     estado = "JOGAR" 
             elif escolha_menu == "OPTIONS":
                 estado = "OPTIONS"
                 origem_options = "MENU"
+            elif escolha_menu == "PERSONAGEM":
+                fonte_ficha = "personagens"
+                estado = escolha_menu
             else: 
                 estado = escolha_menu
 
@@ -681,6 +719,84 @@ while rodando:
             estado = "MENU"
             rede.encerrar_conexao()
             tocar_sfx(sfx_sel)
+            
+    # --- NOVO BLOCO DO COMPÊNDIO DO MESTRE ---
+    elif estado == "COMPENDIO":
+        desenhar_texto("COMPÊNDIO DO MESTRE", fonte_g, (255, 255, 255), largura_t//2, 80)
+        
+        aba_npc = pygame.Rect(largura_t//2 - 120, 120, 100, 30)
+        aba_ini = pygame.Rect(largura_t//2 + 20, 120, 100, 30)
+        
+        cor_npc = (200, 200, 255) if aba_compendio == "npcs" else (100, 100, 100)
+        pygame.draw.rect(tela, (40, 40, 40), aba_npc, border_radius=4); pygame.draw.rect(tela, cor_npc, aba_npc, 2, border_radius=4)
+        desenhar_texto("NPCs", fonte_p, cor_npc, aba_npc.centerx, aba_npc.centery)
+        if aba_npc.collidepoint(m_pos) and m_click: aba_compendio = "npcs"; tocar_sfx(sfx_nav)
+
+        cor_ini = (255, 100, 100) if aba_compendio == "inimigos" else (100, 100, 100)
+        pygame.draw.rect(tela, (40, 40, 40), aba_ini, border_radius=4); pygame.draw.rect(tela, cor_ini, aba_ini, 2, border_radius=4)
+        desenhar_texto("INIMIGOS", fonte_p, cor_ini, aba_ini.centerx, aba_ini.centery)
+        if aba_ini.collidepoint(m_pos) and m_click: aba_compendio = "inimigos"; tocar_sfx(sfx_nav)
+        
+        r_novo = desenhar_texto(f"> CRIAR NOVO {aba_compendio.upper()[:-1] if aba_compendio == 'npcs' else 'INIMIGO'} <", fonte, (100, 255, 100), largura_t//2, 180)
+        if r_novo.collidepoint(m_pos) and m_click:
+            novo_p = {
+                "nome": f"Novo {aba_compendio[:-1].capitalize() if aba_compendio == 'npcs' else 'Inimigo'}",
+                "raca": "Desconhecido", "classe": "Monstro", "background": "Nenhum", "nivel": 1, "xp": 0, "proficiencia": 2, "iniciativa": 0, "inspiracao": False, "imagem": "",
+                "hp_max": 20, "hp_atual": 20, "hp_temp": 0, "hp_input": 1, "hit_dice_atual": 1,
+                "str": 10, "dex": 10, "con": 10, "int": 10, "wis": 10, "cha": 10, "ca": 10, "deslocamento": 30,
+                "ca_armor": 0, "ca_dex": 0, "ca_shield": 0, "speed_swim": 0, "speed_fly": 0, "speed_climb": 0,
+                "save_str": 0, "save_dex": 0, "save_con": 0, "save_int": 0, "save_wis": 0, "save_cha": 0,
+                "combate_ataques": [], "combate_efeitos": [], "combate_acoes": [], "combate_maestrias": []
+            }
+            for s_name, _ in SKILLS_LIST: novo_p[f"skill_{s_name.lower().replace(' ', '_')}"] = 0
+            compendio[aba_compendio].append(novo_p)
+            char_sel = len(compendio[aba_compendio]) - 1
+            fonte_ficha = f"compendio_{aba_compendio}"
+            estado = "PERSONAGEM"
+            sub_estado_char = "EDITAR"
+            scroll_y = 0
+            salvar_tudo()
+            tocar_sfx(sfx_sel)
+            
+        for i, p in enumerate(compendio[aba_compendio]):
+            box_rect = pygame.Rect(largura_t//2 - 250, 230 + i * 45, 250, 30)
+            pygame.draw.rect(tela, (40, 40, 40), box_rect, border_radius=4)
+            pygame.draw.rect(tela, (150, 150, 150), box_rect, 1, border_radius=4)
+            
+            txt = f"{p['nome']} (Nv.{p.get('nivel',1)})"
+            desenhar_texto(txt, fonte, (220, 220, 220), box_rect.left + 10, box_rect.centery, centralizar=False)
+
+            if alvo_spawn:
+                btn_sp = pygame.Rect(box_rect.right + 20, box_rect.y, 100, 30)
+                cor_sp = (100, 255, 100) if btn_sp.collidepoint(m_pos) else (50, 150, 50)
+                pygame.draw.rect(tela, cor_sp, btn_sp, border_radius=4)
+                desenhar_texto("SPAWNAR", fonte_p, (255, 255, 255), btn_sp.centerx, btn_sp.centery)
+                if btn_sp.collidepoint(m_pos) and m_click:
+                    nome_tk = f"{p['nome']} {random.randint(10,99)}"
+                    rede.enviar_msg({"tipo": "spawn", "nome": nome_tk, "x": alvo_spawn[0], "y": alvo_spawn[1]})
+                    mapa_jogo.spawn_token(nome_tk, alvo_spawn[0], alvo_spawn[1])
+                    alvo_spawn = None
+                    estado = "GAME_MAP"
+                    tocar_sfx(sfx_sel)
+            
+            btn_ed = pygame.Rect(box_rect.right + (140 if alvo_spawn else 20), box_rect.y, 80, 30)
+            cor_ed = (100, 200, 255) if btn_ed.collidepoint(m_pos) else (50, 100, 150)
+            pygame.draw.rect(tela, cor_ed, btn_ed, border_radius=4)
+            desenhar_texto("EDITAR", fonte_p, (255, 255, 255), btn_ed.centerx, btn_ed.centery)
+            if btn_ed.collidepoint(m_pos) and m_click:
+                char_sel = i
+                fonte_ficha = f"compendio_{aba_compendio}"
+                estado = "PERSONAGEM"
+                sub_estado_char = "EDITAR"
+                scroll_y = 0
+                tocar_sfx(sfx_sel)
+
+        if alvo_spawn:
+            r_voltar = desenhar_texto("[ CANCELAR SPAWN ]", fonte, (200, 100, 100), largura_t//2, tela.get_height() - 80)
+            if r_voltar.collidepoint(m_pos) and m_click: estado = "GAME_MAP"; alvo_spawn = None; tocar_sfx(sfx_sel)
+        else:
+            r_voltar = desenhar_texto("[ FECHAR COMPÊNDIO ]", fonte, (150, 150, 150), largura_t//2, tela.get_height() - 80)
+            if r_voltar.collidepoint(m_pos) and m_click: estado = "GAME_MAP"; tocar_sfx(sfx_sel)
 
     elif estado == "PERSONAGEM":
         if sub_estado_char == "LISTA":
@@ -692,11 +808,11 @@ while rodando:
             
             for i, p in enumerate(personagens):
                 
-                c_box = (255, 255, 0) if char_sel == i else (150, 150, 150)
+                c_box = (255, 255, 0) if char_sel == i and fonte_ficha == "personagens" else (150, 150, 150)
                 box_rect = pygame.Rect(largura_t//2 - 250, 220 + i * 45 - 15, 25, 25)
                 pygame.draw.rect(tela, (40, 40, 40), box_rect)
                 pygame.draw.rect(tela, c_box, box_rect, 2)
-                if char_sel == i:
+                if char_sel == i and fonte_ficha == "personagens":
                     desenhar_texto("X", fonte, (255, 255, 0), box_rect.centerx, box_rect.centery)
                 
                 txt = f"{p['nome']} - {p.get('raca','')} {p.get('classe','')} (Nv.{p.get('nivel',1)})"
@@ -707,11 +823,12 @@ while rodando:
                 if m_click:
                     txt_rect = pygame.Rect(box_rect.right, box_rect.top, 300, 25)
                     if box_rect.collidepoint(m_pos) or txt_rect.collidepoint(m_pos):
-                        char_sel = -1 if char_sel == i else i
+                        char_sel = -1 if (char_sel == i and fonte_ficha == "personagens") else i
+                        fonte_ficha = "personagens"
                         tocar_sfx(sfx_sel)
                     
                     if r_edit.collidepoint(m_pos):
-                        char_sel = i; sub_estado_char = "EDITAR"; scroll_y = 0; tocar_sfx(sfx_sel)
+                        char_sel = i; sub_estado_char = "EDITAR"; scroll_y = 0; fonte_ficha = "personagens"; tocar_sfx(sfx_sel)
 
             r_voltar = desenhar_texto("[ VOLTAR PARA MENU ]", fonte, (150, 150, 150), largura_t//2, tela.get_height() - 80)
             if r_voltar.collidepoint(m_pos) and m_click: estado = "MENU"; tocar_sfx(sfx_sel)
@@ -750,11 +867,15 @@ while rodando:
                 }
                 for s_name, _ in SKILLS_LIST: novo_p[f"skill_{s_name.lower().replace(' ', '_')}"] = 0
                 personagens.append(novo_p); char_sel = len(personagens) - 1; sub_estado_char = "LISTA"
+                fonte_ficha = "personagens"
                 salvar_tudo(); tocar_sfx(sfx_sel)
 
-        elif sub_estado_char == "EDITAR" and char_sel != -1:
-            p = personagens[char_sel]
-            
+        elif sub_estado_char == "EDITAR":
+            p = get_personagem_atual()
+            if not p:
+                estado = "MENU"
+                continue
+                
             total_w = 910
             start_x = (largura_t - total_w) // 2
             start_y = 50 + scroll_y
@@ -790,7 +911,28 @@ while rodando:
             desenhar_texto(str(p.get('nivel', 1)), fonte_p, (255, 255, 255), los_cx, los_cy + 2)
 
             txt_x, txt_y = port_x + port_size + 20, port_y
-            desenhar_texto(p['nome'].upper(), fonte_g, (220, 180, 100), txt_x, txt_y - 5, centralizar=False)
+            # Input para mudar o nome diretamento no edit
+            nome_rect = pygame.Rect(txt_x, txt_y - 20, 250, 30)
+            if nome_rect.collidepoint(m_pos) and m_click and not dropdown_aberto:
+                campo_ativo = "nome_edit"
+                input_texto = p['nome']
+                tocar_sfx(sfx_nav)
+            
+            if campo_ativo == "nome_edit":
+                pygame.draw.rect(tela, (40, 40, 40), nome_rect)
+                desenhar_texto(input_texto + "|", fonte_g, (255, 255, 0), txt_x, txt_y - 5, centralizar=False)
+                # gambiarra pra input de nome
+                keys = pygame.key.get_pressed()
+                if eventos_pygame:
+                    for ev_nome in eventos_pygame:
+                        if ev_nome.type == pygame.KEYDOWN:
+                            if ev_nome.key == pygame.K_RETURN:
+                                p['nome'] = input_texto; campo_ativo = None; tocar_sfx(sfx_sel)
+                            elif ev_nome.key == pygame.K_BACKSPACE: input_texto = input_texto[:-1]
+                            elif ev_nome.unicode.isprintable() and len(input_texto) < 20: input_texto += ev_nome.unicode
+            else:
+                desenhar_texto(p['nome'].upper(), fonte_g, (220, 180, 100), txt_x, txt_y - 5, centralizar=False)
+                
             pygame.draw.line(tela, (100, 90, 70), (txt_x, txt_y + 25), (box_x + box_w - 20, txt_y + 25))
 
             linha_espaco = 22
@@ -835,7 +977,7 @@ while rodando:
             
             if is_hover_init and m_click and not dropdown_aberto:
                 salvar_valor_numerico(); tot = random.randint(1, 20) + p.get('iniciativa', 0)
-                enviar_rolagem_chat(p['nome'], f"rolou Iniciativa: {tot - p.get('iniciativa', 0)} + {p.get('iniciativa', 0)} = {tot}", f"Iniciativa Rolada: {tot}")
+                enviar_rolagem_chat(p['nome'], f"rolou Iniciativa: 🎲 {tot - p.get('iniciativa', 0)} + {p.get('iniciativa', 0)} = {tot}", f"Iniciativa Rolada: {tot}")
                 m_click = False
 
             hp_box_x = box_x + box_w + 20
@@ -932,7 +1074,7 @@ while rodando:
                     cura_pura = random.randint(1, dado_faces)
                     cura = cura_pura + mod_con
                     p['hp_atual'] = min(p['hp_max'], p['hp_atual'] + max(1, cura)) 
-                    enviar_rolagem_chat(p['nome'], f"usou Hit Die (d{dado_faces}): {cura_pura} + {mod_con} = curou {max(1, cura)} HP", f"Hit Die Rolado: Cura +{max(1, cura)}!")
+                    enviar_rolagem_chat(p['nome'], f"usou Hit Die (d{dado_faces}): 🎲 {cura_pura} + {mod_con} = curou {max(1, cura)} HP", f"Hit Die Rolado: Cura +{max(1, cura)}!")
                 else: 
                     mostrar_alerta("Sem Hit Dice restantes!")
                     tocar_sfx(sfx_nav)
@@ -988,7 +1130,7 @@ while rodando:
                     pygame.draw.rect(tela, (255, 255, 255), mod_rect, 1, border_radius=4)
                     if m_click and not dropdown_aberto:
                         salvar_valor_numerico(); rolagem = random.randint(1, 20); tot = rolagem + base_mod
-                        enviar_rolagem_chat(p['nome'], f"rolou Check de {nome_attr}: {rolagem} + {base_mod} = {tot}", f"{nome_attr} Check: {tot}")
+                        enviar_rolagem_chat(p['nome'], f"rolou Check de {nome_attr}: 🎲 {rolagem} + {base_mod} = {tot}", f"{nome_attr} Check: {tot}")
                         m_click = False
                 else: pygame.draw.rect(tela, (40, 40, 40), mod_rect, border_radius=4)
                 desenhar_texto(mod_str, fonte, (255, 255, 255), col_cx - 19, row2_y + 118)
@@ -1009,7 +1151,7 @@ while rodando:
                     pygame.draw.rect(tela, (255, 255, 255), save_rect, 1, border_radius=4)
                     if m_click and not dropdown_aberto:
                         salvar_valor_numerico(); rolagem = random.randint(1, 20); tot = rolagem + tot_save
-                        enviar_rolagem_chat(p['nome'], f"rolou Save de {nome_attr}: {rolagem} + {tot_save} = {tot}", f"{nome_attr} Save: {tot}")
+                        enviar_rolagem_chat(p['nome'], f"rolou Save de {nome_attr}: 🎲 {rolagem} + {tot_save} = {tot}", f"{nome_attr} Save: {tot}")
                         m_click = False
                 else: pygame.draw.rect(tela, s_bg, save_rect, border_radius=4)
                 desenhar_texto(tot_save_str, fonte, (255, 255, 255), col_cx + 21, row2_y + 118)
@@ -1182,7 +1324,6 @@ while rodando:
                     else:
                         nome = atk.get("nome", "Attack")
                         
-                        # --- CÁLCULO DE MODIFICADORES DE ACERTO ---
                         mod = 0
                         if atk.get("atk_abilidade", "none") != "none": mod = get_mod(p.get(atk["atk_abilidade"], 10))
                         prof_idx = atk.get("atk_prof", 0)
@@ -1192,7 +1333,6 @@ while rodando:
                         mod += atk.get("atk_bonus", 0)
                         hit_str = f"+{mod} To Hit" if mod >= 0 else f"{mod} To Hit"
 
-                        # --- CÁLCULO DE DANO ---
                         dmg_str = atk.get("dmg1_dado", "")
                         m1 = 0
                         if dmg_str:
@@ -1201,7 +1341,6 @@ while rodando:
                                 dmg_str += f"+{m1}" if m1 >= 0 else str(m1)
                             if atk.get("dmg1_tipo", ""): dmg_str += f" {atk['dmg1_tipo']}"
                         
-                        # --- HITBOXES (ÁREAS CLICÁVEIS) ---
                         row_rect = pygame.Rect(qx, current_qy, tab_w - 40, 35) 
                         hit_rect = pygame.Rect(qx + 270, current_qy, 100, 35)
                         dmg_rect = pygame.Rect(qx + 390, current_qy, 180, 35)
@@ -1210,12 +1349,10 @@ while rodando:
                         is_hover_dmg = dmg_rect.collidepoint(m_pos)
                         is_hover_edit = row_rect.collidepoint(m_pos) and not (is_hover_hit or is_hover_dmg)
 
-                        # --- AÇÕES DE CLIQUE ---
                         if is_hover_edit:
                             pygame.draw.rect(tela, (40, 40, 45), row_rect, border_radius=4)
                             if m_click and not dropdown_aberto: ataque_em_edicao = idx_item; tocar_sfx(sfx_sel); m_click = False
 
-                        # 1. Rolar apenas Acerto
                         if is_hover_hit:
                             pygame.draw.rect(tela, (60, 40, 40), hit_rect, border_radius=4)
                             if m_click and not dropdown_aberto:
@@ -1225,7 +1362,6 @@ while rodando:
                                 enviar_rolagem_chat(p['nome'], f"atacou com {nome} (To Hit): 🎲 {rolagem} + {mod} = {tot}", f"{nome}: Acerto {tot}")
                                 m_click = False
 
-                        # 2. Rolar Acerto e Dano juntos
                         if is_hover_dmg:
                             pygame.draw.rect(tela, (40, 60, 40), dmg_rect, border_radius=4)
                             if m_click and not dropdown_aberto:
@@ -1249,7 +1385,6 @@ while rodando:
                                 enviar_rolagem_chat(p['nome'], msg_chat, f"{nome}: Dano {dano_tot_final}!")
                                 m_click = False
 
-                        # --- RENDERIZAÇÃO DE TEXTO DA LINHA ---
                         text_y = current_qy + 8 
                         desenhar_texto(nome, fonte_p, (220, 220, 220), qx + 5, text_y, False)
                         desenhar_texto(atk.get("distancia", "--"), fonte_pp, (150, 150, 150), qx + 180, text_y + 2, False)
@@ -1336,7 +1471,7 @@ while rodando:
                     if m_click and not dropdown_aberto:
                         salvar_valor_numerico()
                         rolagem = random.randint(1, 20); tot = rolagem + tot_mod
-                        enviar_rolagem_chat(p['nome'], f"rolou {s_name}: {rolagem} + {tot_mod} = {tot}", f"{s_name} Check: {tot}")
+                        enviar_rolagem_chat(p['nome'], f"rolou {s_name}: 🎲 {rolagem} + {tot_mod} = {tot}", f"{s_name} Check: {tot}")
                         m_click = False
                 else:
                     pygame.draw.rect(tela, (40, 40, 40) if s_state == 0 else (100, 30, 30), mod_rect, border_radius=4)
@@ -1378,22 +1513,18 @@ while rodando:
                 if r_back.collidepoint(m_pos) and m_click and not dropdown_aberto:
                     salvar_valor_numerico(); estado = "GAME_MAP"; origem_ficha = "MENU"; scroll_y = 0; tocar_sfx(sfx_sel)
             else:
-                r_back = desenhar_texto("[ VOLTAR PARA MENU ]", fonte, (150, 150, 150), start_x + 100, btn_exit_y)
-                if r_back.collidepoint(m_pos) and m_click and not dropdown_aberto: 
-                    salvar_valor_numerico(); estado = "MENU"; scroll_y = 0; tocar_sfx(sfx_sel)
+                if fonte_ficha.startswith("compendio"):
+                    r_back = desenhar_texto("[ VOLTAR PARA O COMPÊNDIO ]", fonte, (150, 150, 150), start_x + 130, btn_exit_y)
+                    if r_back.collidepoint(m_pos) and m_click and not dropdown_aberto: 
+                        salvar_valor_numerico(); estado = "COMPENDIO"; scroll_y = 0; tocar_sfx(sfx_sel)
+                else:
+                    r_back = desenhar_texto("[ VOLTAR PARA MENU ]", fonte, (150, 150, 150), start_x + 100, btn_exit_y)
+                    if r_back.collidepoint(m_pos) and m_click and not dropdown_aberto: 
+                        salvar_valor_numerico(); estado = "MENU"; scroll_y = 0; tocar_sfx(sfx_sel)
                 
                 r_del = desenhar_texto("[ DELETAR ]", fonte, (200, 80, 80), start_x + total_w - 100, btn_exit_y)
                 if r_del.collidepoint(m_pos) and m_click and not dropdown_aberto: 
                     salvar_valor_numerico(); sub_estado_char = "DELETAR"; input_texto = ""; tocar_sfx(sfx_sel)
-
-        elif sub_estado_char == "DELETAR":
-            tela.fill((60, 0, 0))
-            desenhar_texto("ZONA DE PERIGO", fonte_g, (255, 50, 50), largura_t//2, 100)
-            desenhar_texto("Para deletar este personagem para sempre,", fonte, (200, 200, 200), largura_t//2, 180)
-            desenhar_texto("digite 'delete' e aperte ENTER:", fonte, (200, 200, 200), largura_t//2, 210)
-            desenhar_texto(f"[ {input_texto} ]", fonte_g, (255, 255, 0), largura_t//2, 300)
-            if desenhar_texto("[ CANCELAR ]", fonte, (150, 150, 150), largura_t//2, 450).collidepoint(m_pos) and m_click:
-                sub_estado_char = "EDITAR"; tocar_sfx(sfx_sel)
 
     elif estado == "OPTIONS":
         desenhar_texto("CATEGORIAS", fonte_g, (255, 255, 255), largura_t//2, 100)
