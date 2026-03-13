@@ -315,42 +315,54 @@ while True:
         novo_hover = -1
         for i, texto in enumerate(opcoes_main):
             rect_teste = fonte.render(texto, True, BRANCO).get_rect(center=(BASE_W // 2, 220 + i * 70)).inflate(100, 20)
-            if rect_teste.collidepoint(mouse_pos): novo_hover = i
+            if rect_teste.collidepoint(mouse_pos): 
+                novo_hover = i
             cor = AMARELO if i == indice_menu else BRANCO
             txt = f"> {texto} <" if i == indice_menu else texto
             tela_virtual.blit(fonte.render(txt, True, cor), fonte.render(txt, True, cor).get_rect(center=(BASE_W // 2, 220 + i * 70)))
         
         if novo_hover != -1 and novo_hover != indice_hover and novo_hover != indice_menu:
             indice_menu = novo_hover
-            if som_nav: som_nav.play()
+            if som_nav: 
+                som_nav.play()
         indice_hover = novo_hover
 
     elif estado_atual == "opcoes":
         rect_voltar, areas_abas, interativos = desenhar_opcoes(mouse_pos)
         if aba_selecionada == 2:
-            if slider_musica.atualizar(mouse_pos, mouse_clicado): pygame.mixer.music.set_volume(slider_musica.valor / 100)
+            if slider_musica.atualizar(mouse_pos, mouse_clicado): 
+                pygame.mixer.music.set_volume(slider_musica.valor / 100)
             if slider_sfx.atualizar(mouse_pos, mouse_clicado):
                 if som_nav: som_nav.set_volume(slider_sfx.valor / 100)
                 if som_select: som_select.set_volume(slider_sfx.valor / 100)
-        elif aba_selecionada == 0: slider_fonte.atualizar(mouse_pos, mouse_clicado)
+        elif aba_selecionada == 0: 
+            slider_fonte.atualizar(mouse_pos, mouse_clicado)
 
     elif estado_atual == "compendio":
         rect_voltar, rects_categorias = desenhar_compendio(mouse_pos)
 
     tela.fill(PRETO)
     tela.blit(pygame.transform.scale(tela_virtual, (scaled_w, scaled_h)), (offset_x, offset_y))
-    if mostrar_fps: tela.blit(fonte_p.render(f"FPS: {int(relogio.get_fps())}", True, (0, 255, 0)), (10, 10))
+    if mostrar_fps: 
+        tela.blit(fonte_p.render(f"FPS: {int(relogio.get_fps())}", True, (0, 255, 0)), (10, 10))
 
     # --- PROCESSOS DE EVENTOS ---
     for evento in pygame.event.get():
-        if evento.type == pygame.QUIT: salvar_configs(); pygame.quit(); sys.exit()
+        if evento.type == pygame.QUIT: 
+            salvar_configs()
+            pygame.quit()
+            sys.exit()
             
         if evento.type == pygame.MOUSEWHEEL and estado_atual == "opcoes":
-            if aba_selecionada == 0: dropdown_gui.rolar(evento.y)
-            elif aba_selecionada == 1: dropdown_res.rolar(evento.y); dropdown_modo.rolar(evento.y)
+            if aba_selecionada == 0: 
+                dropdown_gui.rolar(evento.y)
+            elif aba_selecionada == 1: 
+                dropdown_res.rolar(evento.y)
+                dropdown_modo.rolar(evento.y)
 
         if evento.type == pygame.MOUSEBUTTONUP and evento.button == 1:
-            if estado_atual == "opcoes": salvar_configs()
+            if estado_atual == "opcoes": 
+                salvar_configs()
 
         if evento.type == pygame.KEYDOWN:
             tecla_interceptada = False
@@ -358,21 +370,33 @@ while True:
                 if s.tratar_teclado(evento):
                     tecla_interceptada = True
                     if not s.editando: 
-                        if s == slider_musica: pygame.mixer.music.set_volume(s.valor / 100)
-                        elif s == slider_sfx and som_select: som_select.set_volume(s.valor / 100)
+                        if s == slider_musica: 
+                            pygame.mixer.music.set_volume(s.valor / 100)
+                        elif s == slider_sfx and som_select: 
+                            som_select.set_volume(s.valor / 100)
                         salvar_configs()
             
             if not tecla_interceptada and estado_atual == "menu":
                 indice_antigo = indice_menu
-                if evento.key == pygame.K_UP and indice_menu > 0: indice_menu -= 1
-                elif evento.key == pygame.K_DOWN and indice_menu < len(opcoes_main) - 1: indice_menu += 1
-                if indice_menu != indice_antigo and som_nav: som_nav.play()
+                if evento.key == pygame.K_UP and indice_menu > 0: 
+                    indice_menu -= 1
+                elif evento.key == pygame.K_DOWN and indice_menu < len(opcoes_main) - 1: 
+                    indice_menu += 1
+                
+                if indice_menu != indice_antigo and som_nav: 
+                    som_nav.play()
 
                 if evento.key in [pygame.K_RETURN, pygame.K_SPACE]:
-                    if som_select: som_select.play()
-                    if opcoes_main[indice_menu] == "Opções": estado_atual = "opcoes"
-                    elif opcoes_main[indice_menu] == "Compêndio": estado_atual = "compendio"
-                    elif opcoes_main[indice_menu] == "Sair": salvar_configs(); pygame.quit(); sys.exit()
+                    if som_select: 
+                        som_select.play()
+                    if opcoes_main[indice_menu] == "Opções": 
+                        estado_atual = "opcoes"
+                    elif opcoes_main[indice_menu] == "Compêndio": 
+                        estado_atual = "compendio"
+                    elif opcoes_main[indice_menu] == "Sair": 
+                        salvar_configs()
+                        pygame.quit()
+                        sys.exit()
 
         if evento.type == pygame.MOUSEBUTTONDOWN and evento.button == 1:
             clicou_em_texto = False
@@ -380,20 +404,32 @@ while True:
                 sliders_aba = [slider_fonte] if aba_selecionada == 0 else [slider_musica, slider_sfx] if aba_selecionada == 2 else []
                 for s in sliders_aba:
                     if s.tratar_clique(mouse_pos):
-                        clicou_em_texto = True; if som_select: som_select.play()
+                        clicou_em_texto = True
+                        if som_select: 
+                            som_select.play()
                     if not s.editando:
-                        if s == slider_musica: pygame.mixer.music.set_volume(s.valor / 100)
-                        elif s == slider_sfx and som_select: som_select.set_volume(s.valor / 100)
+                        if s == slider_musica: 
+                            pygame.mixer.music.set_volume(s.valor / 100)
+                        elif s == slider_sfx and som_select: 
+                            som_select.set_volume(s.valor / 100)
                         salvar_configs()
-            if clicou_em_texto: continue
+            
+            if clicou_em_texto: 
+                continue
 
             if estado_atual == "menu":
                 for i, texto in enumerate(opcoes_main):
                     if fonte.render(texto, True, BRANCO).get_rect(center=(BASE_W // 2, 220 + i * 70)).inflate(100, 20).collidepoint(mouse_pos):
-                        if som_select: som_select.play()
-                        if texto == "Opções": estado_atual = "opcoes"
-                        elif texto == "Compêndio": estado_atual = "compendio"
-                        elif texto == "Sair": salvar_configs(); pygame.quit(); sys.exit()
+                        if som_select: 
+                            som_select.play()
+                        if texto == "Opções": 
+                            estado_atual = "opcoes"
+                        elif texto == "Compêndio": 
+                            estado_atual = "compendio"
+                        elif texto == "Sair": 
+                            salvar_configs()
+                            pygame.quit()
+                            sys.exit()
 
             elif estado_atual == "opcoes":
                 dropdown_aberto_interceptou = False
@@ -405,43 +441,58 @@ while True:
                             salvar_configs()
                         dropdown_aberto_interceptou = True
                     elif dropdown_gui.rect.collidepoint(mouse_pos):
-                        dropdown_gui.tratar_clique(mouse_pos); dropdown_aberto_interceptou = True
-                        if som_select: som_select.play()
+                        dropdown_gui.tratar_clique(mouse_pos)
+                        dropdown_aberto_interceptou = True
+                        if som_select: 
+                            som_select.play()
+                            
                 elif aba_selecionada == 1:
                     if dropdown_res.aberto:
                         if dropdown_res.tratar_clique(mouse_pos): 
-                            if som_select: som_select.play(); aplicar_display(); salvar_configs()
+                            if som_select: som_select.play()
+                            aplicar_display()
+                            salvar_configs()
                         dropdown_aberto_interceptou = True
                     elif dropdown_modo.aberto:
                         if dropdown_modo.tratar_clique(mouse_pos): 
-                            if som_select: som_select.play(); aplicar_display(); salvar_configs()
+                            if som_select: som_select.play()
+                            aplicar_display()
+                            salvar_configs()
                         dropdown_aberto_interceptou = True
                     else:
                         if dropdown_res.rect.collidepoint(mouse_pos):
-                            dropdown_res.tratar_clique(mouse_pos); dropdown_aberto_interceptou = True; if som_select: som_select.play()
+                            dropdown_res.tratar_clique(mouse_pos)
+                            dropdown_aberto_interceptou = True
+                            if som_select: som_select.play()
                         elif dropdown_modo.rect.collidepoint(mouse_pos):
-                            dropdown_modo.tratar_clique(mouse_pos); dropdown_aberto_interceptou = True; if som_select: som_select.play()
+                            dropdown_modo.tratar_clique(mouse_pos)
+                            dropdown_aberto_interceptou = True
+                            if som_select: som_select.play()
 
                 if not dropdown_aberto_interceptou:
                     if rect_voltar.collidepoint(mouse_pos):
-                        if som_select: som_select.play(); estado_atual = "menu"
+                        if som_select: som_select.play()
+                        estado_atual = "menu"
                     for i, r in enumerate(areas_abas):
                         if r.collidepoint(mouse_pos):
-                            if aba_selecionada != i and som_select: som_select.play()
+                            if aba_selecionada != i and som_select: 
+                                som_select.play()
                             aba_selecionada = i
                     for tipo, rect in interativos:
                         if rect.collidepoint(mouse_pos) and tipo == "fps":
-                            if som_select: som_select.play(); mostrar_fps = not mostrar_fps; salvar_configs()
+                            if som_select: som_select.play()
+                            mostrar_fps = not mostrar_fps
+                            salvar_configs()
 
             elif estado_atual == "compendio":
                 if rect_voltar.collidepoint(mouse_pos):
                     if som_select: som_select.play()
                     estado_atual = "menu"
                 
-                # Clique nas categorias da Sidebar
                 for rect, idx in rects_categorias:
                     if rect.collidepoint(mouse_pos):
-                        if cat_compendio_idx != idx and som_select: som_select.play()
+                        if cat_compendio_idx != idx and som_select: 
+                            som_select.play()
                         cat_compendio_idx = idx
 
     pygame.display.flip()
