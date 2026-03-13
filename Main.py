@@ -66,7 +66,7 @@ def desenhar_menu():
 # --- 3. LOOP PRINCIPAL ---
 while True:
     desenhar_menu()
-    agora = pygame.get_ticks()
+    agora = pygame.time.get_ticks()
     mouse_pos = pygame.mouse.get_pos()
     teclas = pygame.key.get_pressed()
     
