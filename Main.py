@@ -160,21 +160,34 @@ estado_atual = "menu"
 opcoes_main = ["Host", "Jogar", "Compêndio", "Personagens", "Opções", "Sair"]
 indice_menu, indice_hover = 0, -1
 
-# Variáveis Opções
 abas_opcoes = ["Geral", "Gráficos", "Áudio"]
 aba_selecionada = 0
 slider_musica = Slider(250, 0, 100, cfg["vol_musica"], "int")
 slider_sfx = Slider(250, 0, 100, cfg["vol_sfx"], "int")
 slider_fonte = Slider(250, 0.5, 2.0, cfg["font_scale"], "float")
 todos_os_sliders = [slider_musica, slider_sfx, slider_fonte]
+
 dropdown_gui = Dropdown(180, 35, ["0.5x", "1.0x", "1.5x", "2.0x"], indice_inicial=cfg["gui_scale_idx"], max_visiveis=2)
 dropdown_res = Dropdown(180, 35, ["800x600", "1280x720", "1366x768", "1600x900", "1920x1080"], indice_inicial=cfg["res_idx"], max_visiveis=2)
 dropdown_modo = Dropdown(180, 35, ["Window", "Borderless", "Full Screen"], indice_inicial=cfg["modo_idx"], max_visiveis=2)
 
-# Variáveis Compêndio
+# --- NOVO SISTEMA DO COMPÊNDIO ---
+ARQUIVO_COMPENDIO = "compendio.json"
 categorias_compendio = ["Raças", "Classes", "Antecedentes", "Magias", "Itens", "Bestiário"]
-cat_compendio_idx = 1 # Começando no 1 (Classes) para mostrar exemplo
-classes_dnd_2024 = ["Bárbaro", "Bardo", "Bruxo", "Clérigo", "Druida", "Feiticeiro", "Guerreiro", "Ladino", "Mago", "Monge", "Paladino", "Patrulheiro"]
+cat_compendio_idx = 0 
+
+def carregar_compendio():
+    if os.path.exists(ARQUIVO_COMPENDIO):
+        try:
+            # encoding="utf-8" é vital para ler Raças, Clérigo, etc.
+            with open(ARQUIVO_COMPENDIO, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"Erro ao ler compendio.json: {e}")
+    # Se der erro ou não existir, cria um vazio
+    return {cat: [] for cat in categorias_compendio}
+
+dados_compendio = carregar_compendio()
 
 def salvar_configs():
     novas_configs = {
