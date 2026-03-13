@@ -153,11 +153,9 @@ def mostrar_alerta(msg):
     msg_alerta = msg
     msg_alerta_timer = 3000
 
-# --- NOVO: ENVIAR ROLAGEM DE FICHA PARA O CHAT ---
 def enviar_rolagem_chat(nome_char, texto_msg, alerta_msg):
     mostrar_alerta(alerta_msg)
     tocar_sfx(sfx_sel)
-    # Se estou no meio de um jogo, avisa o servidor para mostrar no chat!
     if origem_ficha == "GAME_MAP":
         rede.enviar_msg({"tipo": "chat", "nome": nome_char, "texto": texto_msg})
 
@@ -251,7 +249,6 @@ while rodando:
                     else:
                         rede.enviar_msg({"tipo": "chat", "nome": mapa_jogo.meu_id, "texto": texto_chat})
                 
-                # --- LEITURA DO BOTÃO FICHA ---
                 elif acao["tipo"] == "abrir_ficha":
                     if char_sel != -1:
                         estado = "PERSONAGEM"
@@ -836,7 +833,6 @@ while rodando:
             pygame.draw.rect(tela, (200, 40, 40) if is_hover_init else (160, 30, 30), init_rect, border_radius=4)
             desenhar_texto(f"INITIATIVE +{p.get('iniciativa', 0)}", fonte_p, (255, 255, 255), init_rect.centerx - 2, init_rect.centery + 2)
             
-            # --- ROLAGEM DE INICIATIVA NO CHAT ---
             if is_hover_init and m_click and not dropdown_aberto:
                 salvar_valor_numerico(); tot = random.randint(1, 20) + p.get('iniciativa', 0)
                 enviar_rolagem_chat(p['nome'], f"rolou Iniciativa: {tot - p.get('iniciativa', 0)} + {p.get('iniciativa', 0)} = {tot}", f"Iniciativa Rolada: {tot}")
@@ -929,7 +925,6 @@ while rodando:
             hd_max = p.get('nivel', 1); hd_atual = p.get('hit_dice_atual', hd_max)
             desenhar_texto(f"{hd_atual} / {hd_max}", fonte, (255, 255, 255), hd_val_rect.centerx, hd_val_rect.centery)
             
-            # --- ROLAGEM DE HIT DICE NO CHAT ---
             if is_hover_hd and m_click and not dropdown_aberto:
                 salvar_valor_numerico()
                 if hd_atual > 0:
@@ -989,7 +984,6 @@ while rodando:
                 mod_str = f"+{base_mod}" if base_mod >= 0 else str(base_mod)
                 mod_rect = pygame.Rect(col_cx - 35, row2_y + 100, 32, 35)
                 
-                # --- ROLAGEM DE MODIFICADOR NO CHAT ---
                 if mod_rect.collidepoint(m_pos):
                     pygame.draw.rect(tela, (255, 255, 255), mod_rect, 1, border_radius=4)
                     if m_click and not dropdown_aberto:
@@ -1011,7 +1005,6 @@ while rodando:
                 
                 save_rect = pygame.Rect(col_cx + 5, row2_y + 100, 32, 35)
                 
-                # --- ROLAGEM DE SAVING THROW NO CHAT ---
                 if save_rect.collidepoint(m_pos):
                     pygame.draw.rect(tela, (255, 255, 255), save_rect, 1, border_radius=4)
                     if m_click and not dropdown_aberto:
@@ -1188,6 +1181,8 @@ while rodando:
                         current_qy += 380
                     else:
                         nome = atk.get("nome", "Attack")
+                        
+                        # --- CÁLCULO DE MODIFICADORES DE ACERTO ---
                         mod = 0
                         if atk.get("atk_abilidade", "none") != "none": mod = get_mod(p.get(atk["atk_abilidade"], 10))
                         prof_idx = atk.get("atk_prof", 0)
@@ -1197,24 +1192,75 @@ while rodando:
                         mod += atk.get("atk_bonus", 0)
                         hit_str = f"+{mod} To Hit" if mod >= 0 else f"{mod} To Hit"
 
+                        # --- CÁLCULO DE DANO ---
                         dmg_str = atk.get("dmg1_dado", "")
+                        m1 = 0
                         if dmg_str:
                             if atk.get("dmg1_abilidade", "none") != "none":
                                 m1 = get_mod(p.get(atk["dmg1_abilidade"], 10))
                                 dmg_str += f"+{m1}" if m1 >= 0 else str(m1)
                             if atk.get("dmg1_tipo", ""): dmg_str += f" {atk['dmg1_tipo']}"
                         
+                        # --- HITBOXES (ÁREAS CLICÁVEIS) ---
                         row_rect = pygame.Rect(qx, current_qy, tab_w - 40, 35) 
-                        if row_rect.collidepoint(m_pos):
+                        hit_rect = pygame.Rect(qx + 270, current_qy, 100, 35)
+                        dmg_rect = pygame.Rect(qx + 390, current_qy, 180, 35)
+                        
+                        is_hover_hit = hit_rect.collidepoint(m_pos)
+                        is_hover_dmg = dmg_rect.collidepoint(m_pos)
+                        is_hover_edit = row_rect.collidepoint(m_pos) and not (is_hover_hit or is_hover_dmg)
+
+                        # --- AÇÕES DE CLIQUE ---
+                        if is_hover_edit:
                             pygame.draw.rect(tela, (40, 40, 45), row_rect, border_radius=4)
                             if m_click and not dropdown_aberto: ataque_em_edicao = idx_item; tocar_sfx(sfx_sel); m_click = False
 
+                        # 1. Rolar apenas Acerto
+                        if is_hover_hit:
+                            pygame.draw.rect(tela, (60, 40, 40), hit_rect, border_radius=4)
+                            if m_click and not dropdown_aberto:
+                                salvar_valor_numerico()
+                                rolagem = random.randint(1, 20)
+                                tot = rolagem + mod
+                                enviar_rolagem_chat(p['nome'], f"atacou com {nome} (To Hit): 🎲 {rolagem} + {mod} = {tot}", f"{nome}: Acerto {tot}")
+                                m_click = False
+
+                        # 2. Rolar Acerto e Dano juntos
+                        if is_hover_dmg:
+                            pygame.draw.rect(tela, (40, 60, 40), dmg_rect, border_radius=4)
+                            if m_click and not dropdown_aberto:
+                                salvar_valor_numerico()
+                                rolagem_hit = random.randint(1, 20)
+                                tot_hit = rolagem_hit + mod
+                                
+                                dado_base = atk.get("dmg1_dado", "").lower()
+                                dano_tot = 0
+                                rolagens_str = "0"
+                                if 'd' in dado_base:
+                                    partes = dado_base.split('d')
+                                    qtd = int(partes[0]) if partes[0].isdigit() else 1
+                                    lados = int(partes[1]) if len(partes)>1 and partes[1].isdigit() else 0
+                                    rolagens = [random.randint(1, lados) for _ in range(qtd)] if lados > 0 else [0]
+                                    dano_tot = sum(rolagens)
+                                    rolagens_str = f"[{', '.join(map(str, rolagens))}]"
+                                
+                                dano_tot_final = max(0, dano_tot + m1)
+                                msg_chat = f"atacou com {nome} ⚔️ Acerto: {rolagem_hit}+{mod}={tot_hit} | Dano: 🎲 {rolagens_str}+{m1} = {dano_tot_final} {atk.get('dmg1_tipo', '')}"
+                                enviar_rolagem_chat(p['nome'], msg_chat, f"{nome}: Dano {dano_tot_final}!")
+                                m_click = False
+
+                        # --- RENDERIZAÇÃO DE TEXTO DA LINHA ---
                         text_y = current_qy + 8 
                         desenhar_texto(nome, fonte_p, (220, 220, 220), qx + 5, text_y, False)
                         desenhar_texto(atk.get("distancia", "--"), fonte_pp, (150, 150, 150), qx + 180, text_y + 2, False)
-                        desenhar_texto(hit_str, fonte_p, (200, 100, 100), qx + 280, text_y, False)
-                        desenhar_texto(dmg_str, fonte_p, (150, 150, 150), qx + 400, text_y, False)
-                        desenhar_texto("v", fonte_p, (150, 150, 150), qx + tab_w - 60, text_y)
+                        
+                        cor_hit = (255, 150, 150) if is_hover_hit else (200, 100, 100)
+                        desenhar_texto(hit_str, fonte_p, cor_hit, qx + 280, text_y, False)
+                        
+                        cor_dmg = (150, 255, 150) if is_hover_dmg else (150, 150, 150)
+                        desenhar_texto(dmg_str, fonte_p, cor_dmg, qx + 400, text_y, False)
+                        
+                        desenhar_texto("v", fonte_p, (255,255,255) if is_hover_edit else (150, 150, 150), qx + tab_w - 60, text_y)
                         
                         pygame.draw.line(tela, (50, 50, 50), (qx, current_qy + 35), (qx + tab_w - 40, current_qy + 35))
                         current_qy += 35 
@@ -1285,7 +1331,6 @@ while rodando:
 
                 mod_rect = pygame.Rect(sk_x + 180, current_sy - 5, 35, 25)
                 
-                # --- ROLAGEM DE SKILL NO CHAT ---
                 if mod_rect.collidepoint(m_pos):
                     pygame.draw.rect(tela, (255, 255, 255), mod_rect, 1, border_radius=4)
                     if m_click and not dropdown_aberto:
